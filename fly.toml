@@ -1,0 +1,25 @@
+app = "stock-signal-bot"
+primary_region = "sin"   # 新加坡，离香港/中国最近，延迟低
+
+[build]
+
+[env]
+  DATA_SOURCE = "yfinance"
+  DB_PATH = "/data/signals.db"
+
+# 持久化卷：存 SQLite 数据库
+[mounts]
+  source = "signal_data"
+  destination = "/data"
+
+[[services]]
+  # 这是纯 bot（长轮询），不需要对外开放 HTTP 端口
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+
+[deploy]
+  strategy = "immediate"
