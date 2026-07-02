@@ -240,10 +240,7 @@ def run_ai_analysis(
             news           = finnhub.get_company_news(symbol, days=3)
         except Exception as e:
             logger.debug("Finnhub news %s: %s", symbol, e)
-        try:
-            rating_changes = finnhub.get_upgrade_downgrade(symbol)
-        except Exception as e:
-            logger.debug("Finnhub ratings %s: %s", symbol, e)
+        # upgrade-downgrade 在免费套餐返回 403，跳过
         try:
             earnings_surprise = finnhub.get_earnings_surprise(symbol)
         except Exception as e:
@@ -293,29 +290,46 @@ def run_ai_analysis(
         price_now=price,
     )
 
-    # ── 调用 Claude ───────────────────────────────────
-    try:
-        client = anthropic.Anthropic(api_key=anthropic_key)
-        message = client.messages.create(
-            model=_MODEL,
-            max_tokens=1024,
-            system=_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = message.content[0].text.strip()
-        # 有时 Claude 会在 JSON 外加 markdown 代码块
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        analysis = json.loads(raw)
-        analysis["symbol"] = symbol
-        logger.info("AI 分析完成 %s: %s（置信度:%s）",
-                    symbol, analysis.get("direction"), analysis.get("confidence"))
-        return analysis
-    except json.JSONDecodeError as e:
-        logger.error("AI 返回非 JSON（%s）: %s\n原文: %s", symbol, e, raw[:200])
-        return {}
-    except Exception as e:
-        logger.error("AI 分析失败（%s）: %s", symbol, e)
-        return {}
+    # ── 调用 Claude（最多重试2次）────────────────────
+    client = anthropic.Anthropic(api_key=anthropic_key)
+    for attempt in range(3):
+        try:
+            message = client.messages.create(
+                model=_MODEL,
+                max_tokens=1024,
+                system=_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            raw = message.content[0].text.strip()
+
+            # 提取 JSON：处理 markdown 代码块、前后多余文字
+            if "```" in raw:
+                parts = raw.split("```")
+                for p in parts:
+                    p = p.strip()
+                    if p.startswith("json"):
+                        p = p[4:].strip()
+                    if p.startswith("{"):
+                        raw = p
+                        break
+            # 找到第一个 { 到最后一个 }
+            start = raw.find("{")
+            end   = raw.rfind("}") + 1
+            if start >= 0 and end > start:
+                raw = raw[start:end]
+
+            analysis = json.loads(raw)
+            analysis["symbol"] = symbol
+            logger.info("AI 分析完成 %s: %s（置信度:%s）",
+                        symbol, analysis.get("direction"), analysis.get("confidence"))
+            return analysis
+
+        except json.JSONDecodeError as e:
+            logger.warning("AI JSON 解析失败 %s 第%d次: %s", symbol, attempt+1, e)
+            if attempt == 2:
+                logger.error("AI 分析放弃 %s，原文片段: %s", symbol, raw[:300])
+                return {}
+        except Exception as e:
+            logger.error("AI 分析失败（%s）: %s", symbol, e)
+            return {}
+    return {}

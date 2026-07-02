@@ -123,26 +123,32 @@ async def main():
                 logger.info("跳过 %s: %s 强度%d", sym, result.direction, result.strength)
                 continue
 
-            # ── 发送原有技术分析报告 ──
-            text = format_signal_message(result, pinned=is_pinned)
-            for chat_id in chat_ids:
-                await bot.send_message(chat_id=chat_id, text=text, parse_mode=ParseMode.HTML)
-
-            # ── 发送 AI 深度研判（紧接技术报告之后）──
+            # ── AI 深度研判 ──
+            ai_text = ""
             if use_ai:
                 try:
                     ai_result = run_ai_analysis(
                         result, finnhub_client, anthropic_key, macro_context
                     )
                     ai_text = format_ai_analysis(sym, result.current_price, ai_result)
-                    if ai_text:
-                        await asyncio.sleep(0.3)
-                        for chat_id in chat_ids:
-                            await bot.send_message(
-                                chat_id=chat_id, text=ai_text, parse_mode=ParseMode.HTML
-                            )
+                    logger.info("AI 分析完成 %s: %d 字符", sym, len(ai_text))
                 except Exception as e:
-                    logger.error("AI 分析推送失败 %s: %s", sym, e)
+                    logger.error("AI 分析失败 %s: %s", sym, e)
+
+            # ── 合并成一条消息发送 ──
+            tech_text = format_signal_message(result, pinned=is_pinned)
+            combined  = tech_text + ("\n\n" + ai_text if ai_text else "")
+            # Telegram 单条限制 4096 字符，超出则分两条
+            if len(combined) <= 4096:
+                for chat_id in chat_ids:
+                    await bot.send_message(chat_id=chat_id, text=combined, parse_mode=ParseMode.HTML)
+            else:
+                for chat_id in chat_ids:
+                    await bot.send_message(chat_id=chat_id, text=tech_text, parse_mode=ParseMode.HTML)
+                if ai_text:
+                    await asyncio.sleep(0.3)
+                    for chat_id in chat_ids:
+                        await bot.send_message(chat_id=chat_id, text=ai_text, parse_mode=ParseMode.HTML)
 
             logger.info("✅ 推送 %s: %s 强度%d", sym, result.direction, result.strength)
             pushed += 1
