@@ -272,7 +272,7 @@ def generate_signal(daily_df: pd.DataFrame, weekly_df: pd.DataFrame, symbol: str
                 buy_reasons.append("短期金叉（MA5上穿MA20）")
             elif ma5 > bb_mid:
                 buy_score += 6
-                buy_reasons.append("短期趋势向上（MA5>MA20）")
+                buy_reasons.append("短期趋势向上（MA5＞MA20）")
 
         # ── ⑤ 中长期趋势（周线，max ~22）────────────
         if w_golden_cross:
@@ -280,7 +280,7 @@ def generate_signal(daily_df: pd.DataFrame, weekly_df: pd.DataFrame, symbol: str
             buy_reasons.append("周线金叉（MA20上穿MA50）")
         elif weekly_trend == "BULLISH":
             buy_score += 9
-            buy_reasons.append("周线趋势看涨（MA20>MA50）")
+            buy_reasons.append("周线趋势看涨（MA20＞MA50）")
 
         # ── ⑥ OBV量价聪明钱（独立于价格趋势）────────
         if obv_delta > 0:
@@ -363,7 +363,7 @@ def generate_signal(daily_df: pd.DataFrame, weekly_df: pd.DataFrame, symbol: str
             sell_reasons.append("短期死叉（MA5下穿MA20）")
         elif ma5 < bb_mid:
             sell_score += 5
-            sell_reasons.append("短期趋势向下（MA5<MA20）")
+            sell_reasons.append("短期趋势向下（MA5＜MA20）")
 
     # ── ⑤ 中长期趋势 ─────────────────────────────
     if w_death_cross:
@@ -371,7 +371,7 @@ def generate_signal(daily_df: pd.DataFrame, weekly_df: pd.DataFrame, symbol: str
         sell_reasons.append("周线死叉（MA20下穿MA50）")
     elif weekly_trend == "BEARISH":
         sell_score += 9
-        sell_reasons.append("周线趋势看跌（MA20<MA50）")
+        sell_reasons.append("周线趋势看跌（MA20＜MA50）")
 
     # ── ⑥ OBV量价聪明钱 ─────────────────────────
     if obv_delta < 0:
