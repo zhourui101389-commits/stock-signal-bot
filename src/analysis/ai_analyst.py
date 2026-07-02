@@ -1,7 +1,6 @@
 """
-AI 深度分析模块：用 Claude 对股票做多维综合研判，替代规则打分。
-输入：yfinance 技术/基本面数据 + Finnhub 新闻/评级/财报
-输出：结构化的深度分析报告（JSON）
+AI 综合研判模块：接收技术系统信号 + 基本面数据，输出统一操作判断。
+AI 作为裁判，确认或推翻技术信号，给出一个确定性结论。
 """
 import json
 import logging
@@ -14,19 +13,27 @@ logger = logging.getLogger(__name__)
 
 _MODEL = "claude-sonnet-4-6"
 
-_SYSTEM_PROMPT = """你是一位资深美股分析师，专注于短期交易（3-7天）和波段操作（2-4周）。
-你的分析风格：
-- 直接给出明确判断，不说废话
-- 技术面和基本面结合，但以技术面为主
-- 特别关注：成交量异动、主力资金行为、催化剂时间窗口
-- 用中文输出，语言简洁有力
+_SYSTEM_PROMPT = """你是一位资深美股分析师，负责综合量化技术信号和基本面数据，给出一个最终统一的操作判断。
 
-你必须严格按照 JSON 格式输出，不要有任何 JSON 之外的内容。"""
+你的工作规则：
+- 技术系统已给出初步信号（方向+强度+理由），你需要评估并确认或推翻它
+- 技术和基本面一致 → 提高置信度，给出明确建议
+- 两者矛盾 → 判断哪个更可信，给出最终方向并说明推翻理由
+- 只输出一个操作建议，不能两边倒或模糊
+- 给出具体的目标价和止损价（数字，不是百分比）
+- 用中文，语言简洁有力
+- 严格按 JSON 格式输出，不含任何 JSON 以外内容"""
 
 _USER_PROMPT_TEMPLATE = """
 分析股票：{symbol}（当前价 {price}，所属行业：{sector}）
 
-## 技术面数据
+## 技术系统初步信号
+- 方向: {tech_direction}（BUY=看多/SELL=看空/NEUTRAL=中性观望）
+- 强度: {tech_strength}/100
+- 信号理由:
+{tech_reasons}
+
+## 技术面指标
 - 日线趋势：{daily_trend}
 - RSI(14)：{rsi:.1f}
 - MACD：{macd_trend}
@@ -50,9 +57,6 @@ _USER_PROMPT_TEMPLATE = """
 ## 近期财报超预期记录
 {earnings_surprise}
 
-## 分析师评级近期变动
-{rating_changes}
-
 ## 近3天重要新闻
 {news}
 
@@ -60,24 +64,25 @@ _USER_PROMPT_TEMPLATE = """
 {macro_context}
 
 ---
-请以 JSON 格式输出以下分析（不要输出 JSON 以外任何内容）：
+请综合技术信号和基本面，给出统一判断。
+以 JSON 格式输出（不要输出 JSON 以外任何内容）：
 
 {{
-  "direction": "看多|看空|中性",
-  "confidence": "高|中|低",
+  "tech_confirmed": true或false（是否确认技术系统的方向判断）,
+  "override_reason": "<推翻理由，若tech_confirmed=true则填null>",
+  "final_direction": "看多|看空|中性",
+  "conviction": "高|中|低",
   "horizon": "3-5天|1-2周|2-4周",
-  "price_now": {price_now},
-  "target_bull": <乐观目标价，数字>,
-  "target_bear": <悲观目标价，数字>,
-  "verdict": "<20字以内的核心判断>",
-  "analysis": "<150-250字深度分析：技术形态→基本面支撑→催化剂→风险点，要具体>",
-  "bull_case": "<60字，多方理由>",
-  "bear_case": "<60字，空方风险>",
+  "verdict": "<20字以内核心判断，点明最重要的一个逻辑>",
+  "analysis": "<150-250字综合分析：技术信号可信度→基本面支撑→催化剂→风险点，要具体>",
+  "bull_case": "<60字，做多理由>",
+  "bear_case": "<60字，做空风险>",
+  "action": "积极买入|谨慎买入|持有观望|减仓|回避",
+  "target_price": <目标价，具体数字>,
+  "stop_loss": <止损价，具体数字>,
   "key_level_support": <关键支撑价，数字>,
   "key_level_resistance": <关键阻力价，数字>,
-  "catalyst": "<近期催化剂，无则填null>",
-  "action": "积极买入|谨慎买入|持有观望|减仓|回避",
-  "stop_loss": <止损价，数字>
+  "catalyst": "<近期催化剂，无则填null>"
 }}
 """
 
@@ -102,21 +107,6 @@ def _fmt_earnings(earnings: list[dict]) -> str:
         else:
             lines.append(f"  {period}: ❌ 不及预期 {surprise:+.1f}%")
     return "\n".join(lines) if lines else "暂无数据"
-
-
-def _fmt_rating_changes(changes: list[dict]) -> str:
-    if not changes:
-        return "近期无变动"
-    lines = []
-    for c in changes[:3]:
-        action = c.get("action", "")
-        frm = c.get("from", "")
-        to = c.get("to", "")
-        company = c.get("company", "")
-        date = c.get("date", "")
-        emoji = "⬆️" if "upgrade" in action.lower() else "⬇️" if "downgrade" in action.lower() else "➡️"
-        lines.append(f"  {emoji} {date} {company}: {frm}→{to}")
-    return "\n".join(lines) if lines else "近期无变动"
 
 
 def _fmt_news(news: list[dict]) -> str:
@@ -151,13 +141,12 @@ def _extract_technical(result) -> dict:
     ma20   = last("ma20")
     ma50   = last("ma50")
     ma200  = last("ma200")
-    close  = last("close") or result.price
+    close  = last("close") or result.current_price
     bb_up  = last("bb_upper")
     bb_low = last("bb_lower")
     bb_mid = last("bb_mid")
     roc20  = last("roc20") or 0.0
 
-    # 日线趋势判断
     if ma200 and close > ma200 * 1.02:
         daily_trend = f"多头（收盘价 {close:.2f} 在MA200上方 {((close/ma200-1)*100):+.1f}%）"
     elif ma200 and close < ma200 * 0.98:
@@ -169,8 +158,8 @@ def _extract_technical(result) -> dict:
     if abs(macd - signal) < 0.01:
         macd_trend = "交叉临界"
 
-    if bb_up and bb_low and bb_mid:
-        pos = (close - bb_low) / (bb_up - bb_low) * 100 if (bb_up - bb_low) > 0 else 50
+    if bb_up and bb_low and (bb_up - bb_low) > 0:
+        pos = (close - bb_low) / (bb_up - bb_low) * 100
         if pos > 80:
             bb_position = f"上轨附近（{pos:.0f}%），可能超买"
         elif pos < 20:
@@ -201,13 +190,13 @@ def _extract_technical(result) -> dict:
 
 
 def run_ai_analysis(
-    result,           # SignalResult
-    finnhub,          # FinnhubClient（可为 None）
+    result,
+    finnhub,
     anthropic_key: str,
     macro_context: str = "",
 ) -> dict:
     """
-    对单只股票运行 AI 深度分析。
+    综合技术信号和基本面，输出统一操作判断。
     返回结构化 dict，失败时返回 {}。
     """
     if not anthropic_key:
@@ -217,10 +206,8 @@ def run_ai_analysis(
     symbol = result.symbol
     price  = result.current_price if not math.isnan(result.current_price) else result.close_price
 
-    # ── 技术面 ────────────────────────────────────────
     tech = _extract_technical(result)
 
-    # ── 基本面（yfinance 已有） ───────────────────────
     q = result.quote or {}
     volume_ratio  = q.get("volume_ratio", 1.0) or 1.0
     short_pct_val = result.short_data.get("short_pct") if result.short_data else None
@@ -230,17 +217,15 @@ def run_ai_analysis(
     analyst_buy  = analyst.get("buy_pct", 0) or 0
     analyst_cnt  = analyst.get("total",   0) or 0
 
-    # ── Finnhub 数据 ──────────────────────────────────
-    news, rating_changes, earnings_surprise = [], [], []
+    news, earnings_surprise = [], []
     pe_ttm = rev_growth = eps_growth = roe_val = beta_val = None
     pct_52w = 50.0
 
     if finnhub:
         try:
-            news           = finnhub.get_company_news(symbol, days=3)
+            news = finnhub.get_company_news(symbol, days=3)
         except Exception as e:
             logger.debug("Finnhub news %s: %s", symbol, e)
-        # upgrade-downgrade 在免费套餐返回 403，跳过
         try:
             earnings_surprise = finnhub.get_earnings_surprise(symbol)
         except Exception as e:
@@ -259,12 +244,19 @@ def run_ai_analysis(
         except Exception as e:
             logger.debug("Finnhub financials %s: %s", symbol, e)
 
-    # ── 组装 Prompt ───────────────────────────────────
+    # 技术信号理由格式化
+    tech_direction = result.direction  # BUY / SELL / NEUTRAL
+    tech_strength  = result.strength
+    tech_reasons   = "\n".join(f"  • {r}" for r in result.reasons) if result.reasons else "  • 无"
+
     sector = q.get("sector", "未知行业") if q else "未知行业"
     prompt = _USER_PROMPT_TEMPLATE.format(
         symbol=symbol,
         price=f"{price:.2f}",
         sector=sector,
+        tech_direction=tech_direction,
+        tech_strength=tech_strength,
+        tech_reasons=tech_reasons,
         daily_trend=tech["daily_trend"],
         rsi=tech["rsi"],
         macd_trend=tech["macd_trend"],
@@ -284,14 +276,12 @@ def run_ai_analysis(
         beta=f"{beta_val:.2f}" if beta_val else "未知",
         pct_52w=pct_52w,
         earnings_surprise=_fmt_earnings(earnings_surprise),
-        rating_changes=_fmt_rating_changes(rating_changes),
         news=_fmt_news(news),
         macro_context=macro_context or "当前无特别宏观事件",
-        price_now=price,
     )
 
-    # ── 调用 Claude（最多重试2次）────────────────────
     client = anthropic.Anthropic(api_key=anthropic_key)
+    raw = ""
     for attempt in range(3):
         try:
             message = client.messages.create(
@@ -302,17 +292,14 @@ def run_ai_analysis(
             )
             raw = message.content[0].text.strip()
 
-            # 提取 JSON：处理 markdown 代码块、前后多余文字
             if "```" in raw:
-                parts = raw.split("```")
-                for p in parts:
+                for p in raw.split("```"):
                     p = p.strip()
                     if p.startswith("json"):
                         p = p[4:].strip()
                     if p.startswith("{"):
                         raw = p
                         break
-            # 找到第一个 { 到最后一个 }
             start = raw.find("{")
             end   = raw.rfind("}") + 1
             if start >= 0 and end > start:
@@ -320,12 +307,15 @@ def run_ai_analysis(
 
             analysis = json.loads(raw)
             analysis["symbol"] = symbol
-            logger.info("AI 分析完成 %s: %s（置信度:%s）",
-                        symbol, analysis.get("direction"), analysis.get("confidence"))
+            confirmed = analysis.get("tech_confirmed", True)
+            logger.info("AI综合研判 %s: %s（%s技术信号，置信度:%s）",
+                        symbol, analysis.get("final_direction"),
+                        "确认" if confirmed else "推翻",
+                        analysis.get("conviction"))
             return analysis
 
         except json.JSONDecodeError as e:
-            logger.warning("AI JSON 解析失败 %s 第%d次: %s", symbol, attempt+1, e)
+            logger.warning("AI JSON 解析失败 %s 第%d次: %s", symbol, attempt + 1, e)
             if attempt == 2:
                 logger.error("AI 分析放弃 %s，原文片段: %s", symbol, raw[:300])
                 return {}

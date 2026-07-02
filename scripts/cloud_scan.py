@@ -23,7 +23,7 @@ from src.data.finnhub_client import FinnhubClient
 from src.analysis.multi_timeframe import analyze_symbol
 from src.analysis.ai_analyst import run_ai_analysis
 from src.notifications.formatter import (
-    format_signal_message, format_ai_analysis,
+    format_signal_message,
     format_serenity_section,
 )
 from src.data.serenity_tracker import get_serenity_picks
@@ -123,32 +123,23 @@ async def main():
                 logger.info("跳过 %s: %s 强度%d", sym, result.direction, result.strength)
                 continue
 
-            # ── AI 深度研判 ──
-            ai_text = ""
+            # ── AI 综合研判（融合进消息） ──
+            ai_result = {}
             if use_ai:
                 try:
                     ai_result = run_ai_analysis(
                         result, finnhub_client, anthropic_key, macro_context
                     )
-                    ai_text = format_ai_analysis(sym, result.current_price, ai_result, result.direction)
-                    logger.info("AI 分析完成 %s: %d 字符", sym, len(ai_text))
+                    logger.info("AI综合研判完成 %s: %s 置信度%s",
+                                sym, ai_result.get("final_direction", "?"),
+                                ai_result.get("conviction", "?"))
                 except Exception as e:
                     logger.error("AI 分析失败 %s: %s", sym, e)
 
-            # ── 合并成一条消息发送 ──
-            tech_text = format_signal_message(result, pinned=is_pinned)
-            combined  = tech_text + ("\n\n" + ai_text if ai_text else "")
-            # Telegram 单条限制 4096 字符，超出则分两条
-            if len(combined) <= 4096:
-                for chat_id in chat_ids:
-                    await bot.send_message(chat_id=chat_id, text=combined, parse_mode=ParseMode.HTML)
-            else:
-                for chat_id in chat_ids:
-                    await bot.send_message(chat_id=chat_id, text=tech_text, parse_mode=ParseMode.HTML)
-                if ai_text:
-                    await asyncio.sleep(0.3)
-                    for chat_id in chat_ids:
-                        await bot.send_message(chat_id=chat_id, text=ai_text, parse_mode=ParseMode.HTML)
+            # ── 生成统一消息并发送 ──
+            msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None)
+            for chat_id in chat_ids:
+                await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
 
             logger.info("✅ 推送 %s: %s 强度%d", sym, result.direction, result.strength)
             pushed += 1

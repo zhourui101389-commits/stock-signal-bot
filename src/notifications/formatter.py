@@ -1,4 +1,5 @@
 """格式化 Telegram HTML 消息。"""
+import html as _html
 import math
 from datetime import datetime, timezone, timedelta
 from src.analysis.signals import SignalResult
@@ -53,13 +54,24 @@ def _flow_bar(net: float) -> str:
 
 
 def _format_action_guide(result, price: float, pinned: bool,
-                         total_capital: float = 50000, currency: str = "AUD") -> str:
+                         total_capital: float = 50000, currency: str = "AUD",
+                         ai_result: dict = None) -> str:
     """根据仓位分层和信号生成具体操作指引。"""
     if math.isnan(price) or price <= 0:
         return ""
 
+    ai_stop   = (ai_result or {}).get("stop_loss")
+    ai_target = (ai_result or {}).get("target_price")
+    ai_action = (ai_result or {}).get("action", "")
+
     tier      = getattr(result, "tier", "swing")
-    direction = result.direction
+    # 如果 AI 给出了明确方向，用 AI 方向驱动操作指引
+    if ai_action in ("积极买入", "谨慎买入"):
+        direction = "BUY"
+    elif ai_action in ("减仓", "回避"):
+        direction = "SELL"
+    else:
+        direction = result.direction
     strength  = result.strength
     atr_pct   = result.atr_pct if not math.isnan(result.atr_pct) else 3.0
     vr        = result.volume_ratio
@@ -133,12 +145,24 @@ def _format_action_guide(result, price: float, pinned: bool,
     if direction == "BUY" and batch_amt > 0:
         lines.append(f"  动作: {entry_note}")
         lines.append(f"  仓位: <b>{_money(batch_amt)}</b>（{batch_label}）")
-        lines.append(f"  止损: <b>USD {sl_price:.2f}</b>（-{sl_pct*100:.0f}% 硬止损）")
-        lines.append(f"  止盈1: USD {tp1_price:.2f}（+{tp1*100:.0f}% 减1/3）")
-        lines.append(f"  止盈2: USD {tp2_price:.2f}（+{tp2*100:.0f}% 再减1/3）")
-        lines.append(f"  止盈3: {exit_note_last}")
+        # 优先使用 AI 给出的止损价
+        if ai_stop:
+            sl_pct_actual = (price - ai_stop) / price * 100 if price > 0 else 0
+            lines.append(f"  止损: <b>USD {ai_stop:.2f}</b>（-{sl_pct_actual:.1f}%）")
+        else:
+            lines.append(f"  止损: <b>USD {sl_price:.2f}</b>（-{sl_pct*100:.0f}% 硬止损）")
+        # 优先使用 AI 给出的目标价
+        if ai_target:
+            upside = (ai_target - price) / price * 100 if price > 0 else 0
+            lines.append(f"  目标价: <b>USD {ai_target:.2f}</b>（{upside:+.1f}%）")
+        else:
+            lines.append(f"  止盈1: USD {tp1_price:.2f}（+{tp1*100:.0f}% 减1/3）")
+            lines.append(f"  止盈2: USD {tp2_price:.2f}（+{tp2*100:.0f}% 再减1/3）")
+            lines.append(f"  止盈3: {exit_note_last}")
     elif direction == "SELL":
         lines.append(f"  动作: {entry_note}")
+        if ai_stop:
+            lines.append(f"  止损参考: USD {ai_stop:.2f}")
     else:
         lines.append("  动作: 观望，等待更强信号")
 
@@ -148,22 +172,65 @@ def _format_action_guide(result, price: float, pinned: bool,
     return "\n".join(lines) + "\n"
 
 
-def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
+def format_signal_message(result: SignalResult, pinned: bool = False, ai_result: dict = None) -> str:
     price = result.current_price if not math.isnan(result.current_price) else result.close_price
 
-    # ── 操作建议 ──
-    if result.direction == "BUY":
-        action = "✅ 建议买入"
-        pos_line = (
-            f"建议仓位: <b>{result.position_shares} 股</b>（约 {_v(result.position_usd)}）"
-            if result.position_shares > 0 else "建议仓位: 少量试仓"
-        )
-    elif result.direction == "SELL":
-        action = "❌ 建议卖出/减仓"
-        pos_line = "建议: 考虑减仓或止盈离场"
+    # ── 统一操作建议：AI 优先，无 AI 则降级用技术方向 ──
+    if ai_result:
+        ai_action_str = ai_result.get("action", "持有观望")
+        conviction    = ai_result.get("conviction", "中")
+        horizon       = ai_result.get("horizon", "3-5天")
+        verdict       = _html.escape(ai_result.get("verdict", ""))
+        final_dir     = ai_result.get("final_direction", "中性")
+        tech_confirmed = ai_result.get("tech_confirmed", True)
+        override_reason = _html.escape(str(ai_result.get("override_reason") or ""))
+        analysis      = _html.escape(ai_result.get("analysis", ""))
+        bull_case     = _html.escape(ai_result.get("bull_case", ""))
+        bear_case     = _html.escape(ai_result.get("bear_case", ""))
+        catalyst      = _html.escape(str(ai_result.get("catalyst") or "")) or None
+
+        dir_emoji = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(final_dir, "⚪")
+        conv_emoji = {"高": "🔥", "中": "✅", "低": "💡"}.get(conviction, "💡")
+
+        if ai_action_str in ("积极买入", "谨慎买入"):
+            action = f"✅ {ai_action_str}"
+            pos_line = (
+                f"建议仓位: <b>{result.position_shares} 股</b>（约 {_v(result.position_usd)}）"
+                if result.position_shares > 0 else "建议仓位: 少量试仓"
+            )
+        elif ai_action_str in ("减仓", "回避"):
+            action = f"❌ {ai_action_str}"
+            pos_line = "建议: 考虑减仓或止盈离场"
+        else:
+            action = "⏸ 持有观望"
+            pos_line = "建议: 暂不操作，等待更强信号"
     else:
-        action = "⏸ 观望"
-        pos_line = "建议: 暂不操作"
+        # 无 AI 时降级
+        final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
+        dir_emoji = {"BUY": "🟢", "SELL": "🔴", "NEUTRAL": "⚪"}.get(result.direction, "⚪")
+        conviction = "中"
+        conv_emoji = "💡"
+        horizon = "3-5天"
+        verdict = ""
+        tech_confirmed = True
+        override_reason = ""
+        analysis = ""
+        bull_case = ""
+        bear_case = ""
+        catalyst = None
+
+        if result.direction == "BUY":
+            action = "✅ 建议买入"
+            pos_line = (
+                f"建议仓位: <b>{result.position_shares} 股</b>（约 {_v(result.position_usd)}）"
+                if result.position_shares > 0 else "建议仓位: 少量试仓"
+            )
+        elif result.direction == "SELL":
+            action = "❌ 建议卖出/减仓"
+            pos_line = "建议: 考虑减仓或止盈离场"
+        else:
+            action = "⏸ 观望"
+            pos_line = "建议: 暂不操作"
 
     # ── 今日涨幅预估 ──
     gain_raw  = result.estimated_gain_raw_pct
@@ -172,7 +239,7 @@ def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
         est_line = f"今日预估: 技术满值 <b>{_pct(gain_raw)}</b>  →  保守 <b>{_pct(gain_cons)}</b>"
         atr_note = f"  （日内典型波幅 {_pct(result.atr_pct, 'N/A')}，保守值 = 满值 × 55%）"
     else:
-        est_line = "今日预估: — 信号不明确"
+        est_line = ""
         atr_note = ""
 
     # ── 财报提醒 ──
@@ -317,23 +384,51 @@ def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
     rsi_str = _v(result.rsi, ".1f", "", "N/A")
     pin_tag = "📌 " if pinned else ""
 
+    # ── 综合研判板块 ──
+    tech_dir_cn = {"BUY": "看多", "SELL": "看空", "NEUTRAL": "中性"}.get(result.direction, result.direction)
+    if ai_result:
+        confirm_tag = "✅ AI确认" if tech_confirmed else f"⚠️ AI推翻：{override_reason}"
+        research_lines = [
+            f"\n<b>🧠 综合研判</b>  技术: {tech_dir_cn} 强度{result.strength}  {confirm_tag}",
+            f"  {analysis}",
+        ]
+        if bull_case:
+            research_lines.append(f"  🟢 多方: {bull_case}")
+        if bear_case:
+            research_lines.append(f"  🔴 空方: {bear_case}")
+        if catalyst:
+            research_lines.append(f"  ⚡ 催化剂: {catalyst}")
+        research_block = "\n".join(research_lines) + "\n"
+    else:
+        research_block = ""
+
     # ── 操作指引 ──────────────────────────────────────────────────────
     total_capital = getattr(result, "_total_capital", 50000)
     currency      = getattr(result, "_currency", "AUD")
-    action_block  = _format_action_guide(result, price, pinned, total_capital, currency)
+    action_block  = _format_action_guide(result, price, pinned, total_capital, currency, ai_result)
+
+    # ── 标题行（带综合方向） ──
+    if ai_result and verdict:
+        header_verdict = f"\n<b>{verdict}</b>"
+        meta_line = f"置信度: {conv_emoji} {conviction}  周期: {horizon}  {dir_emoji} {final_dir}"
+    else:
+        header_verdict = ""
+        meta_line = f"技术强度: {result.strength}/100"
 
     return (
         f"<b>{pin_tag}{_scan_label()} — {result.symbol}</b>\n"
         f"{'─' * 30}\n"
-        f"今日操作: <b>{action}</b>  强度: {result.strength}/100\n"
+        f"今日操作: <b>{action}</b>\n"
+        f"{meta_line}\n"
         f"{pos_line}\n"
-        f"{est_line}\n"
-        f"{atr_note}\n"
-        f"\n"
+        f"{header_verdict}\n"
+        + (f"{est_line}\n{atr_note}\n" if est_line else "")
+        + f"\n"
         f"<b>📡 实时行情</b>{earnings_warn}\n"
         f"  当前价: <b>{_v(price)}</b>  今日: {today_chg}\n"
         f"  盘前: {pre_chg}  量比: {vr}x  RSI: {rsi_str}\n"
         f"  PE(TTM): {pe}  周线趋势: {trend}\n"
+        f"{research_block}"
         f"\n"
         f"<b>📍 关键价位</b>\n"
         f"{levels_str}\n"
@@ -360,7 +455,7 @@ def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
         f"{reasons_html}\n"
         f"{action_block}"
         f"\n"
-        f"<i>⏱ {ts} CST  ⚠️ 技术分析仅供参考，盈亏自负</i>"
+        f"<i>⏱ {ts} CST  ⚠️ 综合分析仅供参考，盈亏自负</i>"
     )
 
 
@@ -776,87 +871,8 @@ def format_watchlist_message(symbols: list[str]) -> str:
 
 
 def format_ai_analysis(symbol: str, price: float, ai: dict, tech_direction: str = "") -> str:
-    """将 AI 深度分析结果格式化为 Telegram HTML 消息。"""
-    import html as _html
-    if not ai:
-        return ""
-
-    direction = ai.get("direction", "中性")
-    confidence = ai.get("confidence", "低")
-    horizon = ai.get("horizon", "3-5天")
-    # AI 生成的文本内容需要 HTML 转义，防止 <> 破坏 Telegram 解析
-    verdict   = _html.escape(ai.get("verdict", ""))
-    analysis  = _html.escape(ai.get("analysis", ""))
-    bull_case = _html.escape(ai.get("bull_case", ""))
-    bear_case = _html.escape(ai.get("bear_case", ""))
-
-    # AI 操作建议必须与技术方向一致，避免矛盾
-    ai_action = ai.get("action", "持有观望")
-    _buy_actions = ("积极买入", "谨慎买入")
-    if tech_direction == "NEUTRAL" and ai_action in _buy_actions:
-        ai_action = "持有观望"
-    elif tech_direction == "SELL" and ai_action in (*_buy_actions, "持有观望"):
-        ai_action = "回避"
-    action    = _html.escape(ai_action)
-    target_bull = ai.get("target_bull")
-    target_bear = ai.get("target_bear")
-    support = ai.get("key_level_support")
-    resistance = ai.get("key_level_resistance")
-    catalyst  = _html.escape(str(ai.get("catalyst", "") or "")) or None
-    stop_loss = ai.get("stop_loss")
-
-    dir_emoji = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(direction, "⚪")
-    conf_emoji = {"高": "🔥", "中": "✅", "低": "💡"}.get(confidence, "💡")
-
-    lines = [
-        f"<b>🤖 AI 深度研判 — {symbol}</b>",
-        f"{'─' * 30}",
-        f"{dir_emoji} <b>{direction}</b>  置信度: {conf_emoji} {confidence}  周期: {horizon}",
-        f"<b>核心判断: {verdict}</b>",
-        f"",
-        f"<b>📊 综合分析</b>",
-        f"{analysis}",
-        f"",
-    ]
-
-    if target_bull or target_bear:
-        lines.append("<b>🎯 目标价区间</b>")
-        if target_bull:
-            upside = (target_bull - price) / price * 100 if price else 0
-            lines.append(f"  乐观: <b>{target_bull:.2f}</b>（{upside:+.1f}%）")
-        if target_bear:
-            downside = (target_bear - price) / price * 100 if price else 0
-            lines.append(f"  悲观: <b>{target_bear:.2f}</b>（{downside:+.1f}%）")
-        lines.append("")
-
-    if support or resistance:
-        lines.append("<b>📍 关键价位</b>")
-        if resistance:
-            lines.append(f"  阻力位: {resistance:.2f}")
-        if support:
-            lines.append(f"  支撑位: {support:.2f}")
-        if stop_loss:
-            lines.append(f"  止损线: <b>{stop_loss:.2f}</b>")
-        lines.append("")
-
-    lines += [
-        f"<b>🟢 多方理由</b>",
-        f"  {bull_case}",
-        f"",
-        f"<b>🔴 空方风险</b>",
-        f"  {bear_case}",
-    ]
-
-    if catalyst:
-        lines += ["", f"<b>⚡ 近期催化剂</b>", f"  {catalyst}"]
-
-    lines += [
-        "",
-        f"<b>操作建议: {action}</b>",
-        f"<i>⚠️ AI 分析仅供参考，投资决策自担风险</i>",
-    ]
-
-    return "\n".join(lines)
+    """已废弃：AI 分析现已合并进 format_signal_message。保留此函数避免旧调用报错。"""
+    return ""
 
 
 def format_help_message() -> str:
