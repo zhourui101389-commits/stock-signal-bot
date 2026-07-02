@@ -130,7 +130,7 @@ async def main():
                     ai_result = run_ai_analysis(
                         result, finnhub_client, anthropic_key, macro_context
                     )
-                    ai_text = format_ai_analysis(sym, result.current_price, ai_result)
+                    ai_text = format_ai_analysis(sym, result.current_price, ai_result, result.direction)
                     logger.info("AI 分析完成 %s: %d 字符", sym, len(ai_text))
                 except Exception as e:
                     logger.error("AI 分析失败 %s: %s", sym, e)

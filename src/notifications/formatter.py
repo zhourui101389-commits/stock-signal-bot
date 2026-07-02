@@ -775,7 +775,7 @@ def format_watchlist_message(symbols: list[str]) -> str:
     return f"📋 <b>当前自选股（{len(symbols)} 只）</b>\n\n{lines}\n\n使用 /add 或 /remove 管理"
 
 
-def format_ai_analysis(symbol: str, price: float, ai: dict) -> str:
+def format_ai_analysis(symbol: str, price: float, ai: dict, tech_direction: str = "") -> str:
     """将 AI 深度分析结果格式化为 Telegram HTML 消息。"""
     import html as _html
     if not ai:
@@ -789,7 +789,15 @@ def format_ai_analysis(symbol: str, price: float, ai: dict) -> str:
     analysis  = _html.escape(ai.get("analysis", ""))
     bull_case = _html.escape(ai.get("bull_case", ""))
     bear_case = _html.escape(ai.get("bear_case", ""))
-    action    = _html.escape(ai.get("action", "持有观望"))
+
+    # AI 操作建议必须与技术方向一致，避免矛盾
+    ai_action = ai.get("action", "持有观望")
+    _buy_actions = ("积极买入", "谨慎买入")
+    if tech_direction == "NEUTRAL" and ai_action in _buy_actions:
+        ai_action = "持有观望"
+    elif tech_direction == "SELL" and ai_action in (*_buy_actions, "持有观望"):
+        ai_action = "回避"
+    action    = _html.escape(ai_action)
     target_bull = ai.get("target_bull")
     target_bear = ai.get("target_bear")
     support = ai.get("key_level_support")
