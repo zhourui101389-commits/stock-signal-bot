@@ -130,7 +130,7 @@ def _format_action_guide(result, price: float, pinned: bool,
 
     # ── 拼合输出 ────────────────────────────────────────────────────
     lines = ["\n<b>🎯 操作指引</b>"]
-    if direction in ("BUY", "NEUTRAL") and batch_amt > 0:
+    if direction == "BUY" and batch_amt > 0:
         lines.append(f"  动作: {entry_note}")
         lines.append(f"  仓位: <b>{_money(batch_amt)}</b>（{batch_label}）")
         lines.append(f"  止损: <b>USD {sl_price:.2f}</b>（-{sl_pct*100:.0f}% 硬止损）")
@@ -275,8 +275,8 @@ def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
     insider_lines = []
     for t in result.insider_trades:
         shares = t.get("shares", 0)
-        action = t.get("action", "")
-        tx_label = "🟢 买入" if action in ("买入", "BUY") else "🔴 卖出"
+        tx_action = t.get("action", "")
+        tx_label = "🟢 买入" if tx_action in ("买入", "BUY") else "🔴 卖出"
         insider_lines.append(
             f"  {tx_label} {abs(shares):,}股  {t.get('name','')} ({t.get('title','')})  {t.get('date','')}"
         )
