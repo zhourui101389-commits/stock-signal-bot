@@ -397,12 +397,6 @@ def analyze_symbol(
     result.week52_low         = _nan(quote.get("week52_low"))
     result.bid_ask_ratio      = _nan(quote.get("bid_ask_ratio"))
 
-    # 仓位建议（仅 BUY 时）
-    if result.direction == "BUY" and current_price > 0:
-        position_usd = total_capital * max_position_pct * (result.strength / 100)
-        result.position_usd    = round(position_usd, 2)
-        result.position_shares = max(1, int(position_usd / current_price))
-
     # ── 财报日期 ──
     earnings = client.get_earnings_summary(symbol)
     if earnings:
@@ -474,6 +468,12 @@ def analyze_symbol(
             result.strength = max(0, min(100, result.strength + mkt_delta))
             result.reasons.extend(mkt_reasons)
             logger.debug("%s 市场数据修正 %+d → 最终强度 %d", symbol, mkt_delta, result.strength)
+
+    # 仓位建议（用最终强度计算，放在所有评分完成后）
+    if result.direction == "BUY" and current_price > 0:
+        position_usd = total_capital * max_position_pct * (result.strength / 100)
+        result.position_usd    = round(position_usd, 2)
+        result.position_shares = max(1, int(position_usd / current_price))
 
     logger.info(
         "%s → %s (强度 %d，预估 %+.1f%%，当前价 %.2f)",
