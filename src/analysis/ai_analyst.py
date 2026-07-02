@@ -12,7 +12,7 @@ import anthropic
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "claude-haiku-4-5-20251001"   # 快速省钱；换 claude-sonnet-4-6 可提升深度
+_MODEL = "claude-sonnet-4-6"
 
 _SYSTEM_PROMPT = """你是一位资深美股分析师，专注于短期交易（3-7天）和波段操作（2-4周）。
 你的分析风格：
