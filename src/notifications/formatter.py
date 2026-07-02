@@ -65,11 +65,13 @@ def _format_action_guide(result, price: float, pinned: bool,
     ai_action = (ai_result or {}).get("action", "")
 
     tier      = getattr(result, "tier", "swing")
-    # 如果 AI 给出了明确方向，用 AI 方向驱动操作指引
+    # AI 操作建议驱动操作指引方向，保证上下一致
     if ai_action in ("积极买入", "谨慎买入"):
         direction = "BUY"
     elif ai_action in ("减仓", "回避"):
         direction = "SELL"
+    elif ai_result and ai_action == "持有观望":
+        direction = "NEUTRAL"   # AI 说观望则不展示买入细节
     else:
         direction = result.direction
     strength  = result.strength
@@ -421,7 +423,7 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
         f"今日操作: <b>{action}</b>\n"
         f"{meta_line}\n"
         f"{pos_line}\n"
-        f"{header_verdict}\n"
+        + (f"{header_verdict}\n" if header_verdict else "")
         + (f"{est_line}\n{atr_note}\n" if est_line else "")
         + f"\n"
         f"<b>📡 实时行情</b>{earnings_warn}\n"
