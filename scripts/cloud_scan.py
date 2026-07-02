@@ -48,16 +48,47 @@ def _get_chat_ids(config: Config) -> list[int]:
 
 
 def _get_macro_context(finnhub: FinnhubClient | None) -> str:
-    if not finnhub:
-        return ""
+    import yfinance as yf
+    parts = []
+
+    # 大盘指数 + VIX
     try:
-        news = finnhub.get_market_news("general")
-        if not news:
-            return ""
-        headlines = [f"- {n['headline']}" for n in news[:5]]
-        return "当前宏观市场新闻：\n" + "\n".join(headlines)
-    except Exception:
-        return ""
+        tickers = yf.download(["SPY", "QQQ", "^VIX"], period="5d",
+                              progress=False, auto_adjust=True)
+        close = tickers["Close"]
+
+        def _chg(sym, days=1):
+            col = close[sym].dropna()
+            if len(col) > days:
+                return (col.iloc[-1] / col.iloc[-1 - days] - 1) * 100
+            return None
+
+        spy_d  = _chg("SPY", 1)
+        spy_5d = _chg("SPY", min(4, len(close["SPY"].dropna()) - 1))
+        qqq_d  = _chg("QQQ", 1)
+        vix    = close["^VIX"].dropna().iloc[-1] if not close["^VIX"].dropna().empty else None
+
+        if spy_d is not None:
+            parts.append(f"SPY: {spy_d:+.2f}%（今日）/ {spy_5d:+.2f}%（5日）")
+        if qqq_d is not None:
+            parts.append(f"QQQ: {qqq_d:+.2f}%（今日）")
+        if vix is not None:
+            vix_label = "极度恐慌" if vix > 35 else ("恐慌" if vix > 25 else ("偏高" if vix > 18 else "平稳"))
+            parts.append(f"VIX: {vix:.1f}（{vix_label}）")
+    except Exception as e:
+        logger.debug("宏观指标获取失败: %s", e)
+
+    # 市场新闻
+    if finnhub:
+        try:
+            news = finnhub.get_market_news("general")
+            if news:
+                headlines = [f"- {n['headline']}" for n in news[:5]]
+                parts.append("近期市场新闻：\n" + "\n".join(headlines))
+        except Exception:
+            pass
+
+    return "\n".join(parts) if parts else "宏观数据暂不可用"
 
 
 async def _run_review(bot: Bot, chat_ids: list[int]) -> None:

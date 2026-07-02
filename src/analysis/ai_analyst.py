@@ -57,10 +57,13 @@ _USER_PROMPT_TEMPLATE = """
 ## 近期财报超预期记录
 {earnings_surprise}
 
+## 财报预警
+{earnings_warning}
+
 ## 近3天重要新闻
 {news}
 
-## 历史预测记录（上次）
+## 历史预测记录（近期）
 {history}
 
 ## 宏观背景
@@ -68,7 +71,8 @@ _USER_PROMPT_TEMPLATE = """
 
 ---
 请综合技术信号和基本面，给出统一判断。
-如有历史预测记录，请参考上次预测是否正确，校准本次置信度。
+如有历史预测记录，请识别判断规律：连续错误说明某类信号在该股失效；连续正确可提高置信度。
+财报预警期内技术信号可靠性大幅下降，应降低置信度或转为观望。
 以 JSON 格式输出（不要输出 JSON 以外任何内容）：
 
 {{
@@ -196,15 +200,35 @@ def _extract_technical(result) -> dict:
 def _fmt_history(history: list[dict]) -> str:
     if not history:
         return "无历史预测记录"
-    h = history[-1]
-    actual = h.get("actual_pct")
-    correct = h.get("correct")
-    actual_str = f"实际{'+' if actual and actual>0 else ''}{actual:.2f}%" if actual is not None else "待复盘"
-    verdict_str = "✅正确" if correct else ("❌错误" if correct is False else "观望")
-    return (
-        f"  上次({h.get('scan_date','?')}): {h.get('final_direction','?')} "
-        f"目标价${h.get('target_price','?')}  {actual_str}  {verdict_str}"
-    )
+
+    lines = []
+    for h in history[-5:]:
+        actual  = h.get("actual_pct")
+        correct = h.get("correct")
+        actual_str  = f"实际{actual:+.2f}%" if actual is not None else "待复盘"
+        icon        = "✅" if correct is True else ("❌" if correct is False else "⚪")
+        conviction  = h.get("conviction", "")
+        conv_str    = f"[{conviction}]" if conviction else ""
+        verdict     = h.get("verdict", "")
+        verdict_str = f" 「{verdict}」" if verdict else ""
+        lines.append(
+            f"  {icon} {h.get('scan_date','?')}: "
+            f"{h.get('final_direction','?')}{conv_str}{verdict_str} → {actual_str}"
+        )
+
+    # 规律摘要：连续对错模式
+    counted = [h for h in history[-10:] if h.get("correct") is not None]
+    if len(counted) >= 3:
+        n_correct = sum(1 for h in counted if h.get("correct"))
+        lines.append(
+            f"  历史准确率: {n_correct}/{len(counted)}（近{len(counted)}次）"
+        )
+        # 连续错误提示
+        recent = history[-3:]
+        if all(h.get("correct") is False for h in recent if h.get("correct") is not None):
+            lines.append("  ⚠️ 近3次判断连续错误，请重新评估该股信号有效性")
+
+    return "\n".join(lines)
 
 
 def run_ai_analysis(
@@ -268,6 +292,25 @@ def run_ai_analysis(
     tech_strength  = result.strength
     tech_reasons   = "\n".join(f"  • {r}" for r in result.reasons) if result.reasons else "  • 无"
 
+    # 财报预警
+    next_earnings = getattr(result, "next_earnings_date", "") or ""
+    earnings_warning = "暂无近期财报信息"
+    if next_earnings:
+        try:
+            from datetime import date as _date
+            ed = _date.fromisoformat(next_earnings[:10])
+            days_left = (ed - _date.today()).days
+            if days_left < 0:
+                earnings_warning = f"财报已于 {next_earnings} 发布"
+            elif days_left <= 3:
+                earnings_warning = f"⚠️ {days_left} 天后财报（{next_earnings}）——技术信号极不可靠，强烈建议中性观望"
+            elif days_left <= 7:
+                earnings_warning = f"⚠️ {days_left} 天后财报（{next_earnings}）——置信度应降级，避免重仓"
+            else:
+                earnings_warning = f"下次财报 {next_earnings}（{days_left} 天后），暂无直接影响"
+        except Exception:
+            earnings_warning = f"下次财报：{next_earnings}"
+
     sector = q.get("sector", "未知行业") if q else "未知行业"
     prompt = _USER_PROMPT_TEMPLATE.format(
         symbol=symbol,
@@ -295,6 +338,7 @@ def run_ai_analysis(
         beta=f"{beta_val:.2f}" if beta_val else "未知",
         pct_52w=pct_52w,
         earnings_surprise=_fmt_earnings(earnings_surprise),
+        earnings_warning=earnings_warning,
         news=_fmt_news(news),
         history=_fmt_history(symbol_history or []),
         macro_context=macro_context or "当前无特别宏观事件",

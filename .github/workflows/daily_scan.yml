@@ -2,8 +2,8 @@ name: Daily Stock Scan
 
 on:
   schedule:
-    # 13:00 UTC = 21:00 CST (北京时间)，周一到周五
-    - cron: '0 13 * * 1-5'
+    # 21:00 UTC = 17:00 EDT（美股收盘后1小时），周一到周五
+    - cron: '0 21 * * 1-5'
   workflow_dispatch:
 
 jobs:
