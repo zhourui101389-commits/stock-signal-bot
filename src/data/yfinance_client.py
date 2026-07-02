@@ -290,13 +290,22 @@ class YFinanceDataClient:
                     continue
                 shares = int(float(shares))
                 txn = str(row.get("Transaction") or row.get("transaction") or "")
-                action = "买入" if any(k in txn for k in ("Purchase", "Buy", "Acquisition")) else "卖出"
+                is_buy = any(k in txn for k in ("Purchase", "Buy", "Acquisition", "Grant", "Award"))
+                is_sell = any(k in txn for k in ("Sale", "Sell", "Disposition"))
+                if is_buy:
+                    action = "买入"
+                elif is_sell:
+                    action = "卖出"
+                else:
+                    # 兜底：用 shares 符号判断（正=买入）
+                    action = "买入" if shares > 0 else "卖出"
                 result.append({
                     "name":   str(row.get("Insider") or row.get("insider") or ""),
                     "title":  str(row.get("Position") or row.get("position") or ""),
                     "shares": abs(shares),
                     "date":   str(row.get("Start Date") or row.get("date") or "")[:10],
                     "action": action,
+                    "txn":    txn,
                 })
             return result
         except Exception as e:

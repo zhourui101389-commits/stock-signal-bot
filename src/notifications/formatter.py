@@ -275,7 +275,8 @@ def format_signal_message(result: SignalResult, pinned: bool = False) -> str:
     insider_lines = []
     for t in result.insider_trades:
         shares = t.get("shares", 0)
-        tx_label = "🟢 买入" if shares > 0 else "🔴 卖出"
+        action = t.get("action", "")
+        tx_label = "🟢 买入" if action in ("买入", "BUY") else "🔴 卖出"
         insider_lines.append(
             f"  {tx_label} {abs(shares):,}股  {t.get('name','')} ({t.get('title','')})  {t.get('date','')}"
         )
@@ -776,22 +777,24 @@ def format_watchlist_message(symbols: list[str]) -> str:
 
 def format_ai_analysis(symbol: str, price: float, ai: dict) -> str:
     """将 AI 深度分析结果格式化为 Telegram HTML 消息。"""
+    import html as _html
     if not ai:
         return ""
 
     direction = ai.get("direction", "中性")
     confidence = ai.get("confidence", "低")
     horizon = ai.get("horizon", "3-5天")
-    verdict = ai.get("verdict", "")
-    analysis = ai.get("analysis", "")
-    bull_case = ai.get("bull_case", "")
-    bear_case = ai.get("bear_case", "")
-    action = ai.get("action", "持有观望")
+    # AI 生成的文本内容需要 HTML 转义，防止 <> 破坏 Telegram 解析
+    verdict   = _html.escape(ai.get("verdict", ""))
+    analysis  = _html.escape(ai.get("analysis", ""))
+    bull_case = _html.escape(ai.get("bull_case", ""))
+    bear_case = _html.escape(ai.get("bear_case", ""))
+    action    = _html.escape(ai.get("action", "持有观望"))
     target_bull = ai.get("target_bull")
     target_bear = ai.get("target_bear")
     support = ai.get("key_level_support")
     resistance = ai.get("key_level_resistance")
-    catalyst = ai.get("catalyst")
+    catalyst  = _html.escape(str(ai.get("catalyst", "") or "")) or None
     stop_loss = ai.get("stop_loss")
 
     dir_emoji = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(direction, "⚪")
