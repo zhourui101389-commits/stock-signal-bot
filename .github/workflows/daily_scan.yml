@@ -4,7 +4,7 @@ on:
   schedule:
     # 13:00 UTC = 21:00 CST (北京时间)，周一到周五
     - cron: '0 13 * * 1-5'
-  workflow_dispatch:   # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   scan:
@@ -22,7 +22,20 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
-      - name: 运行每日扫描
+      - name: 设置日期变量
+        id: dates
+        run: |
+          echo "TODAY=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          echo "YESTERDAY=$(date -d 'yesterday' +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: 恢复昨日预测缓存
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/predictions.json
+          key: predictions-${{ steps.dates.outputs.YESTERDAY }}
+          restore-keys: predictions-
+
+      - name: 运行每日扫描（含复盘）
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
@@ -31,3 +44,10 @@ jobs:
           DB_PATH: /tmp/signals.db
           DATA_SOURCE: yfinance
         run: python scripts/cloud_scan.py
+
+      - name: 保存今日预测缓存
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/predictions.json
+          key: predictions-${{ steps.dates.outputs.TODAY }}

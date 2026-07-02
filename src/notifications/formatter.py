@@ -865,6 +865,72 @@ def format_serenity_section(picks: dict) -> str:
     return "\n".join(lines)
 
 
+def format_review_message(scan_date: str, reviewed: list[dict]) -> str:
+    """
+    格式化复盘消息。
+    reviewed 每项: {symbol, final_direction, action, entry_price, close_price,
+                    actual_pct, target_price, stop_loss, correct}
+    correct: True=预测正确, False=预测错误, None=观望不计入
+    """
+    if not reviewed:
+        return ""
+
+    bullish = [r for r in reviewed if r.get("final_direction") == "看多"]
+    bearish = [r for r in reviewed if r.get("final_direction") == "看空"]
+    neutral = [r for r in reviewed if r.get("final_direction") == "中性"]
+
+    counted = [r for r in reviewed if r.get("correct") is not None]
+    correct = [r for r in counted if r.get("correct")]
+    win_rate = len(correct) / len(counted) * 100 if counted else 0
+
+    def _row(r: dict) -> str:
+        sym   = r["symbol"]
+        apct  = r.get("actual_pct")
+        entry = r.get("entry_price")
+        close = r.get("close_price")
+        hit_t = r.get("hit_target", False)
+        hit_s = r.get("hit_stop", False)
+
+        if apct is None:
+            return f"  ❓ {sym}: 无收盘数据"
+
+        sign  = "+" if apct >= 0 else ""
+        arrow = "▲" if apct >= 0 else "▼"
+        verdict_icon = "✅" if r.get("correct") else ("❌" if r.get("correct") is False else "⚪")
+        price_info = f"${entry:.2f}→${close:.2f}" if entry and close else ""
+        tag = ""
+        if hit_t:
+            tag = " 🎯目标达成"
+        elif hit_s:
+            tag = " 🛑触发止损"
+        return f"  {verdict_icon} {sym}: {arrow}{sign}{apct:.2f}%  {price_info}{tag}"
+
+    lines = [
+        f"<b>📊 昨日复盘 — {scan_date}</b>",
+        "─" * 30,
+    ]
+
+    if bullish:
+        lines.append(f"\n<b>📈 看多（{len(bullish)}只）</b>")
+        lines += [_row(r) for r in bullish]
+    if bearish:
+        lines.append(f"\n<b>📉 看空（{len(bearish)}只）</b>")
+        lines += [_row(r) for r in bearish]
+    if neutral:
+        syms = " ".join(r["symbol"] for r in neutral)
+        lines.append(f"\n<b>⏸ 观望（{len(neutral)}只）</b>: {syms}（不计入胜率）")
+
+    lines.append(f"\n{'─' * 30}")
+    if counted:
+        rate_icon = "🔥" if win_rate >= 70 else ("✅" if win_rate >= 50 else "⚠️")
+        lines.append(f"{rate_icon} 今日胜率: {len(correct)}/{len(counted)} = <b>{win_rate:.0f}%</b>")
+    else:
+        lines.append("今日无有效预测（全部观望）")
+
+    lines.append(f"\n<i>⚠️ 复盘仅统计方向正确率，不代表实际收益</i>")
+    return "\n".join(lines)
+
+
 def format_watchlist_message(symbols: list[str]) -> str:
     if not symbols:
         return "📋 自选股列表为空\n使用 /add SYMBOL 添加股票"

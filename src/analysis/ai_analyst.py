@@ -60,11 +60,15 @@ _USER_PROMPT_TEMPLATE = """
 ## 近3天重要新闻
 {news}
 
+## 历史预测记录（上次）
+{history}
+
 ## 宏观背景
 {macro_context}
 
 ---
 请综合技术信号和基本面，给出统一判断。
+如有历史预测记录，请参考上次预测是否正确，校准本次置信度。
 以 JSON 格式输出（不要输出 JSON 以外任何内容）：
 
 {{
@@ -189,11 +193,26 @@ def _extract_technical(result) -> dict:
     }
 
 
+def _fmt_history(history: list[dict]) -> str:
+    if not history:
+        return "无历史预测记录"
+    h = history[-1]
+    actual = h.get("actual_pct")
+    correct = h.get("correct")
+    actual_str = f"实际{'+' if actual and actual>0 else ''}{actual:.2f}%" if actual is not None else "待复盘"
+    verdict_str = "✅正确" if correct else ("❌错误" if correct is False else "观望")
+    return (
+        f"  上次({h.get('scan_date','?')}): {h.get('final_direction','?')} "
+        f"目标价${h.get('target_price','?')}  {actual_str}  {verdict_str}"
+    )
+
+
 def run_ai_analysis(
     result,
     finnhub,
     anthropic_key: str,
     macro_context: str = "",
+    symbol_history: list[dict] = None,
 ) -> dict:
     """
     综合技术信号和基本面，输出统一操作判断。
@@ -277,6 +296,7 @@ def run_ai_analysis(
         pct_52w=pct_52w,
         earnings_surprise=_fmt_earnings(earnings_surprise),
         news=_fmt_news(news),
+        history=_fmt_history(symbol_history or []),
         macro_context=macro_context or "当前无特别宏观事件",
     )
 
