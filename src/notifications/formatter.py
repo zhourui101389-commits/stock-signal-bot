@@ -865,69 +865,122 @@ def format_serenity_section(picks: dict) -> str:
     return "\n".join(lines)
 
 
+def _review_next_action(r: dict) -> str:
+    """根据复盘结果生成下一步操作建议。"""
+    direction = r.get("final_direction", "中性")
+    correct   = r.get("correct")
+    hit_t     = r.get("hit_target", False)
+    hit_s     = r.get("hit_stop", False)
+    target    = r.get("target_price")
+    stop      = r.get("stop_loss")
+    close     = r.get("close_price")
+    actual    = r.get("actual_pct")
+
+    if correct is None:
+        return ""
+
+    if correct:
+        if direction == "看多":
+            if hit_t:
+                return "目标价已达成，可部分获利了结，剩余仓位上移止损保护利润"
+            else:
+                target_str = f"（目标${target:.2f}）" if target else ""
+                stop_str   = f"，止损上移至 ${close * 0.97:.2f}" if close else ""
+                return f"方向判断正确{target_str}，趋势延续，继续持有{stop_str}"
+        elif direction == "看空":
+            if hit_t:
+                return "空头目标达成，建议锁定利润，关注能否继续破位"
+            else:
+                stop_str = f"，下移止损至 ${close * 1.03:.2f}" if close else ""
+                return f"空头方向正确{stop_str}，继续持有空仓，观察支撑位"
+    else:
+        if direction == "看多":
+            if hit_s:
+                stop_str = f"（${stop:.2f}）" if stop else ""
+                return f"⚠️ 止损已触发{stop_str}，立即止损出局，重新评估后再考虑入场"
+            else:
+                apct_str = f"已跌 {actual:+.2f}%" if actual is not None else ""
+                return f"判断错误{apct_str}，减仓或止损观望，不要摊平"
+        elif direction == "看空":
+            if hit_s:
+                stop_str = f"（${stop:.2f}）" if stop else ""
+                return f"⚠️ 空头止损触发{stop_str}，回补平仓，避免被轧"
+            else:
+                apct_str = f"已涨 {actual:+.2f}%" if actual is not None else ""
+                return f"判断错误{apct_str}，考虑回补减仓，严守止损"
+    return ""
+
+
 def format_review_message(scan_date: str, reviewed: list[dict]) -> str:
     """
-    格式化复盘消息。
+    格式化逐股复盘消息，每只股票给出下一步操作建议。
     reviewed 每项: {symbol, final_direction, action, entry_price, close_price,
-                    actual_pct, target_price, stop_loss, correct}
+                    actual_pct, target_price, stop_loss, correct, hit_target, hit_stop}
     correct: True=预测正确, False=预测错误, None=观望不计入
     """
     if not reviewed:
         return ""
 
-    bullish = [r for r in reviewed if r.get("final_direction") == "看多"]
-    bearish = [r for r in reviewed if r.get("final_direction") == "看空"]
-    neutral = [r for r in reviewed if r.get("final_direction") == "中性"]
+    right   = [r for r in reviewed if r.get("correct") is True]
+    wrong   = [r for r in reviewed if r.get("correct") is False]
+    neutral = [r for r in reviewed if r.get("correct") is None]
 
-    counted = [r for r in reviewed if r.get("correct") is not None]
-    correct = [r for r in counted if r.get("correct")]
-    win_rate = len(correct) / len(counted) * 100 if counted else 0
-
-    def _row(r: dict) -> str:
-        sym   = r["symbol"]
-        apct  = r.get("actual_pct")
-        entry = r.get("entry_price")
-        close = r.get("close_price")
-        hit_t = r.get("hit_target", False)
-        hit_s = r.get("hit_stop", False)
+    def _stock_block(r: dict) -> list[str]:
+        sym       = r["symbol"]
+        direction = r.get("final_direction", "中性")
+        apct      = r.get("actual_pct")
+        entry     = r.get("entry_price")
+        close     = r.get("close_price")
+        hit_t     = r.get("hit_target", False)
+        hit_s     = r.get("hit_stop", False)
+        verdict   = r.get("verdict", "")
 
         if apct is None:
-            return f"  ❓ {sym}: 无收盘数据"
+            return [f"<b>{sym}</b>  ❓ 无收盘价数据"]
 
-        sign  = "+" if apct >= 0 else ""
-        arrow = "▲" if apct >= 0 else "▼"
-        verdict_icon = "✅" if r.get("correct") else ("❌" if r.get("correct") is False else "⚪")
-        price_info = f"${entry:.2f}→${close:.2f}" if entry and close else ""
-        tag = ""
-        if hit_t:
-            tag = " 🎯目标达成"
-        elif hit_s:
-            tag = " 🛑触发止损"
-        return f"  {verdict_icon} {sym}: {arrow}{sign}{apct:.2f}%  {price_info}{tag}"
+        sign      = "+" if apct >= 0 else ""
+        arrow     = "▲" if apct >= 0 else "▼"
+        price_str = f"${entry:.2f}→${close:.2f}" if entry and close else ""
+        tag       = " 🎯目标达成" if hit_t else (" 🛑触及止损" if hit_s else "")
+        dir_label = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(direction, "")
+
+        lines = [f"<b>{sym}</b>  {dir_label}{direction}  {arrow}{sign}{apct:.2f}%  {price_str}{tag}"]
+        if verdict:
+            lines.append(f"  昨日判断：{_html.escape(verdict)}")
+        next_action = _review_next_action(r)
+        if next_action:
+            lines.append(f"  → <b>{_html.escape(next_action)}</b>")
+        return lines
 
     lines = [
-        f"<b>📊 昨日复盘 — {scan_date}</b>",
-        "─" * 30,
+        f"<b>📋 昨日复盘 — {scan_date}</b>",
+        "─" * 28,
     ]
 
-    if bullish:
-        lines.append(f"\n<b>📈 看多（{len(bullish)}只）</b>")
-        lines += [_row(r) for r in bullish]
-    if bearish:
-        lines.append(f"\n<b>📉 看空（{len(bearish)}只）</b>")
-        lines += [_row(r) for r in bearish]
+    if right:
+        lines.append(f"\n<b>✅ 判断正确（{len(right)}只）</b>")
+        for r in right:
+            lines += [""] + _stock_block(r)
+
+    if wrong:
+        lines.append(f"\n<b>❌ 判断错误（{len(wrong)}只）</b>")
+        for r in wrong:
+            lines += [""] + _stock_block(r)
+
     if neutral:
-        syms = " ".join(r["symbol"] for r in neutral)
-        lines.append(f"\n<b>⏸ 观望（{len(neutral)}只）</b>: {syms}（不计入胜率）")
+        lines.append(f"\n<b>⚪ 未操作（{len(neutral)}只）</b>")
+        for r in neutral:
+            sym   = r["symbol"]
+            apct  = r.get("actual_pct")
+            if apct is not None:
+                sign  = "+" if apct >= 0 else ""
+                arrow = "▲" if apct >= 0 else "▼"
+                lines.append(f"  {sym}  {arrow}{sign}{apct:.2f}%")
+            else:
+                lines.append(f"  {sym}  无数据")
 
-    lines.append(f"\n{'─' * 30}")
-    if counted:
-        rate_icon = "🔥" if win_rate >= 70 else ("✅" if win_rate >= 50 else "⚠️")
-        lines.append(f"{rate_icon} 今日胜率: {len(correct)}/{len(counted)} = <b>{win_rate:.0f}%</b>")
-    else:
-        lines.append("今日无有效预测（全部观望）")
-
-    lines.append(f"\n<i>⚠️ 复盘仅统计方向正确率，不代表实际收益</i>")
+    lines.append(f"\n{'─' * 28}")
+    lines.append(f"<i>判断正确 {len(right)} / 判断错误 {len(wrong)}，上述建议仅供参考</i>")
     return "\n".join(lines)
 
 
