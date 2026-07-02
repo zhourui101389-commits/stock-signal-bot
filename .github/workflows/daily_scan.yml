@@ -2,9 +2,16 @@ name: Daily Stock Scan
 
 on:
   schedule:
-    # 21:00 UTC = 17:00 EDT（美股收盘后1小时），周一到周五
+    # 13:00 UTC = 9:00 EDT（美股开盘前30分钟），盘前扫描
+    - cron: '0 13 * * 1-5'
+    # 21:00 UTC = 17:00 EDT（美股收盘后1小时），盘后复盘
     - cron: '0 21 * * 1-5'
   workflow_dispatch:
+    inputs:
+      scan_mode:
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / 留空=两者）'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -27,7 +34,20 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
-      - name: 运行每日扫描（含复盘）
+      - name: 判断运行模式
+        id: mode
+        run: |
+          if [ -n "${{ github.event.inputs.scan_mode }}" ]; then
+            echo "SCAN_MODE=${{ github.event.inputs.scan_mode }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
+            echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 21 * * 1-5" ]; then
+            echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
+          else
+            echo "SCAN_MODE=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 运行扫描/复盘
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
@@ -36,6 +56,7 @@ jobs:
           DB_PATH: /tmp/signals.db
           DATA_SOURCE: yfinance
           PREDICTIONS_FILE: data/predictions.json
+          SCAN_MODE: ${{ steps.mode.outputs.SCAN_MODE }}
 
         run: python scripts/cloud_scan.py
 

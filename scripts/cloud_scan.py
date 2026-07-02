@@ -165,44 +165,12 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
         logger.info("复盘消息已发送")
 
 
-async def main():
-    config = Config()
-    init_db(config.DB_PATH)
-
-    all_symbols = list(dict.fromkeys(
-        config.tier_core + config.tier_swing
-        + config.tier_speculative + config.pinned_symbols
-    ))
-    watchlist_repo.seed_defaults(all_symbols or config.watchlist_defaults)
-    existing = set(watchlist_repo.get_all_symbols())
-    for sym in all_symbols:
-        if sym not in existing:
-            watchlist_repo.add_symbol(sym)
-
-    symbols  = watchlist_repo.get_all_symbols()
-    chat_ids = _get_chat_ids(config)
-    pinned   = set(config.pinned_symbols)
-    min_str  = config.signals.get("min_strength", 30)
-
-    if not symbols:
-        logger.error("自选股列表为空，退出")
-        return
-    if not chat_ids:
-        logger.error("无推送目标 chat_id，退出")
-        return
-
-    finnhub_key    = config.FINNHUB_API_KEY
-    anthropic_key  = config.ANTHROPIC_API_KEY
-    finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
-    use_ai         = bool(anthropic_key)
-
-    bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
-
-    # ── 先发昨日复盘 ──────────────────────────────────
-    try:
-        await _run_review(bot, chat_ids)
-    except Exception as e:
-        logger.error("复盘失败: %s", e)
+async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
+    """盘前扫描：分析信号、调用 AI、推送 Telegram、保存今日预测。"""
+    symbols = watchlist_repo.get_all_symbols()
+    pinned  = set(config.pinned_symbols)
+    min_str = config.signals.get("min_strength", 30)
+    use_ai  = bool(anthropic_key)
 
     logger.info("开始扫描 %d 只股票（AI分析: %s）→ 推送到 %d 个 chat",
                 len(symbols), "开启" if use_ai else "关闭", len(chat_ids))
@@ -220,7 +188,6 @@ async def main():
     except Exception as e:
         logger.warning("Serenity 获取失败: %s", e)
 
-    # ── 逐只扫描，同时收集今日预测 ──────────────────
     pushed = 0
     today_predictions = []
 
@@ -240,11 +207,9 @@ async def main():
                 logger.info("跳过 %s: %s 强度%d", sym, result.direction, result.strength)
                 continue
 
-            # ── AI 综合研判 ──
             ai_result = {}
             if use_ai:
                 try:
-                    # 把昨日预测历史传给 AI 参考
                     symbol_history = get_symbol_history(sym)
                     ai_result = run_ai_analysis(
                         result, finnhub_client, anthropic_key, macro_context,
@@ -256,7 +221,6 @@ async def main():
                 except Exception as e:
                     logger.error("AI 分析失败 %s: %s", sym, e)
 
-            # ── 发送消息 ──
             price = result.current_price
             msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None)
             for chat_id in chat_ids:
@@ -265,7 +229,6 @@ async def main():
             logger.info("✅ 推送 %s: %s 强度%d", sym, result.direction, result.strength)
             pushed += 1
 
-            # ── 记录今日预测 ──
             today_predictions.append({
                 "symbol":          sym,
                 "direction":       result.direction,
@@ -285,9 +248,59 @@ async def main():
 
     logger.info("扫描完成，共推送 %d 条信号", pushed)
 
-    # ── 保存今日预测供明天复盘 ───────────────────────
     if today_predictions:
         save_predictions(today_predictions)
+
+
+async def main():
+    # SCAN_MODE: "scan"（仅扫描）| "review"（仅复盘）| 不设（两者都跑，向后兼容）
+    scan_mode = os.environ.get("SCAN_MODE", "").lower()
+
+    config = Config()
+    init_db(config.DB_PATH)
+
+    all_symbols = list(dict.fromkeys(
+        config.tier_core + config.tier_swing
+        + config.tier_speculative + config.pinned_symbols
+    ))
+    watchlist_repo.seed_defaults(all_symbols or config.watchlist_defaults)
+    existing = set(watchlist_repo.get_all_symbols())
+    for sym in all_symbols:
+        if sym not in existing:
+            watchlist_repo.add_symbol(sym)
+
+    chat_ids = _get_chat_ids(config)
+    if not watchlist_repo.get_all_symbols():
+        logger.error("自选股列表为空，退出")
+        return
+    if not chat_ids:
+        logger.error("无推送目标 chat_id，退出")
+        return
+
+    finnhub_key    = config.FINNHUB_API_KEY
+    anthropic_key  = config.ANTHROPIC_API_KEY
+    finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
+
+    bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
+
+    if scan_mode == "review":
+        # 盘后模式：只跑复盘
+        try:
+            await _run_review(bot, chat_ids)
+        except Exception as e:
+            logger.error("复盘失败: %s", e)
+
+    elif scan_mode == "scan":
+        # 盘前模式：只跑扫描
+        await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+
+    else:
+        # 兼容旧模式：复盘 + 扫描
+        try:
+            await _run_review(bot, chat_ids)
+        except Exception as e:
+            logger.error("复盘失败: %s", e)
+        await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
 
 
 if __name__ == "__main__":
