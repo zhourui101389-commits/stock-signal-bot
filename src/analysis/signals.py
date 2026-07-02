@@ -72,6 +72,13 @@ class SignalResult:
     generated_at: datetime = field(default_factory=datetime.now)
     tier: str = ""
     pinned: bool = False
+    ai_analysis: dict = field(default_factory=dict)
+    # 附带原始数据供 AI 使用
+    daily_df: object = field(default=None, repr=False)
+    weekly_df: object = field(default=None, repr=False)
+    quote: dict = field(default_factory=dict)
+    short_data: dict = field(default_factory=dict)
+    analyst: dict = field(default_factory=dict)
 
 
 def _safe(val) -> float:

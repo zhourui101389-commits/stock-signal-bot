@@ -370,6 +370,10 @@ def analyze_symbol(
 
     result = generate_signal(daily_df, weekly_df, symbol=symbol)
 
+    # 保存原始数据供 AI 分析使用
+    result.daily_df  = daily_df
+    result.weekly_df = weekly_df
+
     # ATR 百分比
     atr_pct = _NAN
     if not daily_df.empty and "atr" in daily_df.columns:
@@ -433,6 +437,7 @@ def analyze_symbol(
     if short:
         result.short_pct      = _nan(short.get("short_pct"))
         result.days_to_cover  = _nan(short.get("days_to_cover"))
+        result.short_data     = short
 
     # ── 期权/财务/技术异动 ──
     unusual = client.get_unusual_signals(symbol)
@@ -448,7 +453,9 @@ def analyze_symbol(
         result.analyst_target_avg  = _nan(consensus.get("analyst_target_avg"))
         result.analyst_target_high = _nan(consensus.get("analyst_target_high"))
         result.analyst_total       = int(consensus.get("analyst_total") or 0)
+        result.analyst             = consensus
     result.insider_trades = client.get_insider_trades(symbol, limit=3)
+    result.quote = quote
 
     # 今日涨幅预估（用纯技术强度，不受市场数据加成影响，防止虚高）
     result.estimated_gain_pct, result.estimated_gain_raw_pct = _estimate_gain(

@@ -774,6 +774,80 @@ def format_watchlist_message(symbols: list[str]) -> str:
     return f"📋 <b>当前自选股（{len(symbols)} 只）</b>\n\n{lines}\n\n使用 /add 或 /remove 管理"
 
 
+def format_ai_analysis(symbol: str, price: float, ai: dict) -> str:
+    """将 AI 深度分析结果格式化为 Telegram HTML 消息。"""
+    if not ai:
+        return ""
+
+    direction = ai.get("direction", "中性")
+    confidence = ai.get("confidence", "低")
+    horizon = ai.get("horizon", "3-5天")
+    verdict = ai.get("verdict", "")
+    analysis = ai.get("analysis", "")
+    bull_case = ai.get("bull_case", "")
+    bear_case = ai.get("bear_case", "")
+    action = ai.get("action", "持有观望")
+    target_bull = ai.get("target_bull")
+    target_bear = ai.get("target_bear")
+    support = ai.get("key_level_support")
+    resistance = ai.get("key_level_resistance")
+    catalyst = ai.get("catalyst")
+    stop_loss = ai.get("stop_loss")
+
+    dir_emoji = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(direction, "⚪")
+    conf_emoji = {"高": "🔥", "中": "✅", "低": "💡"}.get(confidence, "💡")
+
+    lines = [
+        f"<b>🤖 AI 深度研判 — {symbol}</b>",
+        f"{'─' * 30}",
+        f"{dir_emoji} <b>{direction}</b>  置信度: {conf_emoji} {confidence}  周期: {horizon}",
+        f"<b>核心判断: {verdict}</b>",
+        f"",
+        f"<b>📊 综合分析</b>",
+        f"{analysis}",
+        f"",
+    ]
+
+    if target_bull or target_bear:
+        lines.append("<b>🎯 目标价区间</b>")
+        if target_bull:
+            upside = (target_bull - price) / price * 100 if price else 0
+            lines.append(f"  乐观: <b>{target_bull:.2f}</b>（{upside:+.1f}%）")
+        if target_bear:
+            downside = (target_bear - price) / price * 100 if price else 0
+            lines.append(f"  悲观: <b>{target_bear:.2f}</b>（{downside:+.1f}%）")
+        lines.append("")
+
+    if support or resistance:
+        lines.append("<b>📍 关键价位</b>")
+        if resistance:
+            lines.append(f"  阻力位: {resistance:.2f}")
+        if support:
+            lines.append(f"  支撑位: {support:.2f}")
+        if stop_loss:
+            lines.append(f"  止损线: <b>{stop_loss:.2f}</b>")
+        lines.append("")
+
+    lines += [
+        f"<b>🟢 多方理由</b>",
+        f"  {bull_case}",
+        f"",
+        f"<b>🔴 空方风险</b>",
+        f"  {bear_case}",
+    ]
+
+    if catalyst:
+        lines += ["", f"<b>⚡ 近期催化剂</b>", f"  {catalyst}"]
+
+    lines += [
+        "",
+        f"<b>操作建议: {action}</b>",
+        f"<i>⚠️ AI 分析仅供参考，投资决策自担风险</i>",
+    ]
+
+    return "\n".join(lines)
+
+
 def format_help_message() -> str:
     return (
         "<b>📊 美股信号助手</b>\n\n"

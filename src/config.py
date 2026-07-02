@@ -12,6 +12,8 @@ class Config:
 
     TELEGRAM_BOT_TOKEN: str = os.environ["TELEGRAM_BOT_TOKEN"]
     DB_PATH: str = os.environ.get("DB_PATH", "./data/signals.db")
+    FINNHUB_API_KEY: str = os.environ.get("FINNHUB_API_KEY", "")
+    ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
 
     def __init__(self) -> None:
         with open("config/settings.yaml", encoding="utf-8") as f:
