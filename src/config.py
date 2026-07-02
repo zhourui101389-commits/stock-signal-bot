@@ -10,7 +10,7 @@ class Config:
     MOOMOO_HOST: str = os.environ.get("MOOMOO_HOST", "127.0.0.1")
     MOOMOO_PORT: int = int(os.environ.get("MOOMOO_PORT", "11111"))
 
-    TELEGRAM_BOT_TOKEN: str = os.environ["TELEGRAM_BOT_TOKEN"]
+    TELEGRAM_BOT_TOKEN: str = os.environ["TELEGRAM_BOT_TOKEN"].strip()
     DB_PATH: str = os.environ.get("DB_PATH", "./data/signals.db")
     FINNHUB_API_KEY: str = os.environ.get("FINNHUB_API_KEY", "")
     ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
