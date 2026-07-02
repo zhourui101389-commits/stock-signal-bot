@@ -11,7 +11,7 @@ import os
 logger = logging.getLogger(__name__)
 
 _PRED_FILE = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
-_MAX_HISTORY_DAYS = 10
+_MAX_HISTORY_DAYS = 90
 
 
 def save_predictions(
