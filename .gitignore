@@ -5,7 +5,8 @@ private_key.pem
 *.key
 
 # 数据和日志（根目录）
-/data/
+/data/*
+!/data/predictions.json
 /logs/
 *.db
 

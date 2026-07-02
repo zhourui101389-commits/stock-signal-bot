@@ -6,6 +6,9 @@ on:
     - cron: '0 21 * * 1-5'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -13,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
@@ -22,19 +27,6 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
-      - name: 设置日期变量
-        id: dates
-        run: |
-          echo "TODAY=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
-          echo "YESTERDAY=$(date -d 'yesterday' +%Y-%m-%d)" >> $GITHUB_OUTPUT
-
-      - name: 恢复昨日预测缓存
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/predictions.json
-          key: predictions-${{ steps.dates.outputs.YESTERDAY }}
-          restore-keys: predictions-
-
       - name: 运行每日扫描（含复盘）
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -43,11 +35,16 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DB_PATH: /tmp/signals.db
           DATA_SOURCE: yfinance
+          PREDICTIONS_FILE: data/predictions.json
+
         run: python scripts/cloud_scan.py
 
-      - name: 保存今日预测缓存
+      - name: 提交预测数据到 repo
         if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: /tmp/predictions.json
-          key: predictions-${{ steps.dates.outputs.TODAY }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/predictions.json
+          git diff --staged --quiet || git commit -m "chore: 更新预测数据 $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push origin main
