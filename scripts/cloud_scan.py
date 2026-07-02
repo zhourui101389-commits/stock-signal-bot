@@ -123,6 +123,10 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
             "hit_stop":    hit_stop,
         })
 
+    # 把含实际结果的复盘数据写回文件，供今日 AI 分析时参考历史对错
+    save_predictions(reviewed, scan_date=scan_date)
+    logger.info("复盘结果（含正确/错误标记）已写回预测文件")
+
     msg = format_review_message(scan_date, reviewed)
     if msg:
         for chat_id in chat_ids:

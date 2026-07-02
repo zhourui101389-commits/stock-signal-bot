@@ -11,10 +11,14 @@ logger = logging.getLogger(__name__)
 _PRED_FILE = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
 
 
-def save_predictions(predictions: list[dict], path: str = _PRED_FILE) -> None:
+def save_predictions(
+    predictions: list[dict],
+    path: str = _PRED_FILE,
+    scan_date: str = None,
+) -> None:
     import datetime
     data = {
-        "scan_date": str(datetime.date.today()),
+        "scan_date": scan_date or str(datetime.date.today()),
         "predictions": predictions,
     }
     with open(path, "w", encoding="utf-8") as f:
