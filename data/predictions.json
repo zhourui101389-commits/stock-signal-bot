@@ -1,5 +1,83 @@
 {
-  "scan_date": "",
-  "predictions": [],
+  "scan_date": "2026-07-02",
+  "predictions": [
+    {
+      "symbol": "ASX",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 42.99,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "INTC",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "",
+      "conviction": "",
+      "entry_price": 127.02,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "MRVL",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 272.05,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "MU",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "",
+      "conviction": "",
+      "entry_price": 1040.0,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "MXL",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 112.39,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "SNDK",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 2035.0,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "SOXL",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 218.505,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    }
+  ],
   "history": []
 }
