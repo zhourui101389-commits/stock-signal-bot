@@ -123,7 +123,7 @@ def _fill_multi_day_outcomes() -> bool:
             ]:
                 if pred.get(key_c) is not None:
                     continue
-                if today < scan_d + datetime.timedelta(days=n + 1):
+                if today < scan_d + datetime.timedelta(days=n):
                     continue
                 needed.setdefault(scan_date, {}).setdefault(sym, [])
                 if n not in needed[scan_date][sym]:
@@ -331,8 +331,12 @@ async def _run_review(
     chat_ids: list[int],
     anthropic_key: str = "",
     finnhub_client=None,
+    strict_date_check: bool = True,
 ) -> None:
-    """加载当日预测，对比实际收盘价，发送复盘消息。"""
+    """加载当日预测，对比实际收盘价，发送复盘消息。
+    strict_date_check=True（独立 review 模式）：若 scan_date≠今日则跳过，防止节假日重复复盘。
+    strict_date_check=False（all-in-one 模式）：允许复盘前一天的数据。
+    """
     import yfinance as yf
 
     # 先填充 history 中待完成的 T+1/T+3/T+5
@@ -340,6 +344,27 @@ async def _run_review(
         _fill_multi_day_outcomes()
     except Exception as e:
         logger.warning("多天复盘填充失败: %s", e)
+
+    # 收集近7天历史中已有 T+n 结果的条目，用于消息展示
+    recent_multis: list[dict] = []
+    try:
+        _fresh = load_predictions()
+        _today_d = datetime.date.today()
+        for _day in _fresh.get("history", []):
+            _d = _day.get("scan_date", "")
+            if not _d:
+                continue
+            try:
+                _age = (_today_d - datetime.date.fromisoformat(_d)).days
+            except ValueError:
+                continue
+            if not (0 < _age <= 7):
+                continue
+            for _p in _day.get("predictions", []):
+                if any(_p.get(k) is not None for k in ("t1_pct", "t3_pct", "t5_pct")):
+                    recent_multis.append({**_p, "scan_date": _d})
+    except Exception:
+        pass
 
     data = load_predictions()
     if not data:
@@ -351,11 +376,10 @@ async def _run_review(
     if not predictions:
         return
 
-    # 节假日：如果 predictions.json 里的 scan_date 不是今天，
-    # 说明今天扫描因节假日被跳过，不发复盘（避免重复复盘旧数据）
+    # 节假日检查：独立 review 模式下，scan_date≠今日说明今日扫描被跳过
     today_str = str(datetime.date.today())
-    if scan_date != today_str:
-        logger.info("scan_date(%s) ≠ 今日(%s)，今日无新扫描（节假日？），跳过复盘", scan_date, today_str)
+    if strict_date_check and scan_date != today_str:
+        logger.info("scan_date(%s) ≠ 今日(%s)，节假日跳过复盘", scan_date, today_str)
         return
 
     logger.info("开始复盘 %s，共 %d 条预测", scan_date, len(predictions))
@@ -425,7 +449,8 @@ async def _run_review(
     if anthropic_key:
         ai_analysis = _ai_review_analysis(reviewed, scan_date, anthropic_key, macro_context)
 
-    msg = format_review_message(scan_date, reviewed, ai_analysis=ai_analysis)
+    msg = format_review_message(scan_date, reviewed, ai_analysis=ai_analysis,
+                               history_updates=recent_multis)
     if msg:
         msg = _safe_truncate(msg)
         for chat_id in chat_ids:
@@ -439,9 +464,10 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
         logger.info("今日非美股交易日（节假日/周末），跳过盘前扫描")
         return
 
-    # 周一额外发送上周绩效周报
+    # 周一额外发送上周绩效周报（先补全多天数据再统计）
     if datetime.date.today().weekday() == 0:
         try:
+            _fill_multi_day_outcomes()
             await _send_weekly_report(bot, chat_ids)
         except Exception as e:
             logger.warning("周报发送失败: %s", e)
@@ -579,8 +605,10 @@ async def main():
         await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
 
     else:
+        # all-in-one 模式：允许复盘前一天数据（不做严格日期检查）
         try:
-            await _run_review(bot, chat_ids, anthropic_key, finnhub_client)
+            await _run_review(bot, chat_ids, anthropic_key, finnhub_client,
+                              strict_date_check=False)
         except Exception as e:
             logger.error("复盘失败: %s", e)
         await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)

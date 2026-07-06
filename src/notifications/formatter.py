@@ -875,7 +875,8 @@ def format_serenity_section(picks: dict) -> str:
     return "\n".join(lines)
 
 
-def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str = "") -> str:
+def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str = "",
+                          history_updates: list[dict] = None) -> str:
     """
     格式化逐股复盘消息。
     复盘的目的是展示"预判逻辑 vs 市场实际"，结果回传给明日 AI 参考。
@@ -980,6 +981,34 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
 
     lines.append(f"\n{'─' * 28}")
     lines.append(f"<i>✅ {len(right)} 只方向正确  ❌ {len(wrong)} 只方向错误</i>")
+
+    # 历史多天复盘进展（T+1/T+3/T+5 已填充的历史记录）
+    if history_updates:
+        by_date: dict[str, list[dict]] = {}
+        for p in history_updates:
+            by_date.setdefault(p.get("scan_date", ""), []).append(p)
+        lines.append(f"\n<b>📅 历史多天复盘进展</b>")
+        for d in sorted(by_date.keys()):
+            lines.append(f"<i>{d}</i>")
+            for p in by_date[d]:
+                sym      = p.get("symbol", "")
+                dir_icon = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(
+                    p.get("final_direction", "中性"), "")
+                multi = []
+                for key_p, key_r, label in [
+                    ("t1_pct", "t1_correct", "T+1"),
+                    ("t3_pct", "t3_correct", "T+3"),
+                    ("t5_pct", "t5_correct", "T+5"),
+                ]:
+                    pct = p.get(key_p)
+                    if pct is not None:
+                        a     = "▲" if pct >= 0 else "▼"
+                        s     = "+" if pct >= 0 else ""
+                        badge = "✅" if p.get(key_r) is True else (
+                                "❌" if p.get(key_r) is False else "⚪")
+                        multi.append(f"{label}{badge}{a}{s}{pct:.2f}%")
+                if multi:
+                    lines.append(f"  <b>{sym}</b>  {dir_icon}  {'  '.join(multi)}")
 
     if ai_analysis:
         lines.append(f"\n<b>🧠 AI 复盘洞察</b>")
