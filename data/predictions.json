@@ -1,5 +1,5 @@
 {
-  "scan_date": "2026-07-03",
+  "scan_date": "2026-07-06",
   "predictions": [
     {
       "symbol": "INTC",
@@ -10,12 +10,7 @@
       "entry_price": 120.35,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 120.3499984741211,
-      "actual_pct": -1.2678678027134676e-06,
-      "correct": false,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     },
     {
       "symbol": "MU",
@@ -26,12 +21,7 @@
       "entry_price": 975.56,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 975.5599975585938,
-      "actual_pct": -2.502568981334124e-07,
-      "correct": null,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     },
     {
       "symbol": "MXL",
@@ -42,12 +32,7 @@
       "entry_price": 93.12,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 93.12000274658203,
-      "actual_pct": 2.9495081901874206e-06,
-      "correct": null,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     },
     {
       "symbol": "NVDA",
@@ -58,12 +43,7 @@
       "entry_price": 194.83,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 194.8300018310547,
-      "actual_pct": 9.398217291969654e-07,
-      "correct": true,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     },
     {
       "symbol": "SNDK",
@@ -74,12 +54,7 @@
       "entry_price": 1745.0,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 1745.0,
-      "actual_pct": 0.0,
-      "correct": null,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     },
     {
       "symbol": "SOXL",
@@ -90,12 +65,7 @@
       "entry_price": 181.47,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "",
-      "close_price": 181.47000122070312,
-      "actual_pct": 6.726748917930614e-07,
-      "correct": null,
-      "hit_target": false,
-      "hit_stop": false
+      "verdict": ""
     }
   ],
   "history": [
@@ -213,6 +183,113 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false
+        }
+      ]
+    },
+    {
+      "scan_date": "2026-07-03",
+      "predictions": [
+        {
+          "symbol": "INTC",
+          "direction": "BUY",
+          "final_direction": "看多",
+          "action": "",
+          "conviction": "",
+          "entry_price": 120.35,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 120.3499984741211,
+          "actual_pct": -1.2678678027134676e-06,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
+        },
+        {
+          "symbol": "MU",
+          "direction": "NEUTRAL",
+          "final_direction": "中性",
+          "action": "",
+          "conviction": "",
+          "entry_price": 975.56,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 975.5599975585938,
+          "actual_pct": -2.502568981334124e-07,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
+        },
+        {
+          "symbol": "MXL",
+          "direction": "NEUTRAL",
+          "final_direction": "中性",
+          "action": "",
+          "conviction": "",
+          "entry_price": 93.12,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 93.12000274658203,
+          "actual_pct": 2.9495081901874206e-06,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
+        },
+        {
+          "symbol": "NVDA",
+          "direction": "BUY",
+          "final_direction": "看多",
+          "action": "",
+          "conviction": "",
+          "entry_price": 194.83,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 194.8300018310547,
+          "actual_pct": 9.398217291969654e-07,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
+        },
+        {
+          "symbol": "SNDK",
+          "direction": "NEUTRAL",
+          "final_direction": "中性",
+          "action": "",
+          "conviction": "",
+          "entry_price": 1745.0,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 1745.0,
+          "actual_pct": 0.0,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
+        },
+        {
+          "symbol": "SOXL",
+          "direction": "NEUTRAL",
+          "final_direction": "中性",
+          "action": "",
+          "conviction": "",
+          "entry_price": 181.47,
+          "target_price": null,
+          "stop_loss": null,
+          "verdict": "",
+          "close_price": 181.47000122070312,
+          "actual_pct": 6.726748917930614e-07,
+          "correct": null,
+          "hit_target": false,
+          "hit_stop": false,
+          "inconclusive": true
         }
       ]
     }
