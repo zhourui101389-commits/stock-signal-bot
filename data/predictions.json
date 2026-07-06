@@ -2,56 +2,78 @@
   "scan_date": "2026-07-06",
   "predictions": [
     {
+      "symbol": "ASX",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 44.1,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "DRAM",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 65.6488,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
       "symbol": "INTC",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "entry_price": 124.4433,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "MRVL",
       "direction": "BUY",
       "final_direction": "看多",
       "action": "",
       "conviction": "",
-      "entry_price": 120.35,
+      "entry_price": 256.02,
       "target_price": null,
       "stop_loss": null,
       "verdict": ""
     },
     {
       "symbol": "MU",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
+      "direction": "BUY",
+      "final_direction": "看多",
       "action": "",
       "conviction": "",
-      "entry_price": 975.56,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": ""
-    },
-    {
-      "symbol": "MXL",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "",
-      "conviction": "",
-      "entry_price": 93.12,
+      "entry_price": 1009.58,
       "target_price": null,
       "stop_loss": null,
       "verdict": ""
     },
     {
       "symbol": "NVDA",
-      "direction": "BUY",
-      "final_direction": "看多",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
-      "entry_price": 194.83,
+      "entry_price": 197.2801,
       "target_price": null,
       "stop_loss": null,
       "verdict": ""
     },
     {
       "symbol": "SNDK",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
+      "direction": "BUY",
+      "final_direction": "看多",
       "action": "",
       "conviction": "",
-      "entry_price": 1745.0,
+      "entry_price": 1806.14,
       "target_price": null,
       "stop_loss": null,
       "verdict": ""
@@ -62,7 +84,18 @@
       "final_direction": "中性",
       "action": "",
       "conviction": "",
-      "entry_price": 181.47,
+      "entry_price": 204.8,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": ""
+    },
+    {
+      "symbol": "WDC",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "",
+      "conviction": "",
+      "entry_price": 578.01,
       "target_price": null,
       "stop_loss": null,
       "verdict": ""
@@ -86,7 +119,10 @@
           "actual_pct": -2.6052595210868486,
           "correct": null,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 44.1,
+          "t1_pct": 2.582,
+          "t1_correct": null
         },
         {
           "symbol": "INTC",
@@ -102,7 +138,10 @@
           "actual_pct": -5.251142753801687,
           "correct": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 124.43,
+          "t1_pct": -2.039,
+          "t1_correct": false
         },
         {
           "symbol": "MRVL",
@@ -118,7 +157,10 @@
           "actual_pct": -9.836429595246168,
           "correct": null,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 256.0,
+          "t1_pct": -5.8997,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -134,7 +176,10 @@
           "actual_pct": -6.1961540809044475,
           "correct": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1010.7,
+          "t1_pct": -2.8173,
+          "t1_correct": false
         },
         {
           "symbol": "MXL",
@@ -150,7 +195,10 @@
           "actual_pct": -17.1456510840982,
           "correct": null,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 101.6123,
+          "t1_pct": -9.5896,
+          "t1_correct": null
         },
         {
           "symbol": "SNDK",
@@ -166,7 +214,10 @@
           "actual_pct": -14.250614250614252,
           "correct": null,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1806.2799,
+          "t1_pct": -11.2393,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -182,7 +233,10 @@
           "actual_pct": -16.9492683367872,
           "correct": null,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 204.85,
+          "t1_pct": -6.2493,
+          "t1_correct": null
         }
       ]
     },
@@ -204,7 +258,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 124.43,
+          "t1_pct": 3.3901,
+          "t1_correct": true
         },
         {
           "symbol": "MU",
@@ -221,7 +278,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 1010.4433,
+          "t1_pct": 3.5757,
+          "t1_correct": null
         },
         {
           "symbol": "MXL",
@@ -238,7 +298,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 101.6123,
+          "t1_pct": 9.1197,
+          "t1_correct": null
         },
         {
           "symbol": "NVDA",
@@ -255,7 +318,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 197.365,
+          "t1_pct": 1.3011,
+          "t1_correct": true
         },
         {
           "symbol": "SNDK",
@@ -272,7 +338,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 1806.2799,
+          "t1_pct": 3.5117,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -289,7 +358,10 @@
           "correct": null,
           "hit_target": false,
           "hit_stop": false,
-          "inconclusive": true
+          "inconclusive": true,
+          "t1_close": 204.85,
+          "t1_pct": 12.8837,
+          "t1_correct": null
         }
       ]
     }
