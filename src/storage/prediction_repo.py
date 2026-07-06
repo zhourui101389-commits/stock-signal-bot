@@ -55,6 +55,13 @@ def load_predictions(path: str = _PRED_FILE) -> dict:
         return {}
 
 
+def save_raw(data: dict, path: str = _PRED_FILE) -> None:
+    """直接写入完整 predictions 数据结构，用于更新多天复盘结果等原地修改场景。"""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    logger.info("已写回更新后的预测文件")
+
+
 def get_symbol_history(symbol: str, path: str = _PRED_FILE) -> list[dict]:
     """
     获取该股票所有历史预测记录（时间升序），供 AI 识别判断规律。

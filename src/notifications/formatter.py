@@ -904,6 +904,24 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
         lines = [
             f"<b>{sym}</b>  {dir_icon}{direction}  {arrow}{sign}{apct:.2f}%  {price_str}{tag}"
         ]
+
+        # 多天复盘（T+1 / T+3 / T+5）
+        multi = []
+        for key_p, key_r, label in [
+            ("t1_pct", "t1_correct", "T+1"),
+            ("t3_pct", "t3_correct", "T+3"),
+            ("t5_pct", "t5_correct", "T+5"),
+        ]:
+            pct = r.get(key_p)
+            if pct is not None:
+                a = "▲" if pct >= 0 else "▼"
+                s = "+" if pct >= 0 else ""
+                correct = r.get(key_r)
+                badge = "✅" if correct is True else ("❌" if correct is False else "⚪")
+                multi.append(f"{label}{badge}{a}{s}{pct:.2f}%")
+        if multi:
+            lines.append(f"  {'  '.join(multi)}")
+
         if verdict:
             lines.append(f"  预判依据：{_html.escape(verdict)}{conv_str}")
         if target and not hit_t:
@@ -957,6 +975,88 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
         lines.append(f"\n<b>🧠 AI 复盘洞察</b>")
         lines.append(_html.escape(ai_analysis))
 
+    return "\n".join(lines)
+
+
+def format_weekly_report(recent_history: list[dict]) -> str:
+    """
+    格式化周报：统计近7天预测绩效，发送于每周一盘前。
+    recent_history: predictions.json history 中近7天的条目列表。
+    """
+    if not recent_history:
+        return ""
+
+    all_preds = []
+    for day in recent_history:
+        date = day.get("scan_date", "")
+        for p in day.get("predictions", []):
+            all_preds.append({**p, "scan_date": date})
+
+    right  = [p for p in all_preds if p.get("correct") is True]
+    wrong  = [p for p in all_preds if p.get("correct") is False]
+    total  = len(right) + len(wrong)
+    rate   = len(right) / total * 100 if total > 0 else 0
+
+    # T+3 准确率（更能反映波段质量）
+    right_t3 = [p for p in all_preds if p.get("t3_correct") is True]
+    wrong_t3 = [p for p in all_preds if p.get("t3_correct") is False]
+    total_t3 = len(right_t3) + len(wrong_t3)
+    rate_t3  = len(right_t3) / total_t3 * 100 if total_t3 > 0 else None
+
+    # 最佳 / 最差预测（按 T+0 actual_pct）
+    ranked = sorted(
+        [p for p in all_preds if p.get("actual_pct") is not None],
+        key=lambda x: x["actual_pct"], reverse=True
+    )
+    best  = ranked[:3]
+    worst = ranked[-3:][::-1]
+
+    # 按股票统计准确率（≥3次）
+    sym_stats: dict[str, list[int]] = {}
+    for p in all_preds:
+        s = p.get("symbol", "")
+        c = p.get("correct")
+        if s and c is not None:
+            sym_stats.setdefault(s, [0, 0])
+            sym_stats[s][1] += 1
+            if c:
+                sym_stats[s][0] += 1
+    flagged = [(s, v[0], v[1]) for s, v in sym_stats.items() if v[1] >= 3 and v[0] / v[1] < 0.4]
+
+    lines = [
+        "<b>📊 上周绩效周报</b>",
+        "─" * 28,
+        f"预测总次数: <b>{total}</b>   "
+        f"✅ {len(right)} 正确  ❌ {len(wrong)} 错误  "
+        f"胜率: <b>{rate:.0f}%</b>",
+    ]
+    if rate_t3 is not None:
+        lines.append(f"T+3 波段胜率: <b>{rate_t3:.0f}%</b>（{total_t3}次有效）")
+
+    if best:
+        lines.append("\n<b>🏆 最佳预测（T+0）</b>")
+        for p in best:
+            apct = p.get("actual_pct", 0)
+            lines.append(
+                f"  {p['symbol']} {p.get('final_direction','')} "
+                f"{'▲+' if apct>=0 else '▼'}{apct:.2f}%  {p['scan_date']}"
+            )
+
+    if worst:
+        lines.append("\n<b>💔 最差预测（T+0）</b>")
+        for p in worst:
+            apct = p.get("actual_pct", 0)
+            lines.append(
+                f"  {p['symbol']} {p.get('final_direction','')} "
+                f"{'▲+' if apct>=0 else '▼'}{apct:.2f}%  {p['scan_date']}"
+            )
+
+    if flagged:
+        lines.append("\n<b>⚠️ 系统性误判（胜率<40%，≥3次）</b>")
+        for s, correct_n, total_n in flagged:
+            lines.append(f"  {s}: {correct_n}/{total_n} ({correct_n/total_n*100:.0f}%)")
+
+    lines.append(f"\n<i>统计周期: {recent_history[0].get('scan_date','')} ~ {recent_history[-1].get('scan_date','')}</i>")
     return "\n".join(lines)
 
 

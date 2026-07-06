@@ -20,7 +20,7 @@ from src.config import Config
 from src.storage.database import init_db
 from src.storage import watchlist_repo
 from src.storage.prediction_repo import (
-    load_predictions, save_predictions, get_symbol_history,
+    load_predictions, save_predictions, save_raw, get_symbol_history,
 )
 from src.data.yfinance_client import YFinanceDataClient
 from src.data.finnhub_client import FinnhubClient
@@ -29,6 +29,7 @@ from src.analysis.ai_analyst import run_ai_analysis
 from src.notifications.formatter import (
     format_signal_message,
     format_review_message,
+    format_weekly_report,
     format_serenity_section,
 )
 from src.data.serenity_tracker import get_serenity_picks
@@ -62,6 +63,74 @@ def _is_us_trading_day() -> bool:
         return last_date == today
     except Exception:
         return True  # 网络异常时默认继续
+
+
+def _get_nth_trading_close(sym: str, scan_date_str: str, n: int):
+    """返回 (close_price, date_str) — scan_date 之后第 n 个交易日的收盘价。"""
+    import yfinance as yf
+    today = datetime.date.today()
+    start = datetime.date.fromisoformat(scan_date_str) + datetime.timedelta(days=1)
+    if start > today:
+        return None, None
+    end = min(start + datetime.timedelta(days=n * 2 + 7), today + datetime.timedelta(days=1))
+    try:
+        hist = yf.Ticker(sym).history(start=str(start), end=str(end))
+        if len(hist) >= n:
+            return float(hist["Close"].iloc[n - 1]), hist.index[n - 1].date().isoformat()
+    except Exception:
+        pass
+    return None, None
+
+
+def _fill_multi_day_outcomes() -> bool:
+    """扫描 history 中未完成的 T+1/T+3/T+5 复盘结果，原地更新并写回文件。"""
+    path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
+    data = load_predictions(path)
+    if not data:
+        return False
+
+    today   = datetime.date.today()
+    updated = False
+
+    for day in data.get("history", []):
+        scan_date = day.get("scan_date", "")
+        if not scan_date:
+            continue
+        scan_d = datetime.date.fromisoformat(scan_date)
+
+        for pred in day.get("predictions", []):
+            sym       = pred.get("symbol", "")
+            final_dir = pred.get("final_direction", "中性")
+            entry     = pred.get("entry_price")
+            if not sym or not entry:
+                continue
+
+            for n, key_c, key_p, key_r in [
+                (1, "t1_close", "t1_pct", "t1_correct"),
+                (3, "t3_close", "t3_pct", "t3_correct"),
+                (5, "t5_close", "t5_pct", "t5_correct"),
+            ]:
+                if pred.get(key_c) is not None:
+                    continue
+                if today < scan_d + datetime.timedelta(days=n + 1):
+                    continue  # 时间未到
+                close, _ = _get_nth_trading_close(sym, scan_date, n)
+                if close is None:
+                    continue
+                pct = (close - entry) / entry * 100
+                correct = (
+                    None if abs(pct) < 0.3
+                    else (pct > 0 if final_dir == "看多" else (pct < 0 if final_dir == "看空" else None))
+                )
+                pred[key_c] = round(close, 4)
+                pred[key_p] = round(pct, 4)
+                pred[key_r] = correct
+                updated = True
+
+    if updated:
+        save_raw(data, path)
+        logger.info("已更新多天复盘结果（T+1/T+3/T+5）")
+    return updated
 
 
 def _get_macro_context(finnhub: FinnhubClient | None) -> str:
@@ -108,7 +177,12 @@ def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     return "\n".join(parts) if parts else "宏观数据暂不可用"
 
 
-def _ai_review_analysis(reviewed: list[dict], scan_date: str, anthropic_key: str) -> str:
+def _ai_review_analysis(
+    reviewed: list[dict],
+    scan_date: str,
+    anthropic_key: str,
+    macro_context: str = "",
+) -> str:
     """调用 Claude Haiku 对复盘结果做模式分析，输出改进方向。"""
     import anthropic
 
@@ -126,18 +200,41 @@ def _ai_review_analysis(reviewed: list[dict], scan_date: str, anthropic_key: str
             f"依据：{r.get('verdict','')}"
         )
 
+    # 从 history 统计各股历史准确率
+    path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
+    hist_data = load_predictions(path)
+    sym_stats = {}
+    for day in hist_data.get("history", []):
+        for p in day.get("predictions", []):
+            s = p.get("symbol")
+            c = p.get("correct")
+            if s and c is not None:
+                sym_stats.setdefault(s, [0, 0])
+                sym_stats[s][1] += 1
+                if c:
+                    sym_stats[s][0] += 1
+    acc_lines = [
+        f"  {s}: {v[0]}/{v[1]}次正确（{v[0]/v[1]*100:.0f}%）"
+        for s, v in sym_stats.items() if v[1] >= 5
+    ]
+    acc_block = ("历史准确率（≥5次）：\n" + "\n".join(acc_lines)) if acc_lines else ""
+
+    macro_block = f"当日宏观：\n{macro_context}\n\n" if macro_context else ""
+
     prompt = (
         f"量化交易复盘分析，日期 {scan_date}：\n\n"
+        f"{macro_block}"
         f"✅ 方向正确（{len(right)}只）：\n" + "\n".join(_fmt(r) for r in right) + "\n\n"
         f"❌ 方向错误（{len(wrong)}只）：\n" + "\n".join(_fmt(r) for r in wrong) + "\n\n"
-        f"用100字以内分析：①错误预测的共同特征或原因；②今日扫描应重点注意什么。"
-        f"直接给出分析，不用列序号。"
+        + (acc_block + "\n\n" if acc_block else "")
+        + "用120字以内分析：①错误预测的共同特征或原因（结合宏观环境和历史准确率）；"
+          "②今日扫描应重点注意什么。直接给出分析，不用列序号。"
     )
     try:
         client = anthropic.Anthropic(api_key=anthropic_key)
         resp = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=200,
+            max_tokens=250,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.content[0].text.strip()
@@ -146,18 +243,60 @@ def _ai_review_analysis(reviewed: list[dict], scan_date: str, anthropic_key: str
         return ""
 
 
-async def _run_review(bot: Bot, chat_ids: list[int], anthropic_key: str = "") -> None:
-    """加载昨日预测，对比实际收盘价，发送复盘消息。"""
+async def _send_weekly_report(bot: Bot, chat_ids: list[int]) -> None:
+    """发送上周交易周期的绩效周报（每周一扫描前触发）。"""
+    path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
+    data = load_predictions(path)
+    if not data:
+        return
+    history = data.get("history", [])
+    if not history:
+        return
+    # 取最近 7 天的 history 条目
+    cutoff = datetime.date.today() - datetime.timedelta(days=7)
+    recent = [
+        d for d in history
+        if d.get("scan_date", "") >= str(cutoff)
+    ]
+    if not recent:
+        return
+    msg = format_weekly_report(recent)
+    if msg:
+        for chat_id in chat_ids:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        logger.info("周报已发送")
+
+
+async def _run_review(
+    bot: Bot,
+    chat_ids: list[int],
+    anthropic_key: str = "",
+    finnhub_client=None,
+) -> None:
+    """加载当日预测，对比实际收盘价，发送复盘消息。"""
     import yfinance as yf
+
+    # 先填充 history 中待完成的 T+1/T+3/T+5
+    try:
+        _fill_multi_day_outcomes()
+    except Exception as e:
+        logger.warning("多天复盘填充失败: %s", e)
 
     data = load_predictions()
     if not data:
-        logger.info("无昨日预测记录，跳过复盘")
+        logger.info("无预测记录，跳过复盘")
         return
 
-    scan_date = data.get("scan_date", "")
+    scan_date   = data.get("scan_date", "")
     predictions = data.get("predictions", [])
     if not predictions:
+        return
+
+    # 节假日：如果 predictions.json 里的 scan_date 不是今天，
+    # 说明今天扫描因节假日被跳过，不发复盘（避免重复复盘旧数据）
+    today_str = str(datetime.date.today())
+    if scan_date != today_str:
+        logger.info("scan_date(%s) ≠ 今日(%s)，今日无新扫描（节假日？），跳过复盘", scan_date, today_str)
         return
 
     logger.info("开始复盘 %s，共 %d 条预测", scan_date, len(predictions))
@@ -216,9 +355,16 @@ async def _run_review(bot: Bot, chat_ids: list[int], anthropic_key: str = "") ->
     save_predictions(reviewed, scan_date=scan_date)
     logger.info("复盘结果（含正确/错误标记）已写回预测文件")
 
+    # 宏观上下文（今日收盘后的 SPY/QQQ/VIX 状态）
+    macro_context = ""
+    try:
+        macro_context = _get_macro_context(finnhub_client)
+    except Exception:
+        pass
+
     ai_analysis = ""
     if anthropic_key:
-        ai_analysis = _ai_review_analysis(reviewed, scan_date, anthropic_key)
+        ai_analysis = _ai_review_analysis(reviewed, scan_date, anthropic_key, macro_context)
 
     msg = format_review_message(scan_date, reviewed, ai_analysis=ai_analysis)
     if msg:
@@ -232,6 +378,13 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     if not _is_us_trading_day():
         logger.info("今日非美股交易日（节假日/周末），跳过盘前扫描")
         return
+
+    # 周一额外发送上周绩效周报
+    if datetime.date.today().weekday() == 0:
+        try:
+            await _send_weekly_report(bot, chat_ids)
+        except Exception as e:
+            logger.warning("周报发送失败: %s", e)
 
     symbols = watchlist_repo.get_all_symbols()
     pinned  = set(config.pinned_symbols)
@@ -351,7 +504,7 @@ async def main():
 
     if scan_mode == "review":
         try:
-            await _run_review(bot, chat_ids, anthropic_key)
+            await _run_review(bot, chat_ids, anthropic_key, finnhub_client)
         except Exception as e:
             logger.error("复盘失败: %s", e)
 
@@ -360,7 +513,7 @@ async def main():
 
     else:
         try:
-            await _run_review(bot, chat_ids, anthropic_key)
+            await _run_review(bot, chat_ids, anthropic_key, finnhub_client)
         except Exception as e:
             logger.error("复盘失败: %s", e)
         await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
