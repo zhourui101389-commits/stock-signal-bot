@@ -47,6 +47,23 @@ def _get_chat_ids(config: Config) -> list[int]:
     return watchlist_repo.get_all_chat_ids()
 
 
+def _is_us_trading_day() -> bool:
+    """判断今天是否为美股交易日（排除周末和节假日）。盘前 9AM EDT 调用。"""
+    import yfinance as yf
+    today = datetime.date.today()
+    if today.weekday() >= 5:  # 周六/周日
+        return False
+    try:
+        hist = yf.download("SPY", period="1d", interval="1m",
+                           prepost=True, progress=False)
+        if hist.empty:
+            return False
+        last_date = hist.index[-1].date()
+        return last_date == today
+    except Exception:
+        return True  # 网络异常时默认继续
+
+
 def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     import yfinance as yf
     parts = []
@@ -91,7 +108,45 @@ def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     return "\n".join(parts) if parts else "宏观数据暂不可用"
 
 
-async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
+def _ai_review_analysis(reviewed: list[dict], scan_date: str, anthropic_key: str) -> str:
+    """调用 Claude Haiku 对复盘结果做模式分析，输出改进方向。"""
+    import anthropic
+
+    right = [r for r in reviewed if r.get("correct") is True]
+    wrong = [r for r in reviewed if r.get("correct") is False]
+    if not right and not wrong:
+        return ""
+
+    def _fmt(r: dict) -> str:
+        apct = r.get("actual_pct")
+        return (
+            f"- {r['symbol']}：预判{r.get('final_direction','?')}"
+            f"（置信度{r.get('conviction','')}），"
+            f"实际{f'{apct:+.2f}%' if apct is not None else '无数据'}。"
+            f"依据：{r.get('verdict','')}"
+        )
+
+    prompt = (
+        f"量化交易复盘分析，日期 {scan_date}：\n\n"
+        f"✅ 方向正确（{len(right)}只）：\n" + "\n".join(_fmt(r) for r in right) + "\n\n"
+        f"❌ 方向错误（{len(wrong)}只）：\n" + "\n".join(_fmt(r) for r in wrong) + "\n\n"
+        f"用100字以内分析：①错误预测的共同特征或原因；②今日扫描应重点注意什么。"
+        f"直接给出分析，不用列序号。"
+    )
+    try:
+        client = anthropic.Anthropic(api_key=anthropic_key)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=200,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return resp.content[0].text.strip()
+    except Exception as e:
+        logger.warning("AI复盘分析失败: %s", e)
+        return ""
+
+
+async def _run_review(bot: Bot, chat_ids: list[int], anthropic_key: str = "") -> None:
     """加载昨日预测，对比实际收盘价，发送复盘消息。"""
     import yfinance as yf
 
@@ -115,7 +170,6 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
         target      = pred.get("target_price")
         stop        = pred.get("stop_loss")
 
-        # 拉取扫描日的实际收盘价（从扫描日起最多取3天，应对周末/假期）
         close_price = None
         try:
             start = datetime.date.fromisoformat(scan_date)
@@ -126,14 +180,18 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
         except Exception as e:
             logger.warning("复盘拉取 %s 收盘价失败: %s", sym, e)
 
-        actual_pct = None
-        correct    = None
-        hit_target = False
-        hit_stop   = False
+        actual_pct   = None
+        correct      = None
+        inconclusive = False
+        hit_target   = False
+        hit_stop     = False
 
         if close_price and entry_price:
             actual_pct = (close_price - entry_price) / entry_price * 100
-            if final_dir == "看多":
+            if abs(actual_pct) < 0.5:
+                # 涨跌幅过小（节假日/半天市场/数据误差），不计入对错
+                inconclusive = True
+            elif final_dir == "看多":
                 correct = actual_pct > 0
                 if target:
                     hit_target = close_price >= target
@@ -143,22 +201,26 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
                 correct = actual_pct < 0
                 if stop:
                     hit_stop = close_price >= stop
-            # 中性：correct=None，不计入胜率
+            # 中性：correct=None
 
         reviewed.append({
             **pred,
-            "close_price": close_price,
-            "actual_pct":  actual_pct,
-            "correct":     correct,
-            "hit_target":  hit_target,
-            "hit_stop":    hit_stop,
+            "close_price":  close_price,
+            "actual_pct":   actual_pct,
+            "correct":      correct,
+            "inconclusive": inconclusive,
+            "hit_target":   hit_target,
+            "hit_stop":     hit_stop,
         })
 
-    # 把含实际结果的复盘数据写回文件，供今日 AI 分析时参考历史对错
     save_predictions(reviewed, scan_date=scan_date)
     logger.info("复盘结果（含正确/错误标记）已写回预测文件")
 
-    msg = format_review_message(scan_date, reviewed)
+    ai_analysis = ""
+    if anthropic_key:
+        ai_analysis = _ai_review_analysis(reviewed, scan_date, anthropic_key)
+
+    msg = format_review_message(scan_date, reviewed, ai_analysis=ai_analysis)
     if msg:
         for chat_id in chat_ids:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
@@ -167,6 +229,10 @@ async def _run_review(bot: Bot, chat_ids: list[int]) -> None:
 
 async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     """盘前扫描：分析信号、调用 AI、推送 Telegram、保存今日预测。"""
+    if not _is_us_trading_day():
+        logger.info("今日非美股交易日（节假日/周末），跳过盘前扫描")
+        return
+
     symbols = watchlist_repo.get_all_symbols()
     pinned  = set(config.pinned_symbols)
     min_str = config.signals.get("min_strength", 30)
@@ -284,20 +350,17 @@ async def main():
     bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
 
     if scan_mode == "review":
-        # 盘后模式：只跑复盘
         try:
-            await _run_review(bot, chat_ids)
+            await _run_review(bot, chat_ids, anthropic_key)
         except Exception as e:
             logger.error("复盘失败: %s", e)
 
     elif scan_mode == "scan":
-        # 盘前模式：只跑扫描
         await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
 
     else:
-        # 兼容旧模式：复盘 + 扫描
         try:
-            await _run_review(bot, chat_ids)
+            await _run_review(bot, chat_ids, anthropic_key)
         except Exception as e:
             logger.error("复盘失败: %s", e)
         await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)

@@ -865,23 +865,19 @@ def format_serenity_section(picks: dict) -> str:
     return "\n".join(lines)
 
 
-def format_review_message(scan_date: str, reviewed: list[dict]) -> str:
+def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str = "") -> str:
     """
     格式化逐股复盘消息。
-    复盘的目的是展示"预判逻辑 vs 市场实际"，结果会回传给明日 AI 参考，
-    不生成操作建议——操作建议由明日扫描时 AI 综合历史判断给出。
-
-    reviewed 每项: {symbol, final_direction, conviction, verdict,
-                    entry_price, close_price, actual_pct,
-                    target_price, stop_loss, correct, hit_target, hit_stop}
-    correct: True=方向正确, False=方向错误, None=观望未持仓
+    复盘的目的是展示"预判逻辑 vs 市场实际"，结果回传给明日 AI 参考。
+    inconclusive=True 表示涨跌幅过小（<0.5%），不计入对错统计。
     """
     if not reviewed:
         return ""
 
-    right   = [r for r in reviewed if r.get("correct") is True]
-    wrong   = [r for r in reviewed if r.get("correct") is False]
-    neutral = [r for r in reviewed if r.get("correct") is None]
+    right        = [r for r in reviewed if r.get("correct") is True]
+    wrong        = [r for r in reviewed if r.get("correct") is False]
+    inconclusive = [r for r in reviewed if r.get("inconclusive")]
+    neutral      = [r for r in reviewed if r.get("correct") is None and not r.get("inconclusive")]
 
     def _stock_block(r: dict) -> list[str]:
         sym        = r["symbol"]
@@ -933,6 +929,15 @@ def format_review_message(scan_date: str, reviewed: list[dict]) -> str:
         for r in wrong:
             lines += [""] + _stock_block(r)
 
+    if inconclusive:
+        lines.append(f"\n<b>⚠️ 涨跌过小无效（{len(inconclusive)}只）</b>")
+        for r in inconclusive:
+            sym      = r["symbol"]
+            apct     = r.get("actual_pct")
+            dir_icon = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(r.get("final_direction", "中性"), "")
+            apct_str = f"{'+' if apct>=0 else ''}{apct:.2f}%" if apct is not None else "无数据"
+            lines.append(f"  {sym}  {dir_icon}  {apct_str}（涨跌幅<0.5%，不计入统计）")
+
     if neutral:
         lines.append(f"\n<b>⚪ 观望未持仓（{len(neutral)}只）</b>")
         for r in neutral:
@@ -947,6 +952,11 @@ def format_review_message(scan_date: str, reviewed: list[dict]) -> str:
 
     lines.append(f"\n{'─' * 28}")
     lines.append(f"<i>✅ {len(right)} 只方向正确  ❌ {len(wrong)} 只方向错误</i>")
+
+    if ai_analysis:
+        lines.append(f"\n<b>🧠 AI 复盘洞察</b>")
+        lines.append(_html.escape(ai_analysis))
+
     return "\n".join(lines)
 
 
