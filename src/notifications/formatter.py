@@ -518,14 +518,24 @@ def _signal_verdict(direction: str, cur_chg: float, atr_pct: float,
                 verdict = "❌ 方向逆转，跌破盘前预期，考虑止损"
         else:
             verdict = "⏳ 行情数据待更新"
-    else:  # SELL
+    elif direction == "SELL":
         if chg_ok and cur_chg < 0:
             if inst_ok and inst_pos:
                 verdict = "⚠️ 价格下跌但机构逆向买入，空头信号可能减弱"
             else:
                 verdict = "✅ 信号延续，机构持续出货，观望为主"
         elif chg_ok and cur_chg > 0:
-            verdict = "❌ 空头逆转拉升，止损信号，注意风险"
+            verdict = "❌ 看空信号逆转上涨，注意风险"
+        else:
+            verdict = "⏳ 行情数据待更新"
+    else:  # NEUTRAL
+        if chg_ok and abs(cur_chg) > 0:
+            if inst_ok and inst_pos and cur_chg > 0:
+                verdict = "📊 观望中，机构净买入，可留意做多机会"
+            elif inst_ok and not inst_pos and cur_chg < 0:
+                verdict = "📊 观望中，机构净卖出，暂无入场信号"
+            else:
+                verdict = "📊 观望中，等待更明确的方向信号"
         else:
             verdict = "⏳ 行情数据待更新"
     return verdict
