@@ -10,7 +10,13 @@
       "entry_price": 44.1,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 43.31999969482422,
+      "actual_pct": -1.7687081750017746,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "DRAM",
@@ -21,7 +27,13 @@
       "entry_price": 65.6488,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 64.76000213623047,
+      "actual_pct": -1.3538676468869586,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "INTC",
@@ -32,7 +44,13 @@
       "entry_price": 124.4433,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 122.19999694824219,
+      "actual_pct": -1.8026708161530642,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MRVL",
@@ -43,7 +61,13 @@
       "entry_price": 256.02,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 249.27000427246094,
+      "actual_pct": -2.6365111036399673,
+      "correct": false,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MU",
@@ -54,7 +78,13 @@
       "entry_price": 1009.58,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 984.75,
+      "actual_pct": -2.4594385784187525,
+      "correct": false,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "NVDA",
@@ -65,7 +95,13 @@
       "entry_price": 197.2801,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 195.5500030517578,
+      "actual_pct": -0.8769748941946968,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SNDK",
@@ -76,7 +112,13 @@
       "entry_price": 1806.14,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 1744.4300537109375,
+      "actual_pct": -3.4166756889866012,
+      "correct": false,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SOXL",
@@ -87,7 +129,13 @@
       "entry_price": 204.8,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 194.64999389648438,
+      "actual_pct": -4.956057667732244,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "WDC",
@@ -98,7 +146,13 @@
       "entry_price": 578.01,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "close_price": 577.4600219726562,
+      "actual_pct": -0.09515026164663949,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     }
   ],
   "history": [
