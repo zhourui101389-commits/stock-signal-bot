@@ -205,28 +205,59 @@ def _fmt_history(history: list[dict]) -> str:
     for h in history[-5:]:
         actual  = h.get("actual_pct")
         correct = h.get("correct")
-        actual_str  = f"实际{actual:+.2f}%" if actual is not None else "待复盘"
-        icon        = "✅" if correct is True else ("❌" if correct is False else "⚪")
-        conviction  = h.get("conviction", "")
-        conv_str    = f"[{conviction}]" if conviction else ""
-        verdict     = h.get("verdict", "")
+        t3_pct  = h.get("t3_pct")
+        t5_pct  = h.get("t5_pct")
+        t3_cor  = h.get("t3_correct")
+        t5_cor  = h.get("t5_correct")
+
+        # T+0 结果
+        actual_str = f"实际{actual:+.2f}%" if actual is not None else "待复盘"
+        icon       = "✅" if correct is True else ("❌" if correct is False else "⚪")
+        conviction = h.get("conviction", "")
+        conv_str   = f"[{conviction}]" if conviction else ""
+        verdict    = h.get("verdict", "")
         verdict_str = f" 「{verdict}」" if verdict else ""
-        lines.append(
+
+        line = (
             f"  {icon} {h.get('scan_date','?')}: "
             f"{h.get('final_direction','?')}{conv_str}{verdict_str} → {actual_str}"
         )
+        # T+3 / T+5 多天结果（用更可靠的波段考核）
+        multi = []
+        if t3_pct is not None:
+            t3_icon = "✅" if t3_cor is True else ("❌" if t3_cor is False else "⚪")
+            multi.append(f"T+3{t3_icon}{t3_pct:+.2f}%")
+        if t5_pct is not None:
+            t5_icon = "✅" if t5_cor is True else ("❌" if t5_cor is False else "⚪")
+            multi.append(f"T+5{t5_icon}{t5_pct:+.2f}%")
+        if multi:
+            line += "  " + " ".join(multi)
+        lines.append(line)
 
-    # 规律摘要：连续对错模式
+    # T+0 准确率
     counted = [h for h in history[-10:] if h.get("correct") is not None]
     if len(counted) >= 3:
-        n_correct = sum(1 for h in counted if h.get("correct"))
-        lines.append(
-            f"  历史准确率: {n_correct}/{len(counted)}（近{len(counted)}次）"
-        )
-        # 连续错误提示
-        recent = history[-3:]
-        if all(h.get("correct") is False for h in recent if h.get("correct") is not None):
-            lines.append("  ⚠️ 近3次判断连续错误，请重新评估该股信号有效性")
+        n_right = sum(1 for h in counted if h.get("correct"))
+        lines.append(f"  T+0准确率: {n_right}/{len(counted)}（近{len(counted)}次）")
+
+    # T+3 波段准确率（更能反映信号质量）
+    counted_t3 = [h for h in history[-10:] if h.get("t3_correct") is not None]
+    if len(counted_t3) >= 3:
+        n_t3 = sum(1 for h in counted_t3 if h.get("t3_correct"))
+        lines.append(f"  T+3准确率: {n_t3}/{len(counted_t3)}（波段真实表现）")
+
+    # 置信度校准：高置信度是否真的更准？
+    high_conv = [h for h in history[-15:] if h.get("conviction") == "高" and h.get("correct") is not None]
+    if len(high_conv) >= 3:
+        n_hc = sum(1 for h in high_conv if h.get("correct"))
+        rate = n_hc / len(high_conv) * 100
+        note = "✅ 高置信预测偏准" if rate >= 60 else "⚠️ 高置信预测不可靠"
+        lines.append(f"  高置信度准确率: {n_hc}/{len(high_conv)}（{rate:.0f}%） {note}")
+
+    # 连续错误提示
+    recent = [h for h in history[-3:] if h.get("correct") is not None]
+    if len(recent) >= 3 and all(h.get("correct") is False for h in recent):
+        lines.append("  ⚠️ 近3次判断连续错误，请重新评估该股信号有效性")
 
     return "\n".join(lines)
 

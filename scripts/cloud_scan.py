@@ -5,11 +5,21 @@
 """
 import asyncio
 import datetime
+import html as _html
 import logging
 import os
 import sys
 import warnings
 warnings.filterwarnings("ignore")
+
+_TG_MAX_CHARS = 4096
+
+def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
+    """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
+    if len(msg) <= limit:
+        return msg
+    cutoff = limit - 60
+    return msg[:cutoff] + "\n\n<i>⚠️ 消息过长，已截断，请用 /deep 查看完整报告</i>"
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -83,7 +93,8 @@ def _get_nth_trading_close(sym: str, scan_date_str: str, n: int):
 
 
 def _fill_multi_day_outcomes() -> bool:
-    """扫描 history 中未完成的 T+1/T+3/T+5 复盘结果，原地更新并写回文件。"""
+    """扫描 history 中未完成的 T+1/T+3/T+5 复盘结果，批量下载后原地更新写回。"""
+    import yfinance as yf
     path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
     data = load_predictions(path)
     if not data:
@@ -92,18 +103,68 @@ def _fill_multi_day_outcomes() -> bool:
     today   = datetime.date.today()
     updated = False
 
+    # 按 scan_date 分组，收集需要补全的 (sym, n) 请求
+    # 结构: {scan_date: {sym: [n, ...]}}
+    needed: dict[str, dict[str, list[int]]] = {}
     for day in data.get("history", []):
         scan_date = day.get("scan_date", "")
         if not scan_date:
             continue
         scan_d = datetime.date.fromisoformat(scan_date)
+        for pred in day.get("predictions", []):
+            sym   = pred.get("symbol", "")
+            entry = pred.get("entry_price")
+            if not sym or not entry:
+                continue
+            for n, key_c, _, _ in [
+                (1, "t1_close", "t1_pct", "t1_correct"),
+                (3, "t3_close", "t3_pct", "t3_correct"),
+                (5, "t5_close", "t5_pct", "t5_correct"),
+            ]:
+                if pred.get(key_c) is not None:
+                    continue
+                if today < scan_d + datetime.timedelta(days=n + 1):
+                    continue
+                needed.setdefault(scan_date, {}).setdefault(sym, [])
+                if n not in needed[scan_date][sym]:
+                    needed[scan_date][sym].append(n)
+
+    if not needed:
+        return False
+
+    # 按 scan_date 批量下载，减少 yfinance 请求次数
+    # 缓存: {scan_date: {sym: Series(Close, index=Date)}}
+    price_cache: dict[str, dict] = {}
+    for scan_date, sym_ns in needed.items():
+        scan_d  = datetime.date.fromisoformat(scan_date)
+        max_n   = max(n for ns in sym_ns.values() for n in ns)
+        start   = str(scan_d + datetime.timedelta(days=1))
+        end     = str(scan_d + datetime.timedelta(days=max_n * 2 + 10))
+        symbols = list(sym_ns.keys())
+        try:
+            df = yf.download(symbols, start=start, end=end,
+                             progress=False, auto_adjust=True)
+            close = df["Close"] if len(symbols) > 1 else df["Close"].rename(symbols[0]).to_frame()
+            price_cache[scan_date] = {
+                sym: close[sym].dropna() for sym in symbols if sym in close.columns
+            }
+        except Exception as e:
+            logger.warning("批量下载 %s 价格失败: %s", scan_date, e)
+
+    # 写回结果
+    for day in data.get("history", []):
+        scan_date = day.get("scan_date", "")
+        if scan_date not in price_cache:
+            continue
+        sym_close = price_cache[scan_date]
 
         for pred in day.get("predictions", []):
             sym       = pred.get("symbol", "")
             final_dir = pred.get("final_direction", "中性")
             entry     = pred.get("entry_price")
-            if not sym or not entry:
+            if not sym or not entry or sym not in sym_close:
                 continue
+            series = sym_close[sym]
 
             for n, key_c, key_p, key_r in [
                 (1, "t1_close", "t1_pct", "t1_correct"),
@@ -112,12 +173,10 @@ def _fill_multi_day_outcomes() -> bool:
             ]:
                 if pred.get(key_c) is not None:
                     continue
-                if today < scan_d + datetime.timedelta(days=n + 1):
-                    continue  # 时间未到
-                close, _ = _get_nth_trading_close(sym, scan_date, n)
-                if close is None:
+                if len(series) < n:
                     continue
-                pct = (close - entry) / entry * 100
+                close = float(series.iloc[n - 1])
+                pct   = (close - entry) / entry * 100
                 correct = (
                     None if abs(pct) < 0.3
                     else (pct > 0 if final_dir == "看多" else (pct < 0 if final_dir == "看空" else None))
@@ -368,6 +427,7 @@ async def _run_review(
 
     msg = format_review_message(scan_date, reviewed, ai_analysis=ai_analysis)
     if msg:
+        msg = _safe_truncate(msg)
         for chat_id in chat_ids:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
         logger.info("复盘消息已发送")
@@ -442,6 +502,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
 
             price = result.current_price
             msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None)
+            msg = _safe_truncate(msg)
             for chat_id in chat_ids:
                 await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
 
@@ -464,6 +525,12 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
             await asyncio.sleep(0.8)
         except Exception as e:
             logger.error("处理 %s 失败: %s", sym, e)
+            try:
+                err_msg = f"⚠️ <b>{sym}</b> 扫描失败：{_html.escape(str(e)[:200])}"
+                for chat_id in chat_ids:
+                    await bot.send_message(chat_id=chat_id, text=err_msg, parse_mode=ParseMode.HTML)
+            except Exception:
+                pass
 
     logger.info("扫描完成，共推送 %d 条信号", pushed)
 
