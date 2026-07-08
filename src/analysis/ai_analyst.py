@@ -5,6 +5,7 @@ AI 作为裁判，确认或推翻技术信号，给出一个确定性结论。
 import json
 import logging
 import math
+import time
 from datetime import datetime
 
 import anthropic
@@ -537,6 +538,12 @@ def run_ai_analysis(
                 logger.error("AI 分析放弃 %s，原文片段: %s", symbol, raw[:300])
                 return {}
         except Exception as e:
-            logger.error("AI 分析失败（%s）: %s", symbol, e)
-            return {}
+            # 连接错误/API错误等：这层for循环本来就是为重试设计的，
+            # 之前这里直接return，等于外层3次重试形同虚设，瞬时网络抖动
+            # 就会直接放弃整只股票的AI分析。改成和JSON解析失败一样重试到底。
+            logger.warning("AI 请求失败 %s 第%d次: %s", symbol, attempt + 1, e)
+            if attempt == 2:
+                logger.error("AI 分析放弃 %s（重试3次均失败）: %s", symbol, e)
+                return {}
+            time.sleep(1.5 * (attempt + 1))
     return {}
