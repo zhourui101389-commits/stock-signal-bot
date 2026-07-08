@@ -846,46 +846,6 @@ def format_deep_report(symbol: str, signal: SignalResult, deep: dict) -> str:
     return "\n".join(lines)
 
 
-def format_serenity_section(picks: dict) -> str:
-    """
-    格式化 Serenity (@aleabitoreddit) 供应链观点板块。
-    picks: get_serenity_picks() 的返回值。
-    """
-    if not picks:
-        return ""
-
-    phase2 = picks.get("phase2", [])
-    phase3 = picks.get("phase3", [])
-    notes  = picks.get("notes", [])
-    updated = picks.get("updated", "")
-    source  = picks.get("source", "")
-
-    src_tag = "🔴 兜底数据" if source == "fallback" else "🟢 今日抓取"
-
-    lines = [
-        f"\n<b>🎯 Serenity 供应链观点</b>  <i>(@aleabitoreddit · {src_tag})</i>",
-        "─" * 30,
-    ]
-
-    if phase2:
-        tickers = "  ".join(f"<code>${t}</code>" for t in phase2)
-        lines.append(f"<b>Phase 2</b> 当前核心：{tickers}")
-    if phase3:
-        tickers = "  ".join(f"<code>${t}</code>" for t in phase3)
-        lines.append(f"<b>Phase 3</b> 前瞻布局：{tickers}")
-
-    if notes:
-        lines.append("")
-        for n in notes[:3]:
-            lines.append(f"  📌 {n}")
-
-    lines.append(
-        f"\n<i>来源: semiconstocks.com  |  更新: {updated}"
-        f"  |  ⚠️ 长线逻辑参考，非短线信号，盈亏自负</i>"
-    )
-    return "\n".join(lines)
-
-
 def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str = "",
                           history_updates: list[dict] = None) -> str:
     """
@@ -927,12 +887,14 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
             f"<b>{sym}</b>  {dir_icon}{direction}  {arrow}{sign}{apct:.2f}%  {price_str}{tag}"
         ]
 
-        # 多天复盘（T+1 / T+3 / T+5）
+        # 多天复盘（T+1/T+3/T+5，长周期加 T+10/T+20）
         multi = []
         for key_p, key_r, label in [
             ("t1_pct", "t1_correct", "T+1"),
             ("t3_pct", "t3_correct", "T+3"),
             ("t5_pct", "t5_correct", "T+5"),
+            ("t10_pct", "t10_correct", "T+10"),
+            ("t20_pct", "t20_correct", "T+20"),
         ]:
             pct = r.get(key_p)
             if pct is not None:
@@ -1014,6 +976,8 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                     ("t1_pct", "t1_correct", "T+1"),
                     ("t3_pct", "t3_correct", "T+3"),
                     ("t5_pct", "t5_correct", "T+5"),
+                    ("t10_pct", "t10_correct", "T+10"),
+                    ("t20_pct", "t20_correct", "T+20"),
                 ]:
                     pct = p.get(key_p)
                     if pct is None:
@@ -1079,6 +1043,30 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                     parts = [x for x in [rng_str, exit_str, eq_str] if x]
                     if parts:
                         lines.append(f"    └ {'  │  '.join(parts)}")
+
+                    # 出局后5日（检验出局时机是否过早）
+                    post5d    = p.get("post_exit_5d_pct")
+                    final_d   = p.get("final_direction", "中性")
+                    exit_pct_v = p.get("effective_exit_pct")
+                    if post5d is not None and exit_pct_v is not None:
+                        drift = post5d - exit_pct_v
+                        if final_d == "看多":
+                            if drift > 2:
+                                post_label = f"↗出局后5日{post5d:+.1f}%，继续涨{drift:+.1f}%（目标价可上调）"
+                            elif drift < -2:
+                                post_label = f"↘出局后5日{post5d:+.1f}%，回落{abs(drift):.1f}%（出局时机佳）"
+                            else:
+                                post_label = f"出局后5日{post5d:+.1f}%（时机合理）"
+                        elif final_d == "看空":
+                            if drift < -2:
+                                post_label = f"↘出局后5日{post5d:+.1f}%，继续跌{abs(drift):.1f}%（目标价可下调）"
+                            elif drift > 2:
+                                post_label = f"↗出局后5日{post5d:+.1f}%，反弹{drift:+.1f}%（出局时机佳）"
+                            else:
+                                post_label = f"出局后5日{post5d:+.1f}%（时机合理）"
+                        else:
+                            post_label = f"出局后5日: {post5d:+.1f}%"
+                        lines.append(f"    └ {post_label}")
 
     if ai_analysis:
         lines.append(f"\n<b>🧠 AI 复盘洞察</b>")

@@ -14,6 +14,17 @@ warnings.filterwarnings("ignore")
 
 _TG_MAX_CHARS = 4096
 
+# 相关性高的板块集群：同日 ≥2 只看多时触发风险提示
+_CORR_CLUSTERS = {
+    "半导体": {"NVDA", "AMD", "SOXL", "MU", "AVGO", "QCOM", "TSM", "INTC", "SMCI", "ARM", "AMAT", "ASML", "SOXX"},
+    "科技巨头": {"AAPL", "MSFT", "GOOGL", "GOOG", "META", "AMZN"},
+    "AI基础设施": {"NVDA", "MSFT", "ORCL", "AMZN", "GOOGL", "IONQ", "PLTR"},
+    "电动车": {"TSLA", "NIO", "RIVN", "LCID", "LI", "XPEV"},
+    "中概": {"BABA", "JD", "PDD", "BIDU", "TME", "KWEB"},
+    "黄金/大宗": {"GLD", "SLV", "GDX", "GOLD", "NEM"},
+    "生物医药": {"XBI", "IBB", "MRNA", "PFE", "ABBV", "GILD"},
+}
+
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
     if len(msg) <= limit:
@@ -40,9 +51,7 @@ from src.notifications.formatter import (
     format_signal_message,
     format_review_message,
     format_weekly_report,
-    format_serenity_section,
 )
-from src.data.serenity_tracker import get_serenity_picks
 
 logging.basicConfig(
     level=logging.INFO,
@@ -128,15 +137,31 @@ def _fill_multi_day_outcomes() -> bool:
                 if n not in needed[scan_date][sym]:
                     needed[scan_date][sym].append(n)
             # 退出追踪：按 AI 给出的持仓周期动态确定退出窗口
+            h_str_n     = pred.get("horizon", "3-5天")
+            ew_n        = 20 if "2-4周" in h_str_n else (10 if "1-2周" in h_str_n or "1周" in h_str_n else 5)
             if not pred.get("exit_tracked"):
-                h_str       = pred.get("horizon", "3-5天")
-                exit_window = 20 if "2-4周" in h_str else (10 if "1-2周" in h_str or "1周" in h_str else 5)
                 # 日历日 buffer：trading day ×1.5 + 3（覆盖长假期，如感恩节周）
-                cal_buf     = int(exit_window * 1.5) + 3
+                cal_buf = int(ew_n * 1.5) + 3
                 if today >= scan_d + datetime.timedelta(days=cal_buf):
                     needed.setdefault(scan_date, {}).setdefault(sym, [])
-                    if exit_window not in needed[scan_date][sym]:
-                        needed[scan_date][sym].append(exit_window)
+                    if ew_n not in needed[scan_date][sym]:
+                        needed[scan_date][sym].append(ew_n)
+            # T+10 / T+20（长周期 horizon 额外跟踪点，早于 exit_window 触发）
+            for extra_n in [10, 20]:
+                if extra_n > ew_n or pred.get(f"t{extra_n}_close") is not None:
+                    continue
+                if today >= scan_d + datetime.timedelta(days=extra_n):
+                    needed.setdefault(scan_date, {}).setdefault(sym, [])
+                    if extra_n not in needed[scan_date][sym]:
+                        needed[scan_date][sym].append(extra_n)
+            # 出局后5日（exit_tracked 完成后，检验出局时机）
+            if pred.get("exit_tracked") and pred.get("post_exit_5d_pct") is None:
+                post_n   = ew_n + 5
+                cal_post = int(post_n * 1.5) + 3
+                if today >= scan_d + datetime.timedelta(days=cal_post):
+                    needed.setdefault(scan_date, {}).setdefault(sym, [])
+                    if post_n not in needed[scan_date][sym]:
+                        needed[scan_date][sym].append(post_n)
 
     if not needed:
         return False
@@ -191,6 +216,8 @@ def _fill_multi_day_outcomes() -> bool:
             series = sym_data[sym]["close"]
             high_s = sym_data[sym].get("high")
             low_s  = sym_data[sym].get("low")
+            h_str       = pred.get("horizon", "3-5天")
+            exit_window = 20 if "2-4周" in h_str else (10 if "1-2周" in h_str or "1周" in h_str else 5)
 
             # ── T+1 / T+3 / T+5 收盘价 ───────────────────────────────
             for n, key_c, key_p, key_r in [
@@ -213,9 +240,25 @@ def _fill_multi_day_outcomes() -> bool:
                 pred[key_r] = cor
                 updated = True
 
+            # ── T+10 / T+20（1-2周 / 2-4周 horizon 额外跟踪点）─────────
+            for n, key_c, key_p, key_r in [
+                (10, "t10_close", "t10_pct", "t10_correct"),
+                (20, "t20_close", "t20_pct", "t20_correct"),
+            ]:
+                if n > exit_window or pred.get(key_c) is not None or len(series) < n:
+                    continue
+                c   = float(series.iloc[n - 1])
+                pct = (c - entry) / entry * 100
+                cor = (
+                    None if abs(pct) < 0.3
+                    else (pct > 0 if final_dir == "看多" else (pct < 0 if final_dir == "看空" else None))
+                )
+                pred[key_c] = round(c, 4)
+                pred[key_p] = round(pct, 4)
+                pred[key_r] = cor
+                updated = True
+
             # ── 退出追踪（按 horizon 动态窗口，一次性计算）──────────────
-            h_str       = pred.get("horizon", "3-5天")
-            exit_window = 20 if "2-4周" in h_str else (10 if "1-2周" in h_str or "1周" in h_str else 5)
 
             if (not pred.get("exit_tracked")
                     and len(series) >= exit_window
@@ -280,6 +323,15 @@ def _fill_multi_day_outcomes() -> bool:
 
                 pred["exit_tracked"] = True
                 updated = True
+
+            # ── 出局后5日（检验是否出局过早，exit_tracked 完成后追加）──
+            if pred.get("exit_tracked") and pred.get("post_exit_5d_pct") is None:
+                post_idx = exit_window + 4   # 第 exit_window+5 个交易日（0-indexed）
+                if len(series) > post_idx:
+                    pred["post_exit_5d_pct"] = round(
+                        (float(series.iloc[post_idx]) - entry) / entry * 100, 4
+                    )
+                    updated = True
 
     if updated:
         save_raw(data, path)
@@ -587,16 +639,6 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     client = YFinanceDataClient()
     macro_context = _get_macro_context(finnhub_client)
 
-    # ── Serenity 板块观点 ─────────────────────────
-    try:
-        picks = get_serenity_picks()
-        serenity_text = format_serenity_section(picks)
-        if serenity_text:
-            for chat_id in chat_ids:
-                await bot.send_message(chat_id=chat_id, text=serenity_text, parse_mode=ParseMode.HTML)
-    except Exception as e:
-        logger.warning("Serenity 获取失败: %s", e)
-
     pushed = 0
     today_predictions = []
 
@@ -667,6 +709,29 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
 
     if today_predictions:
         save_predictions(today_predictions)
+
+    # ── 相关性风险提示 ─────────────────────────────────
+    if len(today_predictions) >= 2:
+        buy_syms = {p["symbol"] for p in today_predictions if p.get("final_direction") == "看多"}
+        corr_warns = []
+        for cluster_name, cluster_syms in _CORR_CLUSTERS.items():
+            overlap = buy_syms & cluster_syms
+            if len(overlap) >= 2:
+                corr_warns.append((cluster_name, sorted(overlap)))
+        if corr_warns:
+            warn_lines = ["⚠️ <b>板块相关性提示</b>"]
+            for cname, syms in corr_warns:
+                warn_lines.append(f"  {cname}：{' / '.join(syms)} 同日看多")
+            warn_lines.append("  → 上述标的高度正相关，同向加仓等同集中押注单一主题")
+            warn_lines.append("  → 建议合并仓位不超 20%，或选择其中信号最强的一只")
+            try:
+                warn_msg = "\n".join(warn_lines)
+                for chat_id in chat_ids:
+                    await bot.send_message(chat_id=chat_id, text=warn_msg,
+                                           parse_mode=ParseMode.HTML)
+                logger.info("相关性提示已发送: %s", corr_warns)
+            except Exception as e:
+                logger.warning("相关性提示发送失败: %s", e)
 
 
 async def main():

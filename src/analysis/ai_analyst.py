@@ -279,12 +279,21 @@ def _fmt_history(history: list[dict]) -> str:
         # 附加对比数据
         extra = []
         if t3_cor is not None and actual is not None:
-            # 显示 T+0 作为对比
             t0_icon = "✅" if correct is True else ("❌" if correct is False else "⚪")
             extra.append(f"T+0{t0_icon}{actual:+.2f}%")
         if t5_pct is not None:
             t5_icon = "✅" if t5_cor is True else ("❌" if t5_cor is False else "⚪")
             extra.append(f"T+5{t5_icon}{t5_pct:+.2f}%")
+        t10_pct = h.get("t10_pct")
+        t10_cor = h.get("t10_correct")
+        if t10_pct is not None:
+            t10_icon = "✅" if t10_cor is True else ("❌" if t10_cor is False else "⚪")
+            extra.append(f"T+10{t10_icon}{t10_pct:+.2f}%")
+        t20_pct = h.get("t20_pct")
+        t20_cor = h.get("t20_correct")
+        if t20_pct is not None:
+            t20_icon = "✅" if t20_cor is True else ("❌" if t20_cor is False else "⚪")
+            extra.append(f"T+20{t20_icon}{t20_pct:+.2f}%")
         if extra:
             line += "  " + " ".join(extra)
 
@@ -314,6 +323,14 @@ def _fmt_history(history: list[dict]) -> str:
                 exit_parts.append(f"持满T+{win}:{exit_pct_v:+.1f}%")
             if eq is not None:
                 exit_parts.append(f"卖质{int(eq*100)}%")
+            post5d = h.get("post_exit_5d_pct")
+            if post5d is not None and exit_pct_v is not None:
+                drift = post5d - exit_pct_v
+                final_d = h.get("final_direction", "中性")
+                if (final_d == "看多" and drift > 2) or (final_d == "看空" and drift < -2):
+                    exit_parts.append(f"出局后5日{post5d:+.1f}%（偏早{abs(drift):.1f}%）")
+                elif (final_d == "看多" and drift < -2) or (final_d == "看空" and drift > 2):
+                    exit_parts.append(f"出局后5日{post5d:+.1f}%（时机佳）")
             if exit_parts:
                 line += "  退出:" + "/".join(exit_parts)
 
