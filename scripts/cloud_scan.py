@@ -1095,6 +1095,52 @@ async def _run_test_sell(
     logger.info("测试卖出执行完成: %s, 结果=%s", symbol, "成功" if result else "失败")
 
 
+async def _run_test_ai(bot: Bot, chat_ids: list[int], anthropic_key: str) -> None:
+    """
+    诊断用：单次最小 Anthropic API 调用，打开 httpx/httpcore 的 DEBUG 日志，
+    把完整异常链路（含底层网络异常类型）报出来，用于排查生产环境反复出现的
+    "Connection error"根因，不用跑一整轮36只股票的AI分析烧配额。
+    """
+    if not anthropic_key:
+        logger.info("ANTHROPIC_API_KEY 未配置，跳过AI诊断")
+        return
+
+    import logging as _logging
+    for name in ("httpx", "httpcore", "anthropic"):
+        _logging.getLogger(name).setLevel(_logging.DEBUG)
+
+    import traceback
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=anthropic_key)
+    try:
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=20,
+            messages=[{"role": "user", "content": "ping"}],
+        )
+        reply = msg.content[0].text[:100]
+        result_text = f"✅ AI连接正常\n\n回复: {reply}"
+        logger.info("AI诊断成功: %s", reply)
+    except Exception as e:
+        cause = getattr(e, "__cause__", None)
+        result_text = (
+            f"❌ AI连接失败\n\n"
+            f"异常类型: {type(e).__name__}\n"
+            f"消息: {e}\n"
+            f"底层原因: {type(cause).__name__ if cause else '无'}: {cause}"
+        )
+        logger.error("AI诊断失败 类型=%s 消息=%s 底层类型=%s 底层消息=%s",
+                     type(e).__name__, e, type(cause).__name__ if cause else None, cause)
+        logger.error("完整traceback:\n%s", traceback.format_exc())
+
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=result_text)
+        except Exception as e:
+            logger.warning("AI诊断结果发送失败: %s", e)
+
+
 async def _sync_portfolio(
     bot: Bot,
     chat_ids: list[int],
@@ -1185,6 +1231,13 @@ async def main():
     finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
 
     bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
+
+    if scan_mode == "test_ai":
+        try:
+            await _run_test_ai(bot, chat_ids, anthropic_key)
+        except Exception as e:
+            logger.error("AI诊断失败: %s", e)
+        return
 
     if scan_mode == "test_buy":
         test_symbol = os.environ.get("TEST_BUY_SYMBOL", "QQQ").upper()
