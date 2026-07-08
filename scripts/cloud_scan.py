@@ -710,6 +710,8 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     if today_predictions:
         save_predictions(today_predictions)
 
+    return today_predictions
+
     # ── 相关性风险提示 ─────────────────────────────────
     if len(today_predictions) >= 2:
         buy_syms = {p["symbol"] for p in today_predictions if p.get("final_direction") == "看多"}
@@ -732,6 +734,201 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 logger.info("相关性提示已发送: %s", corr_warns)
             except Exception as e:
                 logger.warning("相关性提示发送失败: %s", e)
+
+
+async def _run_execution(
+    bot: Bot,
+    chat_ids: list[int],
+    alpaca_key: str,
+    alpaca_secret: str,
+    today_predictions: list[dict],
+    config,
+) -> None:
+    """
+    盘前执行：把今日 AI 买入信号转化为 Alpaca 括号单。
+    括号单包含入场限价 + 止损 + 止盈，由 Alpaca 服务端自动监控执行，
+    不需要本地进程常驻，GitHub Actions 跑完即可关闭。
+    """
+    if not alpaca_key or not alpaca_secret:
+        logger.info("ALPACA_API_KEY 未配置，跳过执行")
+        return
+    if not today_predictions:
+        return
+
+    from src.execution.alpaca_client import AlpacaClient
+    alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+
+    try:
+        account   = alpaca.get_account()
+        positions = alpaca.get_positions()
+    except Exception as e:
+        logger.error("获取 Alpaca 账户失败: %s", e)
+        return
+
+    held_symbols  = {p["symbol"] for p in positions}
+    total_equity  = account["equity"]
+    available_cash = account["cash"]
+
+    # 构建 tier 映射（决定仓位比例）
+    tier_map: dict[str, str] = {}
+    for s in config.tier_core:        tier_map[s] = "core"
+    for s in config.tier_swing:       tier_map[s] = "swing"
+    for s in config.tier_speculative: tier_map[s] = "speculative"
+
+    tier_alloc = {"core": 0.15, "swing": 0.08, "speculative": 0.05}
+
+    executed: list[dict] = []
+    skipped:  list[str]  = []
+    closed:   list[str]  = []
+
+    for pred in today_predictions:
+        sym       = pred.get("symbol", "")
+        action    = pred.get("action", "")
+        final_dir = pred.get("final_direction", "中性")
+        conviction = pred.get("conviction", "中")
+        entry     = pred.get("entry_price")
+        stop      = pred.get("stop_loss")
+        target    = pred.get("target_price")
+
+        # 看空或回避：若已有多头持仓则平仓
+        if action in ("回避", "减仓") or final_dir == "看空":
+            if sym in held_symbols:
+                if alpaca.close_position(sym):
+                    closed.append(sym)
+            continue
+
+        # 只处理明确买入信号
+        if action not in ("积极买入", "谨慎买入") or final_dir != "看多":
+            skipped.append(f"{sym}({action or '观望'})")
+            continue
+
+        # 已有持仓：跳过避免重复建仓
+        if sym in held_symbols:
+            skipped.append(f"{sym}(已持仓)")
+            continue
+
+        # 缺少止盈/止损价：跳过
+        if not entry or not stop or not target:
+            skipped.append(f"{sym}(缺价格参数)")
+            continue
+
+        # 计算仓位：谨慎买入用半仓
+        tier      = tier_map.get(sym, "swing")
+        alloc_pct = tier_alloc.get(tier, 0.08)
+        if action == "谨慎买入":
+            alloc_pct *= 0.5
+
+        position_amount = total_equity * alloc_pct
+        # 单笔不超过剩余可用资金的 40%，防止满仓
+        position_amount = min(position_amount, available_cash * 0.40)
+        shares = int(position_amount / entry)
+
+        if shares <= 0:
+            skipped.append(f"{sym}(仓位不足1股)")
+            continue
+        if position_amount > available_cash:
+            skipped.append(f"{sym}(现金不足)")
+            continue
+
+        result = alpaca.place_bracket_order(sym, shares, entry, stop, target)
+        if result:
+            executed.append(result)
+            available_cash -= shares * entry  # 预扣，防止后续超额
+        else:
+            skipped.append(f"{sym}(下单失败)")
+
+    # ── 发送执行报告 ──────────────────────────────────────
+    lines = ["🤖 <b>Alpaca 模拟执行报告</b>", "─" * 28]
+    lines.append(
+        f"账户总资产 <b>${account['equity']:,.0f}</b>  "
+        f"可用现金 ${account['cash']:,.0f}"
+    )
+
+    if executed:
+        lines.append(f"\n✅ <b>已下单（{len(executed)}笔）</b>")
+        for e in executed:
+            upside   = (e["target"] - e["entry"]) / e["entry"] * 100
+            downside = (e["entry"]  - e["stop"])  / e["entry"] * 100
+            lines.append(
+                f"  {e['symbol']} ×{e['qty']}股  "
+                f"入场 ${e['entry']:.2f}  "
+                f"止损 ${e['stop']:.2f}(-{downside:.1f}%)  "
+                f"止盈 ${e['target']:.2f}(+{upside:.1f}%)"
+            )
+    if closed:
+        lines.append(f"\n🔴 已平仓：{', '.join(closed)}")
+    if skipped:
+        lines.append(f"\n⏭ 跳过：{', '.join(skipped)}")
+
+    if not executed and not closed:
+        lines.append("\n今日无新操作")
+
+    msg = "\n".join(lines)
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("执行报告发送失败: %s", e)
+    logger.info("执行完成：下单 %d 笔，平仓 %d 笔，跳过 %d 笔",
+                len(executed), len(closed), len(skipped))
+
+
+async def _sync_portfolio(
+    bot: Bot,
+    chat_ids: list[int],
+    alpaca_key: str,
+    alpaca_secret: str,
+) -> None:
+    """盘后同步：读取 Alpaca 实际持仓和盈亏，发送持仓快报到 Telegram。"""
+    if not alpaca_key or not alpaca_secret:
+        return
+
+    from src.execution.alpaca_client import AlpacaClient
+    alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+
+    try:
+        account   = alpaca.get_account()
+        positions = alpaca.get_positions()
+    except Exception as e:
+        logger.error("同步 Alpaca 持仓失败: %s", e)
+        return
+
+    pl_icon  = "🟢" if account["today_pl"] >= 0 else "🔴"
+    pl_sign  = "+" if account["today_pl"] >= 0 else ""
+    deployed = account["equity"] - account["cash"]
+    dep_pct  = deployed / account["equity"] * 100 if account["equity"] > 0 else 0
+
+    lines = [
+        "📊 <b>Alpaca 模拟持仓快报</b>",
+        "─" * 28,
+        f"总资产: <b>${account['equity']:,.0f}</b>  "
+        f"{pl_icon} 今日 {pl_sign}${account['today_pl']:,.0f}"
+        f"({pl_sign}{account['today_pl_pct']:.2f}%)",
+        f"现金: ${account['cash']:,.0f}  "
+        f"已用: ${deployed:,.0f} ({dep_pct:.1f}%)",
+    ]
+
+    if positions:
+        lines.append(f"\n<b>持仓明细（{len(positions)}只）</b>")
+        for p in sorted(positions, key=lambda x: x["unrealized_pl"], reverse=True):
+            icon  = "🟢" if p["unrealized_pl"] >= 0 else "🔴"
+            sign  = "+" if p["unrealized_pl"] >= 0 else ""
+            price = f"${p['current_price']:.2f}" if p["current_price"] else "N/A"
+            lines.append(
+                f"  {icon} <b>{p['symbol']}</b> {p['qty']:.0f}股  "
+                f"均价${p['avg_entry_price']:.2f}  现价{price}  "
+                f"浮盈 {sign}${p['unrealized_pl']:,.0f}({sign}{p['unrealized_plpc']:.1f}%)"
+            )
+    else:
+        lines.append("\n当前无持仓")
+
+    msg = "\n".join(lines)
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("持仓快报发送失败: %s", e)
+    logger.info("Alpaca 持仓快报已发送，持仓 %d 只", len(positions))
 
 
 async def main():
@@ -761,6 +958,8 @@ async def main():
 
     finnhub_key    = config.FINNHUB_API_KEY
     anthropic_key  = config.ANTHROPIC_API_KEY
+    alpaca_key     = os.environ.get("ALPACA_API_KEY", "")
+    alpaca_secret  = os.environ.get("ALPACA_API_SECRET", "")
     finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
 
     bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
@@ -770,18 +969,34 @@ async def main():
             await _run_review(bot, chat_ids, anthropic_key, finnhub_client)
         except Exception as e:
             logger.error("复盘失败: %s", e)
+        # 盘后同步 Alpaca 持仓快报
+        try:
+            await _sync_portfolio(bot, chat_ids, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.warning("Alpaca 持仓同步失败: %s", e)
 
     elif scan_mode == "scan":
-        await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        # 盘前执行：信号生成后立即下单
+        try:
+            await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret,
+                                 today_preds or [], config)
+        except Exception as e:
+            logger.error("Alpaca 执行失败: %s", e)
 
     else:
-        # all-in-one 模式：允许复盘前一天数据（不做严格日期检查）
+        # all-in-one 模式
         try:
             await _run_review(bot, chat_ids, anthropic_key, finnhub_client,
                               strict_date_check=False)
         except Exception as e:
             logger.error("复盘失败: %s", e)
-        await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        try:
+            await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret,
+                                 today_preds or [], config)
+        except Exception as e:
+            logger.error("Alpaca 执行失败: %s", e)
 
 
 if __name__ == "__main__":

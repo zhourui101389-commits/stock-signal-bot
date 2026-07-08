@@ -1,4 +1,5 @@
 python-telegram-bot==22.5
+alpaca-py>=0.26.0
 yfinance>=0.2.40
 anthropic>=0.40.0
 pandas==2.2.3
