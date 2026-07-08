@@ -35,3 +35,11 @@ class Config:
         self.log_file: str = cfg["logging"]["file"]
         self.economic_calendar: dict = cfg.get("economic_calendar", {})
         self.data_source: str = cfg.get("data_source", "yfinance")
+
+        try:
+            with open("config/universe.yaml", encoding="utf-8") as f:
+                uni = yaml.safe_load(f) or {}
+        except FileNotFoundError:
+            uni = {}
+        self.universe_sp500: list[str]     = uni.get("sp500", [])
+        self.universe_china_adr: list[str] = uni.get("china_adr", [])

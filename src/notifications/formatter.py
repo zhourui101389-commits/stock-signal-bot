@@ -185,7 +185,8 @@ def _format_action_guide(result, price: float, pinned: bool,
     return "\n".join(lines) + "\n"
 
 
-def format_signal_message(result: SignalResult, pinned: bool = False, ai_result: dict = None) -> str:
+def format_signal_message(result: SignalResult, pinned: bool = False, ai_result: dict = None,
+                          discovered: bool = False) -> str:
     price = result.current_price if not math.isnan(result.current_price) else result.close_price
 
     # ── 统一操作建议：AI 优先，无 AI 则降级用技术方向 ──
@@ -395,7 +396,8 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
 
     ts = datetime.now(_CST).strftime("%H:%M")
     rsi_str = _v(result.rsi, ".1f", "", "N/A")
-    pin_tag = "📌 " if pinned else ""
+    pin_tag  = "📌 " if pinned else ""
+    disc_tag = "🔍 " if discovered else ""
 
     # ── 综合研判板块 ──
     tech_dir_cn = {"BUY": "看多", "SELL": "看空", "NEUTRAL": "中性"}.get(result.direction, result.direction)
@@ -429,7 +431,7 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
         meta_line = f"技术强度: {result.strength}/100"
 
     return (
-        f"<b>{pin_tag}{_scan_label()} — {result.symbol}</b>\n"
+        f"<b>{pin_tag}{disc_tag}{_scan_label()} — {result.symbol}</b>\n"
         f"{'─' * 30}\n"
         f"今日操作: <b>{action}</b>\n"
         f"{meta_line}\n"

@@ -32,6 +32,8 @@ _MAX_POSITIONS          = 8       # 最多同时持仓数
 _MIN_WINRATE_SAMPLES    = 8       # 胜率门禁生效所需的最小历史样本数
 _MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动执行
 
+_SCREENER_TOP_N = 25   # 市场初筛（标普500+中概）每日入选候选数
+
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
     if len(msg) <= limit:
@@ -54,6 +56,7 @@ from src.data.yfinance_client import YFinanceDataClient
 from src.data.finnhub_client import FinnhubClient
 from src.analysis.multi_timeframe import analyze_symbol
 from src.analysis.ai_analyst import run_ai_analysis
+from src.analysis.screener import screen_top_candidates
 from src.notifications.formatter import (
     format_signal_message,
     format_review_message,
@@ -663,8 +666,22 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     min_str = config.signals.get("min_strength", 30)
     use_ai  = bool(anthropic_key)
 
-    logger.info("开始扫描 %d 只股票（AI分析: %s）→ 推送到 %d 个 chat",
-                len(symbols), "开启" if use_ai else "关闭", len(chat_ids))
+    # 市场初筛：从标普500+中概池里用动量/成交量打分选出候选，并入今日分析列表。
+    # 不改动 watchlist_repo（不持久化），只影响当次扫描；失败不影响核心票扫描。
+    discovered: set[str] = set()
+    try:
+        universe = list(dict.fromkeys(config.universe_sp500 + config.universe_china_adr))
+        if universe:
+            discovered = set(screen_top_candidates(
+                universe, top_n=_SCREENER_TOP_N, exclude=set(symbols),
+            ))
+            symbols = symbols + [s for s in discovered if s not in symbols]
+    except Exception as e:
+        logger.warning("市场初筛失败，跳过: %s", e)
+
+    logger.info("开始扫描 %d 只股票（核心%d + 初筛发现%d，AI分析: %s）→ 推送到 %d 个 chat",
+                len(symbols), len(symbols) - len(discovered), len(discovered),
+                "开启" if use_ai else "关闭", len(chat_ids))
 
     client = YFinanceDataClient()
     macro_context = _get_macro_context(finnhub_client)
@@ -703,7 +720,9 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                     logger.error("AI 分析失败 %s: %s", sym, e)
 
             price = result.current_price
-            msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None)
+            is_discovered = sym in discovered
+            msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None,
+                                        discovered=is_discovered)
             msg = _safe_truncate(msg)
             for chat_id in chat_ids:
                 await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
@@ -723,6 +742,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 "target_price":    ai_result.get("target_price") if ai_result else None,
                 "stop_loss":       ai_result.get("stop_loss") if ai_result else None,
                 "verdict":         ai_result.get("verdict", "") if ai_result else "",
+                "source":          "screener" if is_discovered else "core",
             })
 
             await asyncio.sleep(0.8)
@@ -873,8 +893,10 @@ async def _run_execution(
             max_loss_usd *= 0.5
         risk_based_amount = (max_loss_usd / risk_per_share) * entry
 
-        tier            = tier_map.get(sym, "swing")
-        tier_cap_amount = total_equity * tier_cap.get(tier, 0.08)
+        # 市场初筛发现的新标的未经长期观察，仓位上限按更保守的speculative档处理
+        default_tier    = "speculative" if pred.get("source") == "screener" else "swing"
+        tier            = tier_map.get(sym, default_tier)
+        tier_cap_amount = total_equity * tier_cap.get(tier, 0.05)
         exposure_room   = total_equity * _MAX_TOTAL_EXPOSURE_PCT - deployed
 
         position_amount = min(risk_based_amount, tier_cap_amount, exposure_room)
