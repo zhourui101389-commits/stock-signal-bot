@@ -55,7 +55,7 @@ def _flow_bar(net: float) -> str:
 
 def _format_action_guide(result, price: float, pinned: bool,
                          total_capital: float = 50000, currency: str = "AUD",
-                         ai_result: dict = None) -> str:
+                         ai_result: dict = None, ai_failed: bool = False) -> str:
     """根据仓位分层和信号生成具体操作指引。"""
     if math.isnan(price) or price <= 0:
         return ""
@@ -66,7 +66,12 @@ def _format_action_guide(result, price: float, pinned: bool,
 
     tier      = getattr(result, "tier", "swing")
     # AI 操作建议驱动操作指引方向，保证上下一致
-    if ai_action in ("积极买入", "谨慎买入"):
+    if ai_failed:
+        # AI 尝试研判但失败（区别于未配置AI）：不能悄悄退回纯技术信号当建议，
+        # 否则消息显示"买入"而实际执行层因为没有AI action不会真的下单，
+        # 两边不一致会误导用户以为系统已经买了
+        direction = "NEUTRAL"
+    elif ai_action in ("积极买入", "谨慎买入"):
         direction = "BUY"
     elif ai_action in ("减仓", "回避"):
         direction = "SELL"
@@ -176,6 +181,8 @@ def _format_action_guide(result, price: float, pinned: bool,
         lines.append(f"  动作: {entry_note}")
         if ai_stop:
             lines.append(f"  止损参考: USD {ai_stop:.2f}")
+    elif ai_failed:
+        lines.append("  动作: ⚠️ AI研判失败，本次不生成执行建议（不会自动下单，仅供参考技术信号）")
     else:
         lines.append("  动作: 观望，等待更强信号")
 
@@ -186,7 +193,7 @@ def _format_action_guide(result, price: float, pinned: bool,
 
 
 def format_signal_message(result: SignalResult, pinned: bool = False, ai_result: dict = None,
-                          discovered: bool = False) -> str:
+                          discovered: bool = False, ai_failed: bool = False) -> str:
     price = result.current_price if not math.isnan(result.current_price) else result.close_price
 
     # ── 统一操作建议：AI 优先，无 AI 则降级用技术方向 ──
@@ -218,8 +225,26 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
         else:
             action = "⏸ 持有观望"
             pos_line = "建议: 暂不操作，等待更强信号"
+    elif ai_failed:
+        # AI 配置了但这次尝试失败（区别于下面"未配置AI"的降级分支）：
+        # 不能悄悄拿纯技术方向当"建议买入"——执行层没有AI action就不会下单，
+        # 消息说买、系统没买，会让用户误以为系统已经操作了
+        final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
+        dir_emoji = {"BUY": "🟢", "SELL": "🔴", "NEUTRAL": "⚪"}.get(result.direction, "⚪")
+        conviction = "中"
+        conv_emoji = "💡"
+        horizon = "3-5天"
+        verdict = ""
+        tech_confirmed = True
+        override_reason = ""
+        analysis = ""
+        bull_case = ""
+        bear_case = ""
+        catalyst = None
+        action = "⚠️ AI研判失败，暂不建议操作"
+        pos_line = "建议: 本次未获AI确认，不构成执行建议（不会自动下单），请自行判断或等下次扫描"
     else:
-        # 无 AI 时降级
+        # 无 AI 时降级（未配置 ANTHROPIC_API_KEY，这是预期模式，不是失败）
         final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
         dir_emoji = {"BUY": "🟢", "SELL": "🔴", "NEUTRAL": "⚪"}.get(result.direction, "⚪")
         conviction = "中"
@@ -420,12 +445,15 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
     # ── 操作指引 ──────────────────────────────────────────────────────
     total_capital = getattr(result, "_total_capital", 50000)
     currency      = getattr(result, "_currency", "AUD")
-    action_block  = _format_action_guide(result, price, pinned, total_capital, currency, ai_result)
+    action_block  = _format_action_guide(result, price, pinned, total_capital, currency, ai_result, ai_failed)
 
     # ── 标题行（带综合方向） ──
     if ai_result and verdict:
         header_verdict = f"\n<b>{verdict}</b>"
         meta_line = f"置信度: {conv_emoji} {conviction}  周期: {horizon}  {dir_emoji} {final_dir}"
+    elif ai_failed:
+        header_verdict = ""
+        meta_line = f"技术强度: {result.strength}/100  ⚠️ AI研判失败，本条仅技术面参考"
     else:
         header_verdict = ""
         meta_line = f"技术强度: {result.strength}/100"

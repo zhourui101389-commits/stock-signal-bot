@@ -707,6 +707,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 continue
 
             ai_result = {}
+            ai_failed = False
             if use_ai:
                 try:
                     symbol_history = get_symbol_history(sym)
@@ -714,16 +715,24 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                         result, finnhub_client, anthropic_key, macro_context,
                         symbol_history=symbol_history,
                     )
-                    logger.info("AI综合研判 %s: %s 置信度%s",
-                                sym, ai_result.get("final_direction", "?"),
-                                ai_result.get("conviction", "?"))
+                    if ai_result:
+                        logger.info("AI综合研判 %s: %s 置信度%s",
+                                    sym, ai_result.get("final_direction", "?"),
+                                    ai_result.get("conviction", "?"))
+                    else:
+                        ai_failed = True
+                        logger.warning("AI 分析失败 %s：未生成结果，本条不作为执行建议", sym)
                 except Exception as e:
+                    ai_failed = True
                     logger.error("AI 分析失败 %s: %s", sym, e)
 
             price = result.current_price
             is_discovered = sym in discovered
+            # AI 尝试研判但失败时，消息不能悄悄退回纯技术信号当"买入建议"——
+            # 执行层（_run_execution）没有 AI action 就不会下单，消息和实际动作
+            # 必须保持一致，否则用户会以为系统已经买了
             msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None,
-                                        discovered=is_discovered)
+                                        discovered=is_discovered, ai_failed=ai_failed)
             msg = _safe_truncate(msg)
             for chat_id in chat_ids:
                 await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
@@ -744,6 +753,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 "stop_loss":       ai_result.get("stop_loss") if ai_result else None,
                 "verdict":         ai_result.get("verdict", "") if ai_result else "",
                 "source":          "screener" if is_discovered else "core",
+                "ai_failed":       ai_failed,
             })
 
             await asyncio.sleep(0.8)
