@@ -1064,8 +1064,9 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                         recovery = (peak_pct or 0) - (exit_pct or 0)
                         if recovery > 0.5:
                             exit_str += f" 之后反弹{recovery:.1f}%（止损过紧？）"
-                    elif exit_r == "held_to_window":
-                        exit_str = f"⏰持满T+5出{exit_pct:+.1f}%"
+                    elif (exit_r or "").startswith("held_to_t"):
+                        win = exit_r.replace("held_to_t", "") if exit_r else "5"
+                        exit_str = f"⏰持满T+{win}出{exit_pct:+.1f}%"
                         missed = (peak_pct or 0) - (exit_pct or 0)
                         if missed > 1:
                             exit_str += f" 错过最高{missed:.1f}%"
@@ -1119,11 +1120,11 @@ def format_weekly_report(recent_history: list[dict]) -> str:
     best  = ranked[:3]
     worst = ranked[-3:][::-1]
 
-    # 按股票统计准确率（≥3次）
+    # 按股票统计准确率（≥3次，以有效出局为准）
     sym_stats: dict[str, list[int]] = {}
     for p in all_preds:
         s = p.get("symbol", "")
-        c = p.get("correct")
+        c = _eff_exit_correct(p)
         if s and c is not None:
             sym_stats.setdefault(s, [0, 0])
             sym_stats[s][1] += 1
@@ -1208,14 +1209,14 @@ def format_weekly_report(recent_history: list[dict]) -> str:
         eq_scores   = [p["exit_quality"] for p in tracked if p.get("exit_quality") is not None]
         target_hits = sum(1 for p in tracked if p.get("effective_exit_reason") == "hit_target")
         stop_hits   = sum(1 for p in tracked if p.get("effective_exit_reason") == "hit_stop")
-        held        = sum(1 for p in tracked if p.get("effective_exit_reason") == "held_to_window")
+        held        = sum(1 for p in tracked if (p.get("effective_exit_reason") or "").startswith("held_to_t"))
 
         lines.append(f"\n<b>🎯 卖出点位质量（{len(tracked)}笔已完成追踪）</b>")
         if eq_scores:
             avg_eq  = sum(eq_scores) / len(eq_scores)
             eq_icon = "🟢" if avg_eq >= 0.7 else ("🟡" if avg_eq >= 0.4 else "🔴")
             lines.append(f"平均卖出质量: {eq_icon}<b>{avg_eq*100:.0f}%</b>（100%=最佳出局时机）")
-        lines.append(f"🎯 止盈触发: {target_hits}次  🛑 止损出局: {stop_hits}次  ⏰ 持满T+5: {held}次")
+        lines.append(f"🎯 止盈触发: {target_hits}次  🛑 止损出局: {stop_hits}次  ⏰ 持满窗口: {held}次")
 
         # 止盈过早（触发后还大涨）
         early_tp = [

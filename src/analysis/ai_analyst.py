@@ -253,8 +253,12 @@ def _fmt_history(history: list[dict]) -> str:
 
         if exit_tracked and exit_pct_v is not None:
             main_icon  = "✅" if eff else "❌"
-            reason_map = {"hit_target": "止盈", "hit_stop": "止损", "held_to_window": "持满T+5"}
-            main_label = f"{reason_map.get(exit_reason,'退出')}{exit_pct_v:+.2f}%"
+            if (exit_reason or "").startswith("held_to_t"):
+                win = exit_reason.replace("held_to_t", "")
+                reason_label = f"持满T+{win}"
+            else:
+                reason_label = {"hit_target": "止盈", "hit_stop": "止损"}.get(exit_reason or "", "退出")
+            main_label = f"{reason_label}{exit_pct_v:+.2f}%"
         elif t3_cor is not None:
             main_icon  = "✅" if t3_cor else "❌"
             main_label = f"T+3波段{t3_pct:+.2f}%" if t3_pct is not None else "T+3"
@@ -305,8 +309,9 @@ def _fmt_history(history: list[dict]) -> str:
                 recovery = (peak_pct or 0) - (exit_pct_v or 0)
                 if recovery > 0.5:
                     exit_parts.append(f"反弹{recovery:.1f}%（止损过紧？）")
-            elif exit_reason == "held_to_window":
-                exit_parts.append(f"持满T+5:{exit_pct_v:+.1f}%")
+            elif (exit_reason or "").startswith("held_to_t"):
+                win = exit_reason.replace("held_to_t", "")
+                exit_parts.append(f"持满T+{win}:{exit_pct_v:+.1f}%")
             if eq is not None:
                 exit_parts.append(f"卖质{int(eq*100)}%")
             if exit_parts:

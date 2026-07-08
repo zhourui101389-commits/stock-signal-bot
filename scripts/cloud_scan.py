@@ -646,6 +646,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                                    {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性"),
                 "action":          ai_result.get("action", "") if ai_result else "",
                 "conviction":      ai_result.get("conviction", "") if ai_result else "",
+                "horizon":         ai_result.get("horizon", "3-5天") if ai_result else "3-5天",
                 "entry_price":     round(price, 4) if price else None,
                 "target_price":    ai_result.get("target_price") if ai_result else None,
                 "stop_loss":       ai_result.get("stop_loss") if ai_result else None,
