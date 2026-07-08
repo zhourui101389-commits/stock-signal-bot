@@ -833,7 +833,7 @@ async def _run_execution(
 
     executed: list[dict] = []
     skipped:  list[str]  = []
-    closed:   list[str]  = []
+    closed:   list[dict] = []
 
     for pred in today_predictions:
         sym       = pred.get("symbol", "")
@@ -847,8 +847,9 @@ async def _run_execution(
         # 看空或回避：若已有多头持仓则平仓
         if action in ("回避", "减仓") or final_dir == "看空":
             if sym in held_symbols:
-                if alpaca.close_position(sym):
-                    closed.append(sym)
+                result = alpaca.close_position(sym)
+                if result:
+                    closed.append(result)
                     open_positions -= 1
             continue
 
@@ -936,14 +937,23 @@ async def _run_execution(
         for e in executed:
             upside   = (e["target"] - e["entry"]) / e["entry"] * 100
             downside = (e["entry"]  - e["stop"])  / e["entry"] * 100
+            cost     = e["qty"] * e["entry"]
             lines.append(
-                f"  {e['symbol']} ×{e['qty']}股  "
-                f"入场 ${e['entry']:.2f}  "
-                f"止损 ${e['stop']:.2f}(-{downside:.1f}%)  "
+                f"  {e['symbol']} ×{e['qty']}股 @ ${e['entry']:.2f}  "
+                f"总花费 ${cost:,.2f}\n"
+                f"    止损 ${e['stop']:.2f}(-{downside:.1f}%)  "
                 f"止盈 ${e['target']:.2f}(+{upside:.1f}%)"
             )
     if closed:
-        lines.append(f"\n🔴 已平仓：{', '.join(closed)}")
+        lines.append(f"\n🔴 <b>已平仓（{len(closed)}笔）</b>")
+        for c in closed:
+            price = c.get("filled_price")
+            qty   = c.get("filled_qty") or 0
+            if price:
+                proceeds = qty * price
+                lines.append(f"  {c['symbol']} ×{qty:.0f}股 @ ${price:.2f}  收入 ${proceeds:,.2f}")
+            else:
+                lines.append(f"  {c['symbol']}（成交价待确认，状态：{c.get('status', '?')}）")
     if skipped:
         lines.append(f"\n⏭ 跳过：{', '.join(skipped)}")
 
@@ -981,23 +991,88 @@ async def _run_test_buy(
 
     result = alpaca.place_market_order(symbol, qty, side="buy")
 
-    if result:
+    if result and result.get("filled_price"):
+        filled_qty = result["filled_qty"]
+        price      = result["filled_price"]
+        cost       = filled_qty * price
+        try:
+            cash_left = alpaca.get_account()["cash"]
+            cash_line = f"剩余现金 ${cash_left:,.2f}"
+        except Exception:
+            cash_line = "剩余现金 获取失败"
         msg = (
-            f"🧪 <b>Alpaca 测试单</b>\n{'─' * 28}\n"
-            f"✅ 市价买入 <b>{symbol}</b> ×{qty} 已提交\n"
-            f"订单号: {result['order_id']}\n"
-            f"状态: {result['status']}\n\n"
+            f"🧪 <b>Alpaca 测试单 - 买入</b>\n{'─' * 28}\n"
+            f"✅ <b>{symbol}</b> ×{filled_qty:.0f}股 @ ${price:.2f}\n"
+            f"总花费 ${cost:,.2f}\n"
+            f"{cash_line}\n"
+            f"订单号: {result['order_id']}\n\n"
             f"未设止盈止损，出场时机由你自行决定；仓位会体现在下次持仓快报里。"
         )
+    elif result:
+        msg = (
+            f"🧪 <b>Alpaca 测试单 - 买入</b>\n{'─' * 28}\n"
+            f"⚠️ {symbol} ×{qty} 已提交但未在轮询时间内确认成交（状态：{result['status']}），"
+            f"订单号: {result['order_id']}，请稍后去 Alpaca Dashboard 核实"
+        )
     else:
-        msg = f"🧪 <b>Alpaca 测试单</b>\n{'─' * 28}\n❌ {symbol} ×{qty} 下单失败，详见运行日志"
+        msg = f"🧪 <b>Alpaca 测试单 - 买入</b>\n{'─' * 28}\n❌ {symbol} ×{qty} 下单失败，详见运行日志"
 
     for chat_id in chat_ids:
         try:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
         except Exception as e:
             logger.warning("测试单结果发送失败: %s", e)
-    logger.info("测试单执行完成: %s ×%d, 结果=%s", symbol, qty, "成功" if result else "失败")
+    logger.info("测试买入执行完成: %s ×%d, 结果=%s", symbol, qty, "成功" if result else "失败")
+
+
+async def _run_test_sell(
+    bot: Bot,
+    chat_ids: list[int],
+    alpaca_key: str,
+    alpaca_secret: str,
+    symbol: str,
+) -> None:
+    """手动验证单：全部平仓指定symbol，用于确认卖出流程/回收测试仓位。"""
+    if not alpaca_key or not alpaca_secret:
+        logger.info("ALPACA_API_KEY 未配置，跳过测试卖单")
+        return
+
+    from src.execution.alpaca_client import AlpacaClient
+    alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+
+    result = alpaca.close_position(symbol)
+
+    if result and result.get("filled_price"):
+        filled_qty = result["filled_qty"]
+        price      = result["filled_price"]
+        proceeds   = filled_qty * price
+        try:
+            cash_left = alpaca.get_account()["cash"]
+            cash_line = f"剩余现金 ${cash_left:,.2f}"
+        except Exception:
+            cash_line = "剩余现金 获取失败"
+        msg = (
+            f"🧪 <b>Alpaca 测试单 - 卖出</b>\n{'─' * 28}\n"
+            f"✅ <b>{symbol}</b> ×{filled_qty:.0f}股 @ ${price:.2f}\n"
+            f"总收入 ${proceeds:,.2f}\n"
+            f"{cash_line}\n"
+            f"订单号: {result['order_id']}"
+        )
+    elif result:
+        msg = (
+            f"🧪 <b>Alpaca 测试单 - 卖出</b>\n{'─' * 28}\n"
+            f"⚠️ {symbol} 已提交但未在轮询时间内确认成交（状态：{result['status']}），"
+            f"订单号: {result['order_id']}，请稍后去 Alpaca Dashboard 核实"
+        )
+    else:
+        msg = f"🧪 <b>Alpaca 测试单 - 卖出</b>\n{'─' * 28}\n❌ {symbol} 平仓失败，详见运行日志（可能本来就没有持仓）"
+
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("测试卖单结果发送失败: %s", e)
+    logger.info("测试卖出执行完成: %s, 结果=%s", symbol, "成功" if result else "失败")
 
 
 async def _sync_portfolio(
@@ -1098,6 +1173,14 @@ async def main():
             await _run_test_buy(bot, chat_ids, alpaca_key, alpaca_secret, test_symbol, test_qty)
         except Exception as e:
             logger.error("测试单失败: %s", e)
+        return
+
+    if scan_mode == "test_sell":
+        test_symbol = os.environ.get("TEST_SELL_SYMBOL", "QQQ").upper()
+        try:
+            await _run_test_sell(bot, chat_ids, alpaca_key, alpaca_secret, test_symbol)
+        except Exception as e:
+            logger.error("测试卖单失败: %s", e)
         return
 
     if scan_mode == "review":

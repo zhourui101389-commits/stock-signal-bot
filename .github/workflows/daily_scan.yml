@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / test_buy=Alpaca测试单 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / test_buy=测试买入 / test_sell=测试卖出 / 留空=两者）'
         required: false
         default: ''
       test_buy_symbol:
@@ -20,6 +20,10 @@ on:
         description: '仅scan_mode=test_buy时生效：测试买入的股数'
         required: false
         default: '1'
+      test_sell_symbol:
+        description: '仅scan_mode=test_sell时生效：测试卖出（全部平仓）的股票代码'
+        required: false
+        default: 'QQQ'
 
 permissions:
   contents: write
@@ -69,6 +73,7 @@ jobs:
           SCAN_MODE: ${{ steps.mode.outputs.SCAN_MODE }}
           TEST_BUY_SYMBOL: ${{ github.event.inputs.test_buy_symbol }}
           TEST_BUY_QTY: ${{ github.event.inputs.test_buy_qty }}
+          TEST_SELL_SYMBOL: ${{ github.event.inputs.test_sell_symbol }}
 
         run: python scripts/cloud_scan.py
 

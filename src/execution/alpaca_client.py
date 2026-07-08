@@ -44,10 +44,34 @@ class AlpacaClient:
             })
         return result
 
+    def _poll_fill(self, order_id, timeout_s: float = 8.0, interval_s: float = 0.5) -> dict:
+        """轮询订单直到成交或超时，返回 {filled_qty, filled_avg_price, status}。"""
+        import time
+        deadline = time.monotonic() + timeout_s
+        last_status = ""
+        while time.monotonic() < deadline:
+            try:
+                o = self._client.get_order_by_id(order_id)
+            except Exception as e:
+                logger.warning("查询订单状态失败 %s: %s", order_id, e)
+                break
+            last_status = str(o.status)
+            if o.filled_qty and float(o.filled_qty) > 0:
+                return {
+                    "filled_qty":   float(o.filled_qty),
+                    "filled_price": float(o.filled_avg_price) if o.filled_avg_price else None,
+                    "status":       last_status,
+                }
+            if last_status in ("canceled", "expired", "rejected"):
+                break
+            time.sleep(interval_s)
+        return {"filled_qty": 0.0, "filled_price": None, "status": last_status or "unknown"}
+
     def place_market_order(self, symbol: str, qty: int, side: str = "buy") -> Optional[dict]:
         """
         简单市价单，不带括号止盈止损，用于手动验证/测试单。
         出场时机由使用者自行决定（后续手动调用 close_position）。
+        提交后轮询到成交，返回实际成交价/股数，供详细记账用。
         """
         from alpaca.trading.requests import MarketOrderRequest
         from alpaca.trading.enums import OrderSide, TimeInForce
@@ -65,13 +89,16 @@ class AlpacaClient:
                     time_in_force=TimeInForce.DAY,
                 )
             )
-            logger.info("市价单成功 %s %s ×%d", side, symbol, qty)
+            fill = self._poll_fill(order.id)
+            logger.info("市价单成功 %s %s ×%d 成交价%s", side, symbol, qty, fill["filled_price"])
             return {
-                "order_id": str(order.id),
-                "symbol":   symbol,
-                "qty":      qty,
-                "side":     side,
-                "status":   str(order.status),
+                "order_id":     str(order.id),
+                "symbol":       symbol,
+                "qty":          qty,
+                "side":         side,
+                "filled_qty":   fill["filled_qty"],
+                "filled_price": fill["filled_price"],
+                "status":       fill["status"],
             }
         except Exception as e:
             logger.error("市价单失败 %s: %s", symbol, e)
@@ -134,14 +161,22 @@ class AlpacaClient:
             logger.error("下单失败 %s: %s", symbol, e)
             return None
 
-    def close_position(self, symbol: str) -> bool:
+    def close_position(self, symbol: str) -> Optional[dict]:
+        """全部平仓，轮询到成交，返回实际成交价/股数供详细记账用；失败返回None。"""
         try:
-            self._client.close_position(symbol)
-            logger.info("已平仓 %s", symbol)
-            return True
+            order = self._client.close_position(symbol)
+            fill = self._poll_fill(order.id)
+            logger.info("已平仓 %s 成交价%s", symbol, fill["filled_price"])
+            return {
+                "order_id":     str(order.id),
+                "symbol":       symbol,
+                "filled_qty":   fill["filled_qty"],
+                "filled_price": fill["filled_price"],
+                "status":       fill["status"],
+            }
         except Exception as e:
             logger.error("平仓失败 %s: %s", symbol, e)
-            return False
+            return None
 
     def get_closed_orders(self, limit: int = 50) -> list[dict]:
         """获取近期已成交或已关闭的订单，用于复盘回填"""
