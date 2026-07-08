@@ -71,7 +71,12 @@ _USER_PROMPT_TEMPLATE = """
 
 ---
 请综合技术信号和基本面，给出统一判断。
-如有历史预测记录，请识别判断规律：T+3波段准确率是主要考核指标（反映持仓期真实表现）；T+0当日仅供参考，可能因入场前行情偏高；当日正但T+3反（标注"当日正T+3反"）说明短期反转，该类信号需降权。连续T+3错误说明某类信号在该股失效；连续正确可提高置信度。
+如有历史预测记录，请识别判断规律：
+- 有效出局准确率（止盈/止损/持满T+5）是主要考核指标，反映市场驱动的真实盈亏，不是固定日期
+- T+0当日仅供参考，含入场前行情，可能虚高
+- "止盈后还涨X%"说明目标价设偏低，下次应上调止盈位；"止损后反弹X%"说明止损设偏紧
+- 卖出质量分低（<40%）说明退出时机差，需改善止盈止损设置
+- 连续出局亏损说明该股信号在当前市场环境中失效
 财报预警期内技术信号可靠性大幅下降，应降低置信度或转为观望。
 以 JSON 格式输出（不要输出 JSON 以外任何内容）：
 
@@ -202,7 +207,20 @@ def _fmt_history(history: list[dict]) -> str:
         return "无历史预测记录"
 
     def _eff_correct(h: dict):
-        """T+3 优先，T+3 无数据则回退 T+0。T+3 才反映持仓期真实表现。"""
+        """
+        准确率以市场驱动退出结果为准（优先级：有效退出 > T+3 > T+0）。
+        - exit_tracked=True：用 effective_exit_pct 对比方向（止盈/止损/持满T+5）
+        - 否则用 T+3（中期代理）
+        - 最后回退 T+0（仅参考，含入场前行情）
+        """
+        if h.get("exit_tracked"):
+            exit_pct  = h.get("effective_exit_pct")
+            final_dir = h.get("final_direction", "中性")
+            if exit_pct is not None:
+                if final_dir == "看多":
+                    return exit_pct > 0
+                elif final_dir == "看空":
+                    return exit_pct < 0
         t3 = h.get("t3_correct")
         return t3 if t3 is not None else h.get("correct")
 
@@ -215,8 +233,17 @@ def _fmt_history(history: list[dict]) -> str:
         t3_cor  = h.get("t3_correct")
         t5_cor  = h.get("t5_correct")
 
-        # 主图标：T+3 为主，T+0 为后备
-        if t3_cor is not None:
+        # 主图标：有效退出（市场驱动）> T+3 > T+0
+        eff = _eff_correct(h)
+        exit_pct_v   = h.get("effective_exit_pct")
+        exit_reason  = h.get("effective_exit_reason")
+        exit_tracked = h.get("exit_tracked")
+
+        if exit_tracked and exit_pct_v is not None:
+            main_icon  = "✅" if eff else "❌"
+            reason_map = {"hit_target": "止盈", "hit_stop": "止损", "held_to_window": "持满T+5"}
+            main_label = f"{reason_map.get(exit_reason,'退出')}{exit_pct_v:+.2f}%"
+        elif t3_cor is not None:
             main_icon  = "✅" if t3_cor else "❌"
             main_label = f"T+3波段{t3_pct:+.2f}%" if t3_pct is not None else "T+3"
         else:
@@ -245,17 +272,43 @@ def _fmt_history(history: list[dict]) -> str:
         if extra:
             line += "  " + " ".join(extra)
 
-        # 当日与波段方向相反时标注
-        if t3_cor is not None and correct is not None and t3_cor != correct:
-            line += "  ⚠️当日正T+3反" if correct and not t3_cor else "  🔄当日跌T+3涨"
+        # 当日与最终结果方向相反时标注
+        if eff is not None and correct is not None and eff != correct:
+            line += "  ⚠️当日正最终反" if correct and not eff else "  🔄当日跌最终涨"
+
+        # 退出细节（止盈/止损/持满）
+        if exit_tracked:
+            eq         = h.get("exit_quality")
+            peak_pct   = h.get("holding_peak_pct")
+            stop_hit_d = h.get("stop_hit_day")
+            tgt_hit_d  = h.get("target_hit_day")
+            exit_parts = []
+            if exit_reason == "hit_target":
+                exit_parts.append(f"止盈T+{tgt_hit_d}:{exit_pct_v:+.1f}%")
+                missed = (peak_pct or 0) - (exit_pct_v or 0)
+                if missed > 0.5:
+                    exit_parts.append(f"后续+{missed:.1f}%")
+            elif exit_reason == "hit_stop":
+                exit_parts.append(f"止损T+{stop_hit_d}:{exit_pct_v:+.1f}%")
+                recovery = (peak_pct or 0) - (exit_pct_v or 0)
+                if recovery > 0.5:
+                    exit_parts.append(f"反弹{recovery:.1f}%（止损过紧？）")
+            elif exit_reason == "held_to_window":
+                exit_parts.append(f"持满T+5:{exit_pct_v:+.1f}%")
+            if eq is not None:
+                exit_parts.append(f"卖质{int(eq*100)}%")
+            if exit_parts:
+                line += "  退出:" + "/".join(exit_parts)
 
         lines.append(line)
 
-    # T+3 波段准确率（主要考核指标，先展示）
-    counted_t3 = [h for h in history[-10:] if h.get("t3_correct") is not None]
-    if len(counted_t3) >= 2:
-        n_t3 = sum(1 for h in counted_t3 if h.get("t3_correct"))
-        lines.append(f"  ⭐ T+3波段准确率: {n_t3}/{len(counted_t3)}（主要考核，持仓期真实表现）")
+    # 有效退出准确率（市场驱动：止盈/止损/持满T+5，主要考核）
+    eff_counted = [h for h in history[-10:] if _eff_correct(h) is not None]
+    if len(eff_counted) >= 2:
+        n_eff = sum(1 for h in eff_counted if _eff_correct(h))
+        has_exit = sum(1 for h in eff_counted if h.get("exit_tracked"))
+        src = f"其中{has_exit}笔已触达止盈/止损" if has_exit else "T+3代理"
+        lines.append(f"  ⭐ 有效出局准确率: {n_eff}/{len(eff_counted)}（{src}，主要考核）")
 
     # T+0 当日准确率（仅参考，含入场前行情，可能虚高）
     counted = [h for h in history[-10:] if h.get("correct") is not None]
@@ -272,10 +325,17 @@ def _fmt_history(history: list[dict]) -> str:
         note  = "✅ 高置信预测偏准" if rate >= 60 else "⚠️ 高置信预测不可靠"
         lines.append(f"  高置信度准确率: {n_hc}/{len(high_conv)}（{rate:.0f}%） {note}")
 
-    # 连续错误提示（T+3 优先）
+    # 连续错误提示（有效退出优先）
     recent = [h for h in history[-3:] if _eff_correct(h) is not None]
     if len(recent) >= 3 and all(_eff_correct(h) is False for h in recent):
-        lines.append("  ⚠️ 近3次持仓期（T+3维度）连续错误，请重新评估该股信号有效性")
+        lines.append("  ⚠️ 近3次有效出局均亏损，请重新评估该股信号有效性")
+
+    # 卖出质量汇总
+    eq_list = [h.get("exit_quality") for h in history if h.get("exit_quality") is not None]
+    if len(eq_list) >= 2:
+        avg_eq  = sum(eq_list) / len(eq_list)
+        eq_icon = "✅" if avg_eq >= 0.7 else ("⚠️" if avg_eq >= 0.4 else "❌")
+        lines.append(f"  {eq_icon} 历史平均卖出质量: {avg_eq*100:.0f}%（越高越接近最优出局时机）")
 
     return "\n".join(lines)
 

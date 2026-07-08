@@ -93,7 +93,7 @@ def _get_nth_trading_close(sym: str, scan_date_str: str, n: int):
 
 
 def _fill_multi_day_outcomes() -> bool:
-    """扫描 history 中未完成的 T+1/T+3/T+5 复盘结果，批量下载后原地更新写回。"""
+    """扫描 history 中未完成的 T+1/T+3/T+5 复盘结果及退出追踪，批量下载 OHLC 后原地写回。"""
     import yfinance as yf
     path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
     data = load_predictions(path)
@@ -103,8 +103,7 @@ def _fill_multi_day_outcomes() -> bool:
     today   = datetime.date.today()
     updated = False
 
-    # 按 scan_date 分组，收集需要补全的 (sym, n) 请求
-    # 结构: {scan_date: {sym: [n, ...]}}
+    # 按 scan_date 分组，收集需要补全的请求
     needed: dict[str, dict[str, list[int]]] = {}
     for day in data.get("history", []):
         scan_date = day.get("scan_date", "")
@@ -128,12 +127,17 @@ def _fill_multi_day_outcomes() -> bool:
                 needed.setdefault(scan_date, {}).setdefault(sym, [])
                 if n not in needed[scan_date][sym]:
                     needed[scan_date][sym].append(n)
+            # 退出追踪：需要完整 T+5 OHLC（~7 个自然日后才有足够数据）
+            if (not pred.get("exit_tracked")
+                    and today >= scan_d + datetime.timedelta(days=7)):
+                needed.setdefault(scan_date, {}).setdefault(sym, [])
+                if 5 not in needed[scan_date][sym]:
+                    needed[scan_date][sym].append(5)
 
     if not needed:
         return False
 
-    # 按 scan_date 批量下载，减少 yfinance 请求次数
-    # 缓存: {scan_date: {sym: Series(Close, index=Date)}}
+    # 批量下载 OHLC（Close / High / Low）
     price_cache: dict[str, dict] = {}
     for scan_date, sym_ns in needed.items():
         scan_d  = datetime.date.fromisoformat(scan_date)
@@ -144,9 +148,24 @@ def _fill_multi_day_outcomes() -> bool:
         try:
             df = yf.download(symbols, start=start, end=end,
                              progress=False, auto_adjust=True)
-            close = df["Close"] if len(symbols) > 1 else df["Close"].rename(symbols[0]).to_frame()
+
+            def _col(name: str):
+                raw = df[name]
+                if len(symbols) > 1:
+                    return raw
+                return raw.rename(symbols[0]).to_frame()
+
+            close_df = _col("Close")
+            high_df  = _col("High")
+            low_df   = _col("Low")
+
             price_cache[scan_date] = {
-                sym: close[sym].dropna() for sym in symbols if sym in close.columns
+                sym: {
+                    "close": close_df[sym].dropna(),
+                    "high":  high_df[sym].dropna() if sym in high_df.columns else None,
+                    "low":   low_df[sym].dropna() if sym in low_df.columns else None,
+                }
+                for sym in symbols if sym in close_df.columns
             }
         except Exception as e:
             logger.warning("批量下载 %s 价格失败: %s", scan_date, e)
@@ -156,16 +175,20 @@ def _fill_multi_day_outcomes() -> bool:
         scan_date = day.get("scan_date", "")
         if scan_date not in price_cache:
             continue
-        sym_close = price_cache[scan_date]
+        sym_data = price_cache[scan_date]
 
         for pred in day.get("predictions", []):
             sym       = pred.get("symbol", "")
             final_dir = pred.get("final_direction", "中性")
             entry     = pred.get("entry_price")
-            if not sym or not entry or sym not in sym_close:
+            if not sym or not entry or sym not in sym_data:
                 continue
-            series = sym_close[sym]
 
+            series = sym_data[sym]["close"]
+            high_s = sym_data[sym].get("high")
+            low_s  = sym_data[sym].get("low")
+
+            # ── T+1 / T+3 / T+5 收盘价 ───────────────────────────────
             for n, key_c, key_p, key_r in [
                 (1, "t1_close", "t1_pct", "t1_correct"),
                 (3, "t3_close", "t3_pct", "t3_correct"),
@@ -175,20 +198,83 @@ def _fill_multi_day_outcomes() -> bool:
                     continue
                 if len(series) < n:
                     continue
-                close = float(series.iloc[n - 1])
-                pct   = (close - entry) / entry * 100
-                correct = (
+                c   = float(series.iloc[n - 1])
+                pct = (c - entry) / entry * 100
+                cor = (
                     None if abs(pct) < 0.3
                     else (pct > 0 if final_dir == "看多" else (pct < 0 if final_dir == "看空" else None))
                 )
-                pred[key_c] = round(close, 4)
+                pred[key_c] = round(c, 4)
                 pred[key_p] = round(pct, 4)
-                pred[key_r] = correct
+                pred[key_r] = cor
+                updated = True
+
+            # ── 退出追踪（T+5 完成后一次性计算）───────────────────────
+            if (not pred.get("exit_tracked")
+                    and len(series) >= 5
+                    and high_s is not None and low_s is not None
+                    and len(high_s) >= 5 and len(low_s) >= 5):
+
+                target_price = pred.get("target_price")
+                stop_loss    = pred.get("stop_loss")
+                n_days       = min(5, len(high_s), len(low_s))
+                highs        = [float(high_s.iloc[i]) for i in range(n_days)]
+                lows         = [float(low_s.iloc[i]) for i in range(n_days)]
+
+                peak       = max(highs)
+                trough     = min(lows)
+                peak_day   = highs.index(peak) + 1
+                trough_day = lows.index(trough) + 1
+
+                pred["holding_peak_pct"]   = round((peak   - entry) / entry * 100, 4)
+                pred["holding_trough_pct"] = round((trough - entry) / entry * 100, 4)
+                pred["holding_peak_day"]   = peak_day
+                pred["holding_trough_day"] = trough_day
+
+                # 止盈/止损首次触达日
+                target_hit_day = stop_hit_day = None
+                for i in range(n_days):
+                    h, l = highs[i], lows[i]
+                    if target_price and target_hit_day is None:
+                        if final_dir == "看多" and h >= target_price:
+                            target_hit_day = i + 1
+                        elif final_dir == "看空" and l <= target_price:
+                            target_hit_day = i + 1
+                    if stop_loss and stop_hit_day is None:
+                        if final_dir == "看多" and l <= stop_loss:
+                            stop_hit_day = i + 1
+                        elif final_dir == "看空" and h >= stop_loss:
+                            stop_hit_day = i + 1
+
+                pred["target_hit_day"] = target_hit_day
+                pred["stop_hit_day"]   = stop_hit_day
+
+                # 有效退出：止盈优先，其次止损，最后持满 T+5
+                if target_hit_day and (not stop_hit_day or target_hit_day <= stop_hit_day):
+                    exit_p, exit_r = target_price, "hit_target"
+                elif stop_hit_day:
+                    exit_p, exit_r = stop_loss, "hit_stop"
+                else:
+                    exit_p  = pred.get("t5_close") or pred.get("t3_close") or pred.get("t1_close")
+                    exit_r  = "held_to_window"
+
+                if exit_p:
+                    pred["effective_exit_pct"]    = round((exit_p - entry) / entry * 100, 4)
+                    pred["effective_exit_reason"] = exit_r
+                    # 退出质量：0=最差时机，1=最佳时机
+                    rng = peak - trough
+                    if rng > 0.01:
+                        if final_dir == "看多":
+                            pred["exit_quality"] = round((exit_p - trough) / rng, 3)
+                        elif final_dir == "看空":
+                            pred["exit_quality"] = round((peak - exit_p) / rng, 3)
+
+                pred["exit_tracked"] = True
                 updated = True
 
     if updated:
         save_raw(data, path)
-        logger.info("已更新多天复盘结果（T+1/T+3/T+5）")
+        logger.info("已更新多天复盘结果（T+1/T+3/T+5 + 退出追踪）")
     return updated
 
 
@@ -262,24 +348,30 @@ def _ai_review_analysis(
     # 从 history 统计各股历史准确率
     path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
     hist_data = load_predictions(path)
+    def _eff_c(p: dict):
+        """有效出局准确率：市场驱动退出 > T+3 > T+0"""
+        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
+            ep = p["effective_exit_pct"]
+            d  = p.get("final_direction", "中性")
+            return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
+        t3 = p.get("t3_correct")
+        return t3 if t3 is not None else p.get("correct")
+
     sym_stats = {}
     for day in hist_data.get("history", []):
         for p in day.get("predictions", []):
             s = p.get("symbol")
-            # T+3 优先（波段真实表现），无则回退 T+0（含入场前行情，可能偏高）
-            c = p.get("t3_correct")
-            if c is None:
-                c = p.get("correct")
+            c = _eff_c(p)
             if s and c is not None:
                 sym_stats.setdefault(s, [0, 0])
                 sym_stats[s][1] += 1
                 if c:
                     sym_stats[s][0] += 1
     acc_lines = [
-        f"  {s}: {v[0]}/{v[1]}次正确（{v[0]/v[1]*100:.0f}%，T+3优先）"
+        f"  {s}: {v[0]}/{v[1]}次正确（{v[0]/v[1]*100:.0f}%，市场驱动出局）"
         for s, v in sym_stats.items() if v[1] >= 5
     ]
-    acc_block = ("历史准确率（≥5次，T+3波段为主）：\n" + "\n".join(acc_lines)) if acc_lines else ""
+    acc_block = ("历史准确率（≥5次，市场驱动出局为主）：\n" + "\n".join(acc_lines)) if acc_lines else ""
 
     macro_block = f"当日宏观：\n{macro_context}\n\n" if macro_context else ""
 

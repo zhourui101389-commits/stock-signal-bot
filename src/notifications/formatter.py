@@ -1026,6 +1026,48 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                         t0_str = f"  T+0{t0_icon}{'+' if apct and apct>=0 else ''}{apct:.2f}%" if apct is not None else f"  T+0{t0_icon}"
                     lines.append(f"  <b>{sym}</b>  {dir_icon}{t0_str}  {'  '.join(multi)}")
 
+                # 退出追踪（T+5 完成后）
+                if p.get("exit_tracked"):
+                    peak_pct   = p.get("holding_peak_pct")
+                    trough_pct = p.get("holding_trough_pct")
+                    peak_day   = p.get("holding_peak_day")
+                    trough_day = p.get("holding_trough_day")
+                    exit_r     = p.get("effective_exit_reason")
+                    exit_pct   = p.get("effective_exit_pct")
+                    eq         = p.get("exit_quality")
+                    tgt_d      = p.get("target_hit_day")
+                    stp_d      = p.get("stop_hit_day")
+
+                    rng_str = ""
+                    if peak_pct is not None:
+                        rng_str = f"最高{peak_pct:+.1f}%(T+{peak_day})  最低{trough_pct:+.1f}%(T+{trough_day})"
+
+                    exit_str = ""
+                    if exit_r == "hit_target":
+                        exit_str = f"🎯止盈T+{tgt_d}出{exit_pct:+.1f}%"
+                        missed = (peak_pct or 0) - (exit_pct or 0)
+                        if missed > 0.5:
+                            exit_str += f" 之后还涨{missed:.1f}%"
+                    elif exit_r == "hit_stop":
+                        exit_str = f"🛑止损T+{stp_d}出{exit_pct:+.1f}%"
+                        recovery = (peak_pct or 0) - (exit_pct or 0)
+                        if recovery > 0.5:
+                            exit_str += f" 之后反弹{recovery:.1f}%（止损过紧？）"
+                    elif exit_r == "held_to_window":
+                        exit_str = f"⏰持满T+5出{exit_pct:+.1f}%"
+                        missed = (peak_pct or 0) - (exit_pct or 0)
+                        if missed > 1:
+                            exit_str += f" 错过最高{missed:.1f}%"
+
+                    eq_str = ""
+                    if eq is not None:
+                        eq_icon = "🟢" if eq >= 0.7 else ("🟡" if eq >= 0.4 else "🔴")
+                        eq_str  = f"卖出质量{eq_icon}{int(eq*100)}%"
+
+                    parts = [x for x in [rng_str, exit_str, eq_str] if x]
+                    if parts:
+                        lines.append(f"    └ {'  │  '.join(parts)}")
+
     if ai_analysis:
         lines.append(f"\n<b>🧠 AI 复盘洞察</b>")
         lines.append(_html.escape(ai_analysis))
@@ -1078,14 +1120,30 @@ def format_weekly_report(recent_history: list[dict]) -> str:
                 sym_stats[s][0] += 1
     flagged = [(s, v[0], v[1]) for s, v in sym_stats.items() if v[1] >= 3 and v[0] / v[1] < 0.4]
 
+    # 有效退出准确率（市场驱动）
+    def _eff_exit_correct(p: dict):
+        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
+            ep = p["effective_exit_pct"]
+            d  = p.get("final_direction", "中性")
+            return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
+        t3 = p.get("t3_correct")
+        return t3 if t3 is not None else p.get("correct")
+
+    eff_right = [p for p in all_preds if _eff_exit_correct(p) is True]
+    eff_wrong = [p for p in all_preds if _eff_exit_correct(p) is False]
+    eff_total = len(eff_right) + len(eff_wrong)
+    eff_rate  = len(eff_right) / eff_total * 100 if eff_total > 0 else None
+
     lines = [
         "<b>📊 上周绩效周报</b>",
         "─" * 28,
         f"预测总次数: <b>{total}</b>",
     ]
-    if rate_t3 is not None:
+    if eff_rate is not None:
+        has_exit = sum(1 for p in all_preds if p.get("exit_tracked"))
+        src = f"其中{has_exit}笔已触达止盈/止损" if has_exit else "T+3代理"
         lines.append(
-            f"⭐ T+3波段胜率: <b>{rate_t3:.0f}%</b>（{total_t3}次有效，主要考核指标）"
+            f"⭐ 有效出局胜率: <b>{eff_rate:.0f}%</b>（{eff_total}次，{src}，主要考核）"
         )
     lines.append(
         f"T+0当日胜率: {rate:.0f}%（{total}次，含入场前行情，仅参考）"
@@ -1113,6 +1171,47 @@ def format_weekly_report(recent_history: list[dict]) -> str:
         lines.append("\n<b>⚠️ 系统性误判（胜率<40%，≥3次）</b>")
         for s, correct_n, total_n in flagged:
             lines.append(f"  {s}: {correct_n}/{total_n} ({correct_n/total_n*100:.0f}%)")
+
+    # 卖出质量汇总
+    tracked = [p for p in all_preds if p.get("exit_tracked")]
+    if tracked:
+        eq_scores   = [p["exit_quality"] for p in tracked if p.get("exit_quality") is not None]
+        target_hits = sum(1 for p in tracked if p.get("effective_exit_reason") == "hit_target")
+        stop_hits   = sum(1 for p in tracked if p.get("effective_exit_reason") == "hit_stop")
+        held        = sum(1 for p in tracked if p.get("effective_exit_reason") == "held_to_window")
+
+        lines.append(f"\n<b>🎯 卖出点位质量（{len(tracked)}笔已完成追踪）</b>")
+        if eq_scores:
+            avg_eq  = sum(eq_scores) / len(eq_scores)
+            eq_icon = "🟢" if avg_eq >= 0.7 else ("🟡" if avg_eq >= 0.4 else "🔴")
+            lines.append(f"平均卖出质量: {eq_icon}<b>{avg_eq*100:.0f}%</b>（100%=最佳出局时机）")
+        lines.append(f"🎯 止盈触发: {target_hits}次  🛑 止损出局: {stop_hits}次  ⏰ 持满T+5: {held}次")
+
+        # 止盈过早（触发后还大涨）
+        early_tp = [
+            p for p in tracked
+            if p.get("effective_exit_reason") == "hit_target"
+            and ((p.get("holding_peak_pct") or 0) - (p.get("effective_exit_pct") or 0)) > 3
+        ]
+        if early_tp:
+            items = ", ".join(
+                f"{p['symbol']}(+{(p.get('holding_peak_pct',0) or 0)-(p.get('effective_exit_pct',0) or 0):.1f}%更多)"
+                for p in early_tp[:3]
+            )
+            lines.append(f"  ⚠️ 止盈过早（触发后还涨>3%）: {items}")
+
+        # 止损过紧（触发后反弹）
+        tight_sl = [
+            p for p in tracked
+            if p.get("effective_exit_reason") == "hit_stop"
+            and ((p.get("holding_peak_pct") or 0) - (p.get("effective_exit_pct") or 0)) > 2
+        ]
+        if tight_sl:
+            items = ", ".join(
+                f"{p['symbol']}(反弹{(p.get('holding_peak_pct',0) or 0)-(p.get('effective_exit_pct',0) or 0):.1f}%)"
+                for p in tight_sl[:3]
+            )
+            lines.append(f"  ⚠️ 止损过紧（触发后反弹>2%）: {items}")
 
     lines.append(f"\n<i>统计周期: {recent_history[0].get('scan_date','')} ~ {recent_history[-1].get('scan_date','')}</i>")
     return "\n".join(lines)
