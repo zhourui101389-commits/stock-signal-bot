@@ -12,7 +12,7 @@ import anthropic
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "claude-sonnet-4-6"
+_MODEL = "claude-sonnet-5"
 
 _SYSTEM_PROMPT = """你是一位资深美股量化分析师，负责综合量化技术信号和基本面数据，给出一个最终统一的操作判断。
 
@@ -504,11 +504,14 @@ def run_ai_analysis(
         try:
             message = client.messages.create(
                 model=_MODEL,
-                max_tokens=1024,
+                max_tokens=4096,  # Sonnet 5默认自适应思考，thinking占用同一个max_tokens预算，
+                                  # 留够余量避免JSON回答被截断（1024是给纯直出回答的旧值）
                 system=_SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt}],
             )
-            raw = message.content[0].text.strip()
+            # Sonnet 5开启自适应思考时，content[0]会是thinking块而不是text块
+            # （4.6默认不思考，text永远在第一位）；改成按类型找text块，两种情况都对
+            raw = next((b.text for b in message.content if b.type == "text"), "").strip()
 
             if "```" in raw:
                 for p in raw.split("```"):
