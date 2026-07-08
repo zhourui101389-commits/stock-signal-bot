@@ -1226,8 +1226,8 @@ async def main():
 
     finnhub_key    = config.FINNHUB_API_KEY
     anthropic_key  = config.ANTHROPIC_API_KEY
-    alpaca_key     = os.environ.get("ALPACA_API_KEY", "")
-    alpaca_secret  = os.environ.get("ALPACA_API_SECRET", "")
+    alpaca_key     = os.environ.get("ALPACA_API_KEY", "").strip()
+    alpaca_secret  = os.environ.get("ALPACA_API_SECRET", "").strip()
     finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
 
     bot = Bot(token=config.TELEGRAM_BOT_TOKEN)

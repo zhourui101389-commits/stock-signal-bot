@@ -12,8 +12,11 @@ class Config:
 
     TELEGRAM_BOT_TOKEN: str = os.environ["TELEGRAM_BOT_TOKEN"].strip()
     DB_PATH: str = os.environ.get("DB_PATH", "./data/signals.db")
-    FINNHUB_API_KEY: str = os.environ.get("FINNHUB_API_KEY", "")
-    ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
+    # .strip() 很重要：GitHub Secrets 粘贴时容易带上尾随换行，混进HTTP header
+    # 会被 httpcore 判定为非法header值直接拒绝发送（而不是被API拒绝），
+    # 报错信息是"Connection error"，很难联想到是密钥本身多了个\n
+    FINNHUB_API_KEY: str = os.environ.get("FINNHUB_API_KEY", "").strip()
+    ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 
     def __init__(self) -> None:
         with open("config/settings.yaml", encoding="utf-8") as f:
