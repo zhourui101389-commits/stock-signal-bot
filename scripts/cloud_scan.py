@@ -25,6 +25,13 @@ _CORR_CLUSTERS = {
     "生物医药": {"XBI", "IBB", "MRNA", "PFE", "ABBV", "GILD"},
 }
 
+# ── Alpaca 执行风控参数 ──────────────────────────────────────
+_MAX_LOSS_PER_TRADE_PCT = 0.005   # 单笔最大亏损占总资产比例（按入场-止损反推仓位）
+_MAX_TOTAL_EXPOSURE_PCT = 0.60    # 最大总仓位敞口（占总资产）
+_MAX_POSITIONS          = 8       # 最多同时持仓数
+_MIN_WINRATE_SAMPLES    = 8       # 胜率门禁生效所需的最小历史样本数
+_MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动执行
+
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
     if len(msg) <= limit:
@@ -340,6 +347,36 @@ def _fill_multi_day_outcomes() -> bool:
     return updated
 
 
+def _effective_correct(pred: dict) -> bool | None:
+    """有效出局准确率：市场驱动退出 > T+3 > T+0，None 表示样本尚不可判定。"""
+    if pred.get("exit_tracked") and pred.get("effective_exit_pct") is not None:
+        ep = pred["effective_exit_pct"]
+        d  = pred.get("final_direction", "中性")
+        return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
+    t3 = pred.get("t3_correct")
+    return t3 if t3 is not None else pred.get("correct")
+
+
+def _action_win_rate(action: str, path: str = None) -> tuple[float | None, int]:
+    """统计历史上该 action（如'积极买入'）在看多方向的市场驱动出局胜率，供执行门禁使用。"""
+    path = path or os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
+    data = load_predictions(path)
+    wins = total = 0
+    for day in data.get("history", []):
+        for p in day.get("predictions", []):
+            if p.get("action") != action or p.get("final_direction") != "看多":
+                continue
+            c = _effective_correct(p)
+            if c is None:
+                continue
+            total += 1
+            if c:
+                wins += 1
+    if total == 0:
+        return None, 0
+    return wins / total, total
+
+
 def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     import yfinance as yf
     parts = []
@@ -410,20 +447,12 @@ def _ai_review_analysis(
     # 从 history 统计各股历史准确率
     path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
     hist_data = load_predictions(path)
-    def _eff_c(p: dict):
-        """有效出局准确率：市场驱动退出 > T+3 > T+0"""
-        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
-            ep = p["effective_exit_pct"]
-            d  = p.get("final_direction", "中性")
-            return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
-        t3 = p.get("t3_correct")
-        return t3 if t3 is not None else p.get("correct")
 
     sym_stats = {}
     for day in hist_data.get("history", []):
         for p in day.get("predictions", []):
             s = p.get("symbol")
-            c = _eff_c(p)
+            c = _effective_correct(p)
             if s and c is not None:
                 sym_stats.setdefault(s, [0, 0])
                 sym_stats[s][1] += 1
@@ -711,8 +740,6 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     if today_predictions:
         save_predictions(today_predictions)
 
-    return today_predictions
-
     # ── 相关性风险提示 ─────────────────────────────────
     if len(today_predictions) >= 2:
         buy_syms = {p["symbol"] for p in today_predictions if p.get("final_direction") == "看多"}
@@ -735,6 +762,8 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 logger.info("相关性提示已发送: %s", corr_warns)
             except Exception as e:
                 logger.warning("相关性提示发送失败: %s", e)
+
+    return today_predictions
 
 
 async def _run_execution(
@@ -769,14 +798,16 @@ async def _run_execution(
     held_symbols  = {p["symbol"] for p in positions}
     total_equity  = account["equity"]
     available_cash = account["cash"]
+    deployed        = total_equity - available_cash
+    open_positions  = len(held_symbols)
 
-    # 构建 tier 映射（决定仓位比例）
+    # 构建 tier 映射（决定仓位上限）
     tier_map: dict[str, str] = {}
     for s in config.tier_core:        tier_map[s] = "core"
     for s in config.tier_swing:       tier_map[s] = "swing"
     for s in config.tier_speculative: tier_map[s] = "speculative"
 
-    tier_alloc = {"core": 0.15, "swing": 0.08, "speculative": 0.05}
+    tier_cap = {"core": 0.15, "swing": 0.08, "speculative": 0.05}  # 仓位上限（占总资产）
 
     executed: list[dict] = []
     skipped:  list[str]  = []
@@ -796,6 +827,7 @@ async def _run_execution(
             if sym in held_symbols:
                 if alpaca.close_position(sym):
                     closed.append(sym)
+                    open_positions -= 1
             continue
 
         # 只处理明确买入信号
@@ -813,13 +845,39 @@ async def _run_execution(
             skipped.append(f"{sym}(缺价格参数)")
             continue
 
-        # 计算仓位：谨慎买入用半仓
-        tier      = tier_map.get(sym, "swing")
-        alloc_pct = tier_alloc.get(tier, 0.08)
-        if action == "谨慎买入":
-            alloc_pct *= 0.5
+        # 硬顶1：最大持仓数
+        if open_positions >= _MAX_POSITIONS:
+            skipped.append(f"{sym}(已达最大持仓数{_MAX_POSITIONS})")
+            continue
 
-        position_amount = total_equity * alloc_pct
+        # 硬顶2：总仓位敞口
+        if deployed >= total_equity * _MAX_TOTAL_EXPOSURE_PCT:
+            skipped.append(f"{sym}(总敞口已达上限)")
+            continue
+
+        # 门禁：该 action 历史胜率过低时暂停自动执行（样本不足时不生效）
+        win_rate, sample_n = _action_win_rate(action)
+        if sample_n >= _MIN_WINRATE_SAMPLES and win_rate is not None and win_rate < _MIN_WINRATE:
+            skipped.append(f"{sym}({action}历史胜率{win_rate*100:.0f}%过低)")
+            continue
+
+        # 仓位计算：按单笔最大亏损反推股数（入场价-止损价 为每股风险），
+        # 再用 tier 上限、剩余现金、总敞口余量分别封顶取最小值
+        risk_per_share = entry - stop
+        if risk_per_share <= 0:
+            skipped.append(f"{sym}(止损价格异常)")
+            continue
+
+        max_loss_usd = total_equity * _MAX_LOSS_PER_TRADE_PCT
+        if action == "谨慎买入":
+            max_loss_usd *= 0.5
+        risk_based_amount = (max_loss_usd / risk_per_share) * entry
+
+        tier            = tier_map.get(sym, "swing")
+        tier_cap_amount = total_equity * tier_cap.get(tier, 0.08)
+        exposure_room   = total_equity * _MAX_TOTAL_EXPOSURE_PCT - deployed
+
+        position_amount = min(risk_based_amount, tier_cap_amount, exposure_room)
         # 单笔不超过剩余可用资金的 40%，防止满仓
         position_amount = min(position_amount, available_cash * 0.40)
         shares = int(position_amount / entry)
@@ -834,7 +892,10 @@ async def _run_execution(
         result = alpaca.place_bracket_order(sym, shares, entry, stop, target)
         if result:
             executed.append(result)
-            available_cash -= shares * entry  # 预扣，防止后续超额
+            cost = shares * entry
+            available_cash -= cost   # 预扣，防止后续超额
+            deployed        += cost
+            open_positions  += 1
         else:
             skipped.append(f"{sym}(下单失败)")
 
