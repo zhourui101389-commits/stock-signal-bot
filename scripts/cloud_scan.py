@@ -816,7 +816,8 @@ async def _run_execution(
         logger.error("获取 Alpaca 账户失败: %s", e)
         return
 
-    held_symbols  = {p["symbol"] for p in positions}
+    held_symbols       = {p["symbol"] for p in positions}
+    positions_by_symbol = {p["symbol"]: p for p in positions}
     # 仓位/敞口/止损计算只按自定的资金基数走（默认$50k），不用账户真实总权益（可能更高，如$100k纸面本金）
     capital_base   = min(account["equity"], config.alpaca_capital_base)
     deployed       = sum(p["market_value"] for p in positions)  # 按实际持仓市值算，不依赖broker总现金
@@ -834,6 +835,7 @@ async def _run_execution(
     executed: list[dict] = []
     skipped:  list[str]  = []
     closed:   list[dict] = []
+    win_rate_cache: dict[str, tuple] = {}  # action -> (win_rate, sample_n)，避免每个候选都重新读一遍predictions.json
 
     for pred in today_predictions:
         sym       = pred.get("symbol", "")
@@ -850,7 +852,13 @@ async def _run_execution(
                 result = alpaca.close_position(sym)
                 if result:
                     closed.append(result)
-                    open_positions -= 1
+                    # 只有确认完全成交才释放持仓数/资金额度，避免用未成交的平仓
+                    # 去解锁本轮后面的新买入（poll超时/部分成交时状态不是"filled"）
+                    if result.get("status") == "filled":
+                        open_positions -= 1
+                        freed = positions_by_symbol.get(sym, {}).get("market_value", 0.0)
+                        deployed       -= freed
+                        available_cash += freed
             continue
 
         # 只处理明确买入信号
@@ -879,7 +887,9 @@ async def _run_execution(
             continue
 
         # 门禁：该 action 历史胜率过低时暂停自动执行（样本不足时不生效）
-        win_rate, sample_n = _action_win_rate(action)
+        if action not in win_rate_cache:
+            win_rate_cache[action] = _action_win_rate(action)
+        win_rate, sample_n = win_rate_cache[action]
         if sample_n >= _MIN_WINRATE_SAMPLES and win_rate is not None and win_rate < _MIN_WINRATE:
             skipped.append(f"{sym}({action}历史胜率{win_rate*100:.0f}%过低)")
             continue
@@ -949,7 +959,7 @@ async def _run_execution(
         for c in closed:
             price = c.get("filled_price")
             qty   = c.get("filled_qty") or 0
-            if price:
+            if c.get("status") == "filled" and price:
                 proceeds = qty * price
                 lines.append(f"  {c['symbol']} ×{qty:.0f}股 @ ${price:.2f}  收入 ${proceeds:,.2f}")
             else:
@@ -991,7 +1001,7 @@ async def _run_test_buy(
 
     result = alpaca.place_market_order(symbol, qty, side="buy")
 
-    if result and result.get("filled_price"):
+    if result and result.get("status") == "filled":
         filled_qty = result["filled_qty"]
         price      = result["filled_price"]
         cost       = filled_qty * price
@@ -1042,7 +1052,7 @@ async def _run_test_sell(
 
     result = alpaca.close_position(symbol)
 
-    if result and result.get("filled_price"):
+    if result and result.get("status") == "filled":
         filled_qty = result["filled_qty"]
         price      = result["filled_price"]
         proceeds   = filled_qty * price

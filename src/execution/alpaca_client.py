@@ -45,27 +45,33 @@ class AlpacaClient:
         return result
 
     def _poll_fill(self, order_id, timeout_s: float = 8.0, interval_s: float = 0.5) -> dict:
-        """轮询订单直到成交或超时，返回 {filled_qty, filled_avg_price, status}。"""
+        """
+        轮询订单直到完全成交(filled)或超时，返回 {filled_qty, filled_price, status}。
+        只有 status == "filled" 才算完成；partially_filled 视为未完成继续等，
+        超时/终止时返回目前已知的部分成交信息（可能是0）供调用方自行判断。
+        """
         import time
         deadline = time.monotonic() + timeout_s
-        last_status = ""
+        last_status = "unknown"
+        last_filled_qty = 0.0
+        last_filled_price = None
         while time.monotonic() < deadline:
             try:
                 o = self._client.get_order_by_id(order_id)
             except Exception as e:
                 logger.warning("查询订单状态失败 %s: %s", order_id, e)
                 break
-            last_status = str(o.status)
-            if o.filled_qty and float(o.filled_qty) > 0:
-                return {
-                    "filled_qty":   float(o.filled_qty),
-                    "filled_price": float(o.filled_avg_price) if o.filled_avg_price else None,
-                    "status":       last_status,
-                }
+            last_status = o.status.value if hasattr(o.status, "value") else str(o.status)
+            if o.filled_qty:
+                last_filled_qty = float(o.filled_qty)
+            if o.filled_avg_price:
+                last_filled_price = float(o.filled_avg_price)
+            if last_status == "filled":
+                break
             if last_status in ("canceled", "expired", "rejected"):
                 break
             time.sleep(interval_s)
-        return {"filled_qty": 0.0, "filled_price": None, "status": last_status or "unknown"}
+        return {"filled_qty": last_filled_qty, "filled_price": last_filled_price, "status": last_status}
 
     def place_market_order(self, symbol: str, qty: int, side: str = "buy") -> Optional[dict]:
         """
@@ -78,6 +84,9 @@ class AlpacaClient:
 
         if qty <= 0:
             logger.warning("下单数量为0，跳过 %s", symbol)
+            return None
+        if side not in ("buy", "sell"):
+            logger.error("side参数非法(%r)，必须是'buy'或'sell'，跳过 %s，避免误判方向", side, symbol)
             return None
 
         try:
