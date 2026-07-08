@@ -949,12 +949,12 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
     ]
 
     if right:
-        lines.append(f"\n<b>✅ 方向正确（{len(right)}只）</b>")
+        lines.append(f"\n<b>✅ 当日方向正确（{len(right)}只，T+0参考）</b>")
         for r in right:
             lines += [""] + _stock_block(r)
 
     if wrong:
-        lines.append(f"\n<b>❌ 方向错误（{len(wrong)}只）</b>")
+        lines.append(f"\n<b>❌ 当日方向错误（{len(wrong)}只，T+0参考）</b>")
         for r in wrong:
             lines += [""] + _stock_block(r)
 
@@ -980,20 +980,24 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                 lines.append(f"  {sym}  无数据")
 
     lines.append(f"\n{'─' * 28}")
-    lines.append(f"<i>✅ {len(right)} 只方向正确  ❌ {len(wrong)} 只方向错误</i>")
+    lines.append(
+        f"<i>✅ {len(right)} 当日正确  ❌ {len(wrong)} 当日错误"
+        f"  ⚠️ T+0含入场前行情，T+3波段才是真实考核</i>"
+    )
 
     # 历史多天复盘进展（T+1/T+3/T+5 已填充的历史记录）
     if history_updates:
         by_date: dict[str, list[dict]] = {}
         for p in history_updates:
             by_date.setdefault(p.get("scan_date", ""), []).append(p)
-        lines.append(f"\n<b>📅 历史多天复盘进展</b>")
+        lines.append(f"\n<b>📅 历史多天复盘进展（T+3为主要考核）</b>")
         for d in sorted(by_date.keys()):
             lines.append(f"<i>{d}</i>")
             for p in by_date[d]:
-                sym      = p.get("symbol", "")
-                dir_icon = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(
+                sym       = p.get("symbol", "")
+                dir_icon  = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(
                     p.get("final_direction", "中性"), "")
+                t0_correct = p.get("correct")
                 multi = []
                 for key_p, key_r, label in [
                     ("t1_pct", "t1_correct", "T+1"),
@@ -1001,14 +1005,26 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
                     ("t5_pct", "t5_correct", "T+5"),
                 ]:
                     pct = p.get(key_p)
-                    if pct is not None:
-                        a     = "▲" if pct >= 0 else "▼"
-                        s     = "+" if pct >= 0 else ""
-                        badge = "✅" if p.get(key_r) is True else (
-                                "❌" if p.get(key_r) is False else "⚪")
-                        multi.append(f"{label}{badge}{a}{s}{pct:.2f}%")
+                    if pct is None:
+                        continue
+                    a      = "▲" if pct >= 0 else "▼"
+                    s      = "+" if pct >= 0 else ""
+                    tn_cor = p.get(key_r)
+                    badge  = "✅" if tn_cor is True else ("❌" if tn_cor is False else "⚪")
+                    item   = f"{label}{badge}{a}{s}{pct:.2f}%"
+                    # T+3 与 T+0 方向相反时高亮
+                    if label == "T+3" and t0_correct is True and tn_cor is False:
+                        item += " ⚠️当日涨波段跌"
+                    elif label == "T+3" and t0_correct is False and tn_cor is True:
+                        item += " 🔄当日跌波段涨"
+                    multi.append(item)
                 if multi:
-                    lines.append(f"  <b>{sym}</b>  {dir_icon}  {'  '.join(multi)}")
+                    t0_str = ""
+                    if t0_correct is not None:
+                        t0_icon = "✅" if t0_correct else "❌"
+                        apct = p.get("actual_pct")
+                        t0_str = f"  T+0{t0_icon}{'+' if apct and apct>=0 else ''}{apct:.2f}%" if apct is not None else f"  T+0{t0_icon}"
+                    lines.append(f"  <b>{sym}</b>  {dir_icon}{t0_str}  {'  '.join(multi)}")
 
     if ai_analysis:
         lines.append(f"\n<b>🧠 AI 复盘洞察</b>")
@@ -1065,12 +1081,15 @@ def format_weekly_report(recent_history: list[dict]) -> str:
     lines = [
         "<b>📊 上周绩效周报</b>",
         "─" * 28,
-        f"预测总次数: <b>{total}</b>   "
-        f"✅ {len(right)} 正确  ❌ {len(wrong)} 错误  "
-        f"胜率: <b>{rate:.0f}%</b>",
+        f"预测总次数: <b>{total}</b>",
     ]
     if rate_t3 is not None:
-        lines.append(f"T+3 波段胜率: <b>{rate_t3:.0f}%</b>（{total_t3}次有效）")
+        lines.append(
+            f"⭐ T+3波段胜率: <b>{rate_t3:.0f}%</b>（{total_t3}次有效，主要考核指标）"
+        )
+    lines.append(
+        f"T+0当日胜率: {rate:.0f}%（{total}次，含入场前行情，仅参考）"
+    )
 
     if best:
         lines.append("\n<b>🏆 最佳预测（T+0）</b>")

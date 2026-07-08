@@ -266,17 +266,20 @@ def _ai_review_analysis(
     for day in hist_data.get("history", []):
         for p in day.get("predictions", []):
             s = p.get("symbol")
-            c = p.get("correct")
+            # T+3 优先（波段真实表现），无则回退 T+0（含入场前行情，可能偏高）
+            c = p.get("t3_correct")
+            if c is None:
+                c = p.get("correct")
             if s and c is not None:
                 sym_stats.setdefault(s, [0, 0])
                 sym_stats[s][1] += 1
                 if c:
                     sym_stats[s][0] += 1
     acc_lines = [
-        f"  {s}: {v[0]}/{v[1]}次正确（{v[0]/v[1]*100:.0f}%）"
+        f"  {s}: {v[0]}/{v[1]}次正确（{v[0]/v[1]*100:.0f}%，T+3优先）"
         for s, v in sym_stats.items() if v[1] >= 5
     ]
-    acc_block = ("历史准确率（≥5次）：\n" + "\n".join(acc_lines)) if acc_lines else ""
+    acc_block = ("历史准确率（≥5次，T+3波段为主）：\n" + "\n".join(acc_lines)) if acc_lines else ""
 
     macro_block = f"当日宏观：\n{macro_context}\n\n" if macro_context else ""
 

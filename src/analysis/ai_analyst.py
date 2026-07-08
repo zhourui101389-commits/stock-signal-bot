@@ -71,7 +71,7 @@ _USER_PROMPT_TEMPLATE = """
 
 ---
 请综合技术信号和基本面，给出统一判断。
-如有历史预测记录，请识别判断规律：连续错误说明某类信号在该股失效；连续正确可提高置信度。
+如有历史预测记录，请识别判断规律：T+3波段准确率是主要考核指标（反映持仓期真实表现）；T+0当日仅供参考，可能因入场前行情偏高；当日正但T+3反（标注"当日正T+3反"）说明短期反转，该类信号需降权。连续T+3错误说明某类信号在该股失效；连续正确可提高置信度。
 财报预警期内技术信号可靠性大幅下降，应降低置信度或转为观望。
 以 JSON 格式输出（不要输出 JSON 以外任何内容）：
 
@@ -201,63 +201,81 @@ def _fmt_history(history: list[dict]) -> str:
     if not history:
         return "无历史预测记录"
 
+    def _eff_correct(h: dict):
+        """T+3 优先，T+3 无数据则回退 T+0。T+3 才反映持仓期真实表现。"""
+        t3 = h.get("t3_correct")
+        return t3 if t3 is not None else h.get("correct")
+
     lines = []
     for h in history[-5:]:
         actual  = h.get("actual_pct")
-        correct = h.get("correct")
+        correct = h.get("correct")    # T+0
         t3_pct  = h.get("t3_pct")
         t5_pct  = h.get("t5_pct")
         t3_cor  = h.get("t3_correct")
         t5_cor  = h.get("t5_correct")
 
-        # T+0 结果
-        actual_str = f"实际{actual:+.2f}%" if actual is not None else "待复盘"
-        icon       = "✅" if correct is True else ("❌" if correct is False else "⚪")
-        conviction = h.get("conviction", "")
-        conv_str   = f"[{conviction}]" if conviction else ""
-        verdict    = h.get("verdict", "")
+        # 主图标：T+3 为主，T+0 为后备
+        if t3_cor is not None:
+            main_icon  = "✅" if t3_cor else "❌"
+            main_label = f"T+3波段{t3_pct:+.2f}%" if t3_pct is not None else "T+3"
+        else:
+            main_icon  = "✅" if correct is True else ("❌" if correct is False else "⚪")
+            main_label = f"T+0当日{actual:+.2f}%" if actual is not None else "T+0待复盘"
+
+        conviction  = h.get("conviction", "")
+        conv_str    = f"[{conviction}]" if conviction else ""
+        verdict     = h.get("verdict", "")
         verdict_str = f" 「{verdict}」" if verdict else ""
 
         line = (
-            f"  {icon} {h.get('scan_date','?')}: "
-            f"{h.get('final_direction','?')}{conv_str}{verdict_str} → {actual_str}"
+            f"  {main_icon} {h.get('scan_date','?')}: "
+            f"{h.get('final_direction','?')}{conv_str}{verdict_str} → {main_label}"
         )
-        # T+3 / T+5 多天结果（用更可靠的波段考核）
-        multi = []
-        if t3_pct is not None:
-            t3_icon = "✅" if t3_cor is True else ("❌" if t3_cor is False else "⚪")
-            multi.append(f"T+3{t3_icon}{t3_pct:+.2f}%")
+
+        # 附加对比数据
+        extra = []
+        if t3_cor is not None and actual is not None:
+            # 显示 T+0 作为对比
+            t0_icon = "✅" if correct is True else ("❌" if correct is False else "⚪")
+            extra.append(f"T+0{t0_icon}{actual:+.2f}%")
         if t5_pct is not None:
             t5_icon = "✅" if t5_cor is True else ("❌" if t5_cor is False else "⚪")
-            multi.append(f"T+5{t5_icon}{t5_pct:+.2f}%")
-        if multi:
-            line += "  " + " ".join(multi)
+            extra.append(f"T+5{t5_icon}{t5_pct:+.2f}%")
+        if extra:
+            line += "  " + " ".join(extra)
+
+        # 当日与波段方向相反时标注
+        if t3_cor is not None and correct is not None and t3_cor != correct:
+            line += "  ⚠️当日正T+3反" if correct and not t3_cor else "  🔄当日跌T+3涨"
+
         lines.append(line)
 
-    # T+0 准确率
+    # T+3 波段准确率（主要考核指标，先展示）
+    counted_t3 = [h for h in history[-10:] if h.get("t3_correct") is not None]
+    if len(counted_t3) >= 2:
+        n_t3 = sum(1 for h in counted_t3 if h.get("t3_correct"))
+        lines.append(f"  ⭐ T+3波段准确率: {n_t3}/{len(counted_t3)}（主要考核，持仓期真实表现）")
+
+    # T+0 当日准确率（仅参考，含入场前行情，可能虚高）
     counted = [h for h in history[-10:] if h.get("correct") is not None]
     if len(counted) >= 3:
         n_right = sum(1 for h in counted if h.get("correct"))
-        lines.append(f"  T+0准确率: {n_right}/{len(counted)}（近{len(counted)}次）")
+        lines.append(f"  T+0当日准确率: {n_right}/{len(counted)}（仅参考，含入场前行情）")
 
-    # T+3 波段准确率（更能反映信号质量）
-    counted_t3 = [h for h in history[-10:] if h.get("t3_correct") is not None]
-    if len(counted_t3) >= 3:
-        n_t3 = sum(1 for h in counted_t3 if h.get("t3_correct"))
-        lines.append(f"  T+3准确率: {n_t3}/{len(counted_t3)}（波段真实表现）")
-
-    # 置信度校准：高置信度是否真的更准？
-    high_conv = [h for h in history[-15:] if h.get("conviction") == "高" and h.get("correct") is not None]
+    # 置信度校准：用 T+3 优先
+    high_conv = [h for h in history[-15:]
+                 if h.get("conviction") == "高" and _eff_correct(h) is not None]
     if len(high_conv) >= 3:
-        n_hc = sum(1 for h in high_conv if h.get("correct"))
-        rate = n_hc / len(high_conv) * 100
-        note = "✅ 高置信预测偏准" if rate >= 60 else "⚠️ 高置信预测不可靠"
+        n_hc = sum(1 for h in high_conv if _eff_correct(h))
+        rate  = n_hc / len(high_conv) * 100
+        note  = "✅ 高置信预测偏准" if rate >= 60 else "⚠️ 高置信预测不可靠"
         lines.append(f"  高置信度准确率: {n_hc}/{len(high_conv)}（{rate:.0f}%） {note}")
 
-    # 连续错误提示
-    recent = [h for h in history[-3:] if h.get("correct") is not None]
-    if len(recent) >= 3 and all(h.get("correct") is False for h in recent):
-        lines.append("  ⚠️ 近3次判断连续错误，请重新评估该股信号有效性")
+    # 连续错误提示（T+3 优先）
+    recent = [h for h in history[-3:] if _eff_correct(h) is not None]
+    if len(recent) >= 3 and all(_eff_correct(h) is False for h in recent):
+        lines.append("  ⚠️ 近3次持仓期（T+3维度）连续错误，请重新评估该股信号有效性")
 
     return "\n".join(lines)
 
