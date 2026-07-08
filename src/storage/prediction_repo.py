@@ -25,23 +25,35 @@ def save_predictions(
     existing = load_predictions(path)
     history  = list(existing.get("history", []))
 
-    # 如果现有文件是不同日期的数据（已含复盘结果），归入 history
-    existing_date = existing.get("scan_date", "")
-    if existing.get("predictions") and existing_date and existing_date != today:
+    existing_date  = existing.get("scan_date", "")
+    existing_preds = existing.get("predictions", [])
+
+    if existing_preds and existing_date and existing_date != today:
+        # 不同日期的旧数据（已含复盘结果），归入 history
         history.append({
             "scan_date":   existing_date,
-            "predictions": existing["predictions"],
+            "predictions": existing_preds,
         })
         history = history[-_MAX_HISTORY_DAYS:]
+        merged = predictions
+    elif existing_preds and existing_date == today:
+        # 同一天第二次扫描（如盘中复查）：按symbol合并而非整体覆盖，
+        # 重新扫过的股票用新结果，没重新扫的股票保留原预测，不丢数据
+        by_symbol = {p["symbol"]: p for p in existing_preds}
+        for p in predictions:
+            by_symbol[p["symbol"]] = p
+        merged = list(by_symbol.values())
+    else:
+        merged = predictions
 
     data = {
         "scan_date":   today,
-        "predictions": predictions,
+        "predictions": merged,
         "history":     history,
     }
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    logger.info("已保存 %d 条预测记录（历史 %d 天）", len(predictions), len(history))
+    logger.info("已保存 %d 条预测记录（历史 %d 天）", len(merged), len(history))
 
 
 def load_predictions(path: str = _PRED_FILE) -> dict:

@@ -32,7 +32,7 @@ _MAX_POSITIONS          = 8       # 最多同时持仓数
 _MIN_WINRATE_SAMPLES    = 8       # 胜率门禁生效所需的最小历史样本数
 _MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动执行
 
-_SCREENER_TOP_N = 25   # 市场初筛（标普500+中概）每日入选候选数
+_SCREENER_TOP_N = 15   # 市场初筛（标普500+中概）每日入选候选数
 
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""

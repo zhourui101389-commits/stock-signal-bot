@@ -4,6 +4,8 @@ on:
   schedule:
     # 13:00 UTC = 9:00 EDT（美股开盘前30分钟），盘前扫描
     - cron: '0 13 * * 1-5'
+    # 19:00 UTC = 15:00 EDT（收盘前1小时，power hour），盘中复查
+    - cron: '0 19 * * 1-5'
     # 21:00 UTC = 17:00 EDT（美股收盘后1小时），盘后复盘
     - cron: '0 21 * * 1-5'
   workflow_dispatch:
@@ -52,6 +54,8 @@ jobs:
           if [ -n "${{ github.event.inputs.scan_mode }}" ]; then
             echo "SCAN_MODE=${{ github.event.inputs.scan_mode }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
+            echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 19 * * 1-5" ]; then
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "0 21 * * 1-5" ]; then
             echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
