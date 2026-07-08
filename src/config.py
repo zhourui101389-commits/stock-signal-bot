@@ -31,6 +31,7 @@ class Config:
         self.total_capital: float = float(p.get("total_capital", 50000))
         self.currency: str = p.get("currency", "AUD")
         self.max_position_pct: float = float(p.get("max_position_pct", 0.10))
+        self.alpaca_capital_base: float = float(cfg.get("alpaca", {}).get("capital_base_usd", 50000))
         self.log_level: str = cfg["logging"]["level"]
         self.log_file: str = cfg["logging"]["file"]
         self.economic_calendar: dict = cfg.get("economic_calendar", {})

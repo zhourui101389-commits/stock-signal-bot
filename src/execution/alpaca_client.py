@@ -44,6 +44,39 @@ class AlpacaClient:
             })
         return result
 
+    def place_market_order(self, symbol: str, qty: int, side: str = "buy") -> Optional[dict]:
+        """
+        简单市价单，不带括号止盈止损，用于手动验证/测试单。
+        出场时机由使用者自行决定（后续手动调用 close_position）。
+        """
+        from alpaca.trading.requests import MarketOrderRequest
+        from alpaca.trading.enums import OrderSide, TimeInForce
+
+        if qty <= 0:
+            logger.warning("下单数量为0，跳过 %s", symbol)
+            return None
+
+        try:
+            order = self._client.submit_order(
+                MarketOrderRequest(
+                    symbol=symbol,
+                    qty=qty,
+                    side=OrderSide.BUY if side == "buy" else OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY,
+                )
+            )
+            logger.info("市价单成功 %s %s ×%d", side, symbol, qty)
+            return {
+                "order_id": str(order.id),
+                "symbol":   symbol,
+                "qty":      qty,
+                "side":     side,
+                "status":   str(order.status),
+            }
+        except Exception as e:
+            logger.error("市价单失败 %s: %s", symbol, e)
+            return None
+
     def place_bracket_order(
         self,
         symbol: str,

@@ -9,9 +9,17 @@ on:
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / test_buy=Alpaca测试单 / 留空=两者）'
         required: false
         default: ''
+      test_buy_symbol:
+        description: '仅scan_mode=test_buy时生效：测试买入的股票代码'
+        required: false
+        default: 'QQQ'
+      test_buy_qty:
+        description: '仅scan_mode=test_buy时生效：测试买入的股数'
+        required: false
+        default: '1'
 
 permissions:
   contents: write
@@ -59,6 +67,8 @@ jobs:
           DATA_SOURCE: yfinance
           PREDICTIONS_FILE: data/predictions.json
           SCAN_MODE: ${{ steps.mode.outputs.SCAN_MODE }}
+          TEST_BUY_SYMBOL: ${{ github.event.inputs.test_buy_symbol }}
+          TEST_BUY_QTY: ${{ github.event.inputs.test_buy_qty }}
 
         run: python scripts/cloud_scan.py
 

@@ -816,10 +816,11 @@ async def _run_execution(
         return
 
     held_symbols  = {p["symbol"] for p in positions}
-    total_equity  = account["equity"]
-    available_cash = account["cash"]
-    deployed        = total_equity - available_cash
-    open_positions  = len(held_symbols)
+    # 仓位/敞口/止损计算只按自定的资金基数走（默认$50k），不用账户真实总权益（可能更高，如$100k纸面本金）
+    capital_base   = min(account["equity"], config.alpaca_capital_base)
+    deployed       = sum(p["market_value"] for p in positions)  # 按实际持仓市值算，不依赖broker总现金
+    available_cash = min(capital_base - deployed, account["cash"])
+    open_positions = len(held_symbols)
 
     # 构建 tier 映射（决定仓位上限）
     tier_map: dict[str, str] = {}
@@ -871,7 +872,7 @@ async def _run_execution(
             continue
 
         # 硬顶2：总仓位敞口
-        if deployed >= total_equity * _MAX_TOTAL_EXPOSURE_PCT:
+        if deployed >= capital_base * _MAX_TOTAL_EXPOSURE_PCT:
             skipped.append(f"{sym}(总敞口已达上限)")
             continue
 
@@ -888,7 +889,7 @@ async def _run_execution(
             skipped.append(f"{sym}(止损价格异常)")
             continue
 
-        max_loss_usd = total_equity * _MAX_LOSS_PER_TRADE_PCT
+        max_loss_usd = capital_base * _MAX_LOSS_PER_TRADE_PCT
         if action == "谨慎买入":
             max_loss_usd *= 0.5
         risk_based_amount = (max_loss_usd / risk_per_share) * entry
@@ -896,8 +897,8 @@ async def _run_execution(
         # 市场初筛发现的新标的未经长期观察，仓位上限按更保守的speculative档处理
         default_tier    = "speculative" if pred.get("source") == "screener" else "swing"
         tier            = tier_map.get(sym, default_tier)
-        tier_cap_amount = total_equity * tier_cap.get(tier, 0.05)
-        exposure_room   = total_equity * _MAX_TOTAL_EXPOSURE_PCT - deployed
+        tier_cap_amount = capital_base * tier_cap.get(tier, 0.05)
+        exposure_room   = capital_base * _MAX_TOTAL_EXPOSURE_PCT - deployed
 
         position_amount = min(risk_based_amount, tier_cap_amount, exposure_room)
         # 单笔不超过剩余可用资金的 40%，防止满仓
@@ -924,8 +925,9 @@ async def _run_execution(
     # ── 发送执行报告 ──────────────────────────────────────
     lines = ["🤖 <b>Alpaca 模拟执行报告</b>", "─" * 28]
     lines.append(
-        f"账户总资产 <b>${account['equity']:,.0f}</b>  "
-        f"可用现金 ${account['cash']:,.0f}"
+        f"操作基数 <b>${capital_base:,.0f}</b>  "
+        f"已用 ${deployed:,.0f}  可用 ${available_cash:,.0f}"
+        f"（账户实际总权益 ${account['equity']:,.0f}，多余部分不参与计算）"
     )
 
     if executed:
@@ -955,6 +957,46 @@ async def _run_execution(
             logger.warning("执行报告发送失败: %s", e)
     logger.info("执行完成：下单 %d 笔，平仓 %d 笔，跳过 %d 笔",
                 len(executed), len(closed), len(skipped))
+
+
+async def _run_test_buy(
+    bot: Bot,
+    chat_ids: list[int],
+    alpaca_key: str,
+    alpaca_secret: str,
+    symbol: str,
+    qty: int,
+) -> None:
+    """
+    手动验证单：简单市价买入，不走括号单/止盈止损，用于确认Alpaca对接是否成功。
+    出场时机由使用者自行决定，仓位会自动出现在下次 _sync_portfolio 的持仓快报里。
+    """
+    if not alpaca_key or not alpaca_secret:
+        logger.info("ALPACA_API_KEY 未配置，跳过测试单")
+        return
+
+    from src.execution.alpaca_client import AlpacaClient
+    alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+
+    result = alpaca.place_market_order(symbol, qty, side="buy")
+
+    if result:
+        msg = (
+            f"🧪 <b>Alpaca 测试单</b>\n{'─' * 28}\n"
+            f"✅ 市价买入 <b>{symbol}</b> ×{qty} 已提交\n"
+            f"订单号: {result['order_id']}\n"
+            f"状态: {result['status']}\n\n"
+            f"未设止盈止损，出场时机由你自行决定；仓位会体现在下次持仓快报里。"
+        )
+    else:
+        msg = f"🧪 <b>Alpaca 测试单</b>\n{'─' * 28}\n❌ {symbol} ×{qty} 下单失败，详见运行日志"
+
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("测试单结果发送失败: %s", e)
+    logger.info("测试单执行完成: %s ×%d, 结果=%s", symbol, qty, "成功" if result else "失败")
 
 
 async def _sync_portfolio(
@@ -1047,6 +1089,15 @@ async def main():
     finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
 
     bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
+
+    if scan_mode == "test_buy":
+        test_symbol = os.environ.get("TEST_BUY_SYMBOL", "QQQ").upper()
+        test_qty    = int(os.environ.get("TEST_BUY_QTY", "1"))
+        try:
+            await _run_test_buy(bot, chat_ids, alpaca_key, alpaca_secret, test_symbol, test_qty)
+        except Exception as e:
+            logger.error("测试单失败: %s", e)
+        return
 
     if scan_mode == "review":
         try:

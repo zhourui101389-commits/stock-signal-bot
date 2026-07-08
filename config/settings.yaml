@@ -23,9 +23,14 @@ indicators:
   ma_trend: 200
 
 portfolio:
-  total_capital: 50000    # 总资金
+  total_capital: 50000    # 总资金（手动交易仓位建议用，非Alpaca）
   currency: AUD           # 货币单位（显示用）
   max_position_pct: 0.10  # 单只股票最大仓位比例（10%）
+
+alpaca:
+  capital_base_usd: 50000  # Alpaca模拟盘实际操作资金基数（美元）
+                            # 账户真实权益可能更高（如$100k），但仓位/敞口/止损计算
+                            # 只按这个基数走，多出来的资金留作缓冲，不参与计算
 
 watchlist:
   moomoo_group: US          # 从 Moomoo 账户哪个分组拉取自选股
