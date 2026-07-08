@@ -68,9 +68,10 @@ def _get_chat_ids(config: Config) -> list[int]:
 
 
 def _is_us_trading_day() -> bool:
-    """判断今天是否为美股交易日（排除周末和节假日）。盘前 9AM EDT 调用。"""
+    """判断今天是否为美股交易日（排除周末和节假日）。按美东时区判断，避免 UTC 运行环境跨天误判。"""
     import yfinance as yf
-    today = datetime.date.today()
+    from zoneinfo import ZoneInfo
+    today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
     if today.weekday() >= 5:  # 周六/周日
         return False
     try:
@@ -78,7 +79,7 @@ def _is_us_trading_day() -> bool:
                            prepost=True, progress=False)
         if hist.empty:
             return False
-        last_date = hist.index[-1].date()
+        last_date = hist.index[-1].tz_convert("America/New_York").date()
         return last_date == today
     except Exception:
         return True  # 网络异常时默认继续
