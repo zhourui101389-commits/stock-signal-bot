@@ -11,7 +11,8 @@
       "entry_price": 60.59,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "INTC",
@@ -23,7 +24,8 @@
       "entry_price": 110.39,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "MRVL",
@@ -35,7 +37,8 @@
       "entry_price": 230.7,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "MU",
@@ -47,7 +50,8 @@
       "entry_price": 938.38,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "MXL",
@@ -59,7 +63,8 @@
       "entry_price": 85.82,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "NVDA",
@@ -71,7 +76,8 @@
       "entry_price": 196.93,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "SNDK",
@@ -83,7 +89,8 @@
       "entry_price": 1617.7,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "SOXL",
@@ -95,7 +102,8 @@
       "entry_price": 165.28,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     },
     {
       "symbol": "WDC",
@@ -107,7 +115,8 @@
       "entry_price": 532.1,
       "target_price": null,
       "stop_loss": null,
-      "verdict": ""
+      "verdict": "",
+      "source": "core"
     }
   ],
   "history": [
