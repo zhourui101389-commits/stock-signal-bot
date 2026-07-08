@@ -83,28 +83,39 @@ def _format_action_guide(result, price: float, pinned: bool,
     def _money(amt: float) -> str:
         return f"{cur} {amt:,.0f}"
 
-    # ── 止损率 / 止盈率 / 仓位比例 ───────────────────────────────────
+    # ── ATR-based 止损率 / 盈亏比 / 仓位比例 ──────────────────────────
+    # 止损 = 2×ATR（低波动股用 1.5×），目标价 = 2:1 R/R 起步
+    atr_raw = atr_pct if not math.isnan(atr_pct) else 3.0   # ATR 作为价格的百分比（如 2.5 = 2.5%）
+    # 止损距离（分数形式，如 0.05 = 5%）
+    _sl_raw = atr_raw * 2 / 100   # 2×ATR
+
     if tier == "core":
-        sl_pct, tp1, tp2  = 0.08, 0.10, 0.20
-        alloc_pct         = 0.20          # 核心仓目标 20% 总资金
-        batch_amt         = round(total_capital * alloc_pct / 3 / 100) * 100
-        batch_label       = f"核心仓 · 第1批（共3批，目标 {alloc_pct*100:.0f}%）"
-        entry_note        = "次日开盘30分钟后 限价买入"
-        exit_note_last    = "剩余跌破10日线清仓"
+        sl_pct = min(max(_sl_raw * 1.5, 0.04), 0.12)  # 核心仓宽一些，1.5×2ATR，4-12%
+        tp1    = sl_pct * 1.5     # 1.5:1 R/R 半仓止盈
+        tp2    = sl_pct * 3.0     # 3:1 R/R 尾仓止盈
+        alloc_pct  = 0.20
+        batch_amt  = round(total_capital * alloc_pct / 3 / 100) * 100
+        batch_label = f"核心仓 · 第1批（共3批，目标 {alloc_pct*100:.0f}%）"
+        entry_note  = "次日开盘30分钟后 限价买入"
+        exit_note_last = "剩余跌破10日线清仓"
     elif tier == "speculative":
-        sl_pct, tp1, tp2  = 0.04, 0.05, 0.08
-        alloc_pct         = 0.05          # 投机仓 5%
-        batch_amt         = round(total_capital * alloc_pct / 100) * 100
-        batch_label       = f"投机仓（上限 {alloc_pct*100:.0f}%，当日信号专用）"
-        entry_note        = "今日盘中开盘30分钟后 确认涨势入场"
-        exit_note_last    = "不过夜超3天"
+        sl_pct = min(max(_sl_raw, 0.03), 0.08)  # 投机仓紧一些，1×2ATR，3-8%
+        tp1    = sl_pct * 2.0     # 2:1 R/R
+        tp2    = sl_pct * 3.5     # 3.5:1 R/R
+        alloc_pct  = 0.05
+        batch_amt  = round(total_capital * alloc_pct / 100) * 100
+        batch_label = f"投机仓（上限 {alloc_pct*100:.0f}%，当日信号专用）"
+        entry_note  = "今日盘中开盘30分钟后 确认涨势入场"
+        exit_note_last = "不过夜超3天"
     else:  # swing
-        sl_pct, tp1, tp2  = 0.06, 0.10, 0.18
-        alloc_pct         = 0.08          # 机动仓 8%
-        batch_amt         = round(total_capital * alloc_pct / 100) * 100
-        batch_label       = f"机动仓（上限 {alloc_pct*100:.0f}%）"
-        entry_note        = "次日开盘30分钟后 限价买入"
-        exit_note_last    = "剩余止损-6%清仓"
+        sl_pct = min(max(_sl_raw, 0.04), 0.10)  # 机动仓 2×ATR，4-10%
+        tp1    = sl_pct * 2.0     # 2:1 R/R（最低要求）
+        tp2    = sl_pct * 3.0     # 3:1 R/R
+        alloc_pct  = 0.08
+        batch_amt  = round(total_capital * alloc_pct / 100) * 100
+        batch_label = f"机动仓（上限 {alloc_pct*100:.0f}%）"
+        entry_note  = "次日开盘30分钟后 限价买入"
+        exit_note_last = f"剩余持满窗口后平仓（止损约 {sl_pct*100:.0f}%）"
 
     # SELL 方向
     if direction == "SELL":
@@ -1148,6 +1159,25 @@ def format_weekly_report(recent_history: list[dict]) -> str:
     lines.append(
         f"T+0当日胜率: {rate:.0f}%（{total}次，含入场前行情，仅参考）"
     )
+
+    # 盈亏比（profit factor）= 总盈利 / 总亏损，>1.5 才有正期望
+    def _pnl(p: dict) -> float | None:
+        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
+            return p["effective_exit_pct"]
+        return p.get("t3_pct") or p.get("actual_pct")
+
+    wins_pnl  = [_pnl(p) for p in all_preds if _eff_exit_correct(p) is True  and _pnl(p) is not None]
+    loss_pnl  = [abs(_pnl(p)) for p in all_preds if _eff_exit_correct(p) is False and _pnl(p) is not None]
+    if wins_pnl and loss_pnl:
+        avg_win = sum(wins_pnl) / len(wins_pnl)
+        avg_loss = sum(loss_pnl) / len(loss_pnl)
+        pf = (len(wins_pnl) * avg_win) / max(len(loss_pnl) * avg_loss, 0.001)
+        pf_icon = "🟢" if pf >= 1.5 else ("🟡" if pf >= 1.0 else "🔴")
+        lines.append(
+            f"盈亏比系数: {pf_icon}<b>{pf:.2f}x</b>  "
+            f"平均盈利 +{avg_win:.2f}%  平均亏损 -{avg_loss:.2f}%"
+            f"  （≥1.5x为正期望）"
+        )
 
     if best:
         lines.append("\n<b>🏆 最佳预测（T+0）</b>")

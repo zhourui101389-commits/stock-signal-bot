@@ -13,16 +13,25 @@ logger = logging.getLogger(__name__)
 
 _MODEL = "claude-sonnet-4-6"
 
-_SYSTEM_PROMPT = """你是一位资深美股分析师，负责综合量化技术信号和基本面数据，给出一个最终统一的操作判断。
+_SYSTEM_PROMPT = """你是一位资深美股量化分析师，负责综合量化技术信号和基本面数据，给出一个最终统一的操作判断。
 
 你的工作规则：
 - 技术系统已给出初步信号（方向+强度+理由），你需要评估并确认或推翻它
 - 技术和基本面一致 → 提高置信度，给出明确建议
 - 两者矛盾 → 判断哪个更可信，给出最终方向并说明推翻理由
 - 只输出一个操作建议，不能两边倒或模糊
-- 给出具体的目标价和止损价（数字，不是百分比）
 - 用中文，语言简洁有力
-- 严格按 JSON 格式输出，不含任何 JSON 以外内容"""
+- 严格按 JSON 格式输出，不含任何 JSON 以外内容
+
+止盈止损必须基于 ATR（真实日均波幅），禁止使用固定百分比：
+- 止损 = 入场价 - 1.5×ATR（低波动大盘股）到 entry - 2×ATR（高波动股/杠杆ETF如SOXL）
+- 目标价必须满足盈亏比 ≥ 2:1，即 (target - entry) ≥ 2 × (entry - stop_loss)
+- 优先对齐近期技术阻力位或支撑位，而非机械套公式
+- 中性方向（不入场）时 stop_loss 和 target_price 填 null
+
+持仓期判断：
+- "3-5天"适合动量短线，"1-2周"适合波段，"2-4周"适合趋势
+- 评估不绑定固定日期，止盈或止损触发即退出；持满窗口未触达则在最后一个交易日平仓"""
 
 _USER_PROMPT_TEMPLATE = """
 分析股票：{symbol}（当前价 {price}，所属行业：{sector}）
@@ -43,6 +52,9 @@ _USER_PROMPT_TEMPLATE = """
 - 中期趋势（MA20/MA50 周线）：{ma_mid_trend}
 - ADX（趋势强度）：{adx:.1f}
 - ROC20（近20日涨跌）：{roc20:+.1f}%
+- ATR(14)日均波幅：{atr_pct:.1f}%（约 ${atr_dollar:.2f}/日）
+  → 止损参考：1.5×ATR=${atr_1_5x:.2f} / 2×ATR=${atr_2x:.2f}（从入场价扣减）
+  → 最低目标价（2:1盈亏比）= 入场价 + 2×止损距离
 - 做空比例：{short_pct}
 
 ## 基本面数据
@@ -91,8 +103,8 @@ _USER_PROMPT_TEMPLATE = """
   "bull_case": "<60字，做多理由>",
   "bear_case": "<60字，做空风险>",
   "action": "积极买入|谨慎买入|持有观望|减仓|回避",
-  "target_price": <目标价，具体数字>,
-  "stop_loss": <止损价，具体数字>,
+  "target_price": <目标价（具体数字，盈亏比≥2:1；中性方向填null）>,
+  "stop_loss": <止损价（具体数字，基于ATR；中性方向填null）>,
   "key_level_support": <关键支撑价，数字>,
   "key_level_resistance": <关键阻力价，数字>,
   "catalyst": "<近期催化剂，无则填null>"
@@ -396,6 +408,12 @@ def run_ai_analysis(
         except Exception as e:
             logger.debug("Finnhub financials %s: %s", symbol, e)
 
+    # ATR 计算（用于止损指引）
+    atr_pct_val = result.atr_pct if not math.isnan(result.atr_pct) else 3.0
+    atr_dollar  = price * atr_pct_val / 100
+    atr_1_5x    = atr_dollar * 1.5
+    atr_2x      = atr_dollar * 2.0
+
     # 技术信号理由格式化
     tech_direction = result.direction  # BUY / SELL / NEUTRAL
     tech_strength  = result.strength
@@ -437,6 +455,10 @@ def run_ai_analysis(
         ma_mid_trend=tech["ma_mid_trend"],
         adx=tech["adx"],
         roc20=tech["roc20"],
+        atr_pct=atr_pct_val,
+        atr_dollar=atr_dollar,
+        atr_1_5x=atr_1_5x,
+        atr_2x=atr_2x,
         short_pct=short_pct_str,
         analyst_buy_pct=f"{analyst_buy:.0f}",
         analyst_count=analyst_cnt,

@@ -127,12 +127,16 @@ def _fill_multi_day_outcomes() -> bool:
                 needed.setdefault(scan_date, {}).setdefault(sym, [])
                 if n not in needed[scan_date][sym]:
                     needed[scan_date][sym].append(n)
-            # 退出追踪：需要完整 T+5 OHLC（~7 个自然日后才有足够数据）
-            if (not pred.get("exit_tracked")
-                    and today >= scan_d + datetime.timedelta(days=7)):
-                needed.setdefault(scan_date, {}).setdefault(sym, [])
-                if 5 not in needed[scan_date][sym]:
-                    needed[scan_date][sym].append(5)
+            # 退出追踪：按 AI 给出的持仓周期动态确定退出窗口
+            if not pred.get("exit_tracked"):
+                h_str       = pred.get("horizon", "3-5天")
+                exit_window = 20 if "2-4周" in h_str else (10 if "1-2周" in h_str or "1周" in h_str else 5)
+                # 日历日 buffer：trading day ×1.5 + 3（覆盖长假期，如感恩节周）
+                cal_buf     = int(exit_window * 1.5) + 3
+                if today >= scan_d + datetime.timedelta(days=cal_buf):
+                    needed.setdefault(scan_date, {}).setdefault(sym, [])
+                    if exit_window not in needed[scan_date][sym]:
+                        needed[scan_date][sym].append(exit_window)
 
     if not needed:
         return False
@@ -209,15 +213,18 @@ def _fill_multi_day_outcomes() -> bool:
                 pred[key_r] = cor
                 updated = True
 
-            # ── 退出追踪（T+5 完成后一次性计算）───────────────────────
+            # ── 退出追踪（按 horizon 动态窗口，一次性计算）──────────────
+            h_str       = pred.get("horizon", "3-5天")
+            exit_window = 20 if "2-4周" in h_str else (10 if "1-2周" in h_str or "1周" in h_str else 5)
+
             if (not pred.get("exit_tracked")
-                    and len(series) >= 5
+                    and len(series) >= exit_window
                     and high_s is not None and low_s is not None
-                    and len(high_s) >= 5 and len(low_s) >= 5):
+                    and len(high_s) >= exit_window and len(low_s) >= exit_window):
 
                 target_price = pred.get("target_price")
                 stop_loss    = pred.get("stop_loss")
-                n_days       = min(5, len(high_s), len(low_s))
+                n_days       = min(exit_window, len(high_s), len(low_s))
                 highs        = [float(high_s.iloc[i]) for i in range(n_days)]
                 lows         = [float(low_s.iloc[i]) for i in range(n_days)]
 
@@ -255,8 +262,10 @@ def _fill_multi_day_outcomes() -> bool:
                 elif stop_hit_day:
                     exit_p, exit_r = stop_loss, "hit_stop"
                 else:
-                    exit_p  = pred.get("t5_close") or pred.get("t3_close") or pred.get("t1_close")
-                    exit_r  = "held_to_window"
+                    # 持满窗口：用窗口末日收盘价（第 exit_window 个交易日）
+                    last_idx = min(exit_window - 1, len(series) - 1)
+                    exit_p   = float(series.iloc[last_idx])
+                    exit_r   = f"held_to_t{exit_window}"
 
                 if exit_p:
                     pred["effective_exit_pct"]    = round((exit_p - entry) / entry * 100, 4)
