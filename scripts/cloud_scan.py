@@ -674,6 +674,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
         if universe:
             discovered = set(screen_top_candidates(
                 universe, top_n=_SCREENER_TOP_N, exclude=set(symbols),
+                finnhub_client=finnhub_client,
             ))
             symbols = symbols + [s for s in discovered if s not in symbols]
     except Exception as e:

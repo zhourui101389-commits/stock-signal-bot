@@ -113,6 +113,15 @@ class FinnhubClient:
             "52w_return":        m.get("52WeekPriceReturnDaily"),
         }
 
+    def get_earnings_calendar(self, from_date: str, to_date: str) -> set[str]:
+        """
+        返回 [from_date, to_date] 区间内即将公布财报的股票代码集合（全市场，一次调用）。
+        用于初筛阶段批量排除临近财报的候选，不用逐个股票查询。
+        """
+        data = self._get("/calendar/earnings", {"from": from_date, "to": to_date})
+        rows = data.get("earningsCalendar", []) if isinstance(data, dict) else []
+        return {row["symbol"] for row in rows if row.get("symbol")}
+
     def get_earnings_surprise(self, symbol: str) -> list[dict]:
         """近4季度财报超预期情况（EPS实际 vs 预期）。"""
         data = self._get("/stock/earnings", {"symbol": symbol})
