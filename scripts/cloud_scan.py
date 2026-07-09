@@ -1267,6 +1267,13 @@ async def main():
         except Exception as e:
             logger.warning("Alpaca 持仓同步失败: %s", e)
 
+    elif scan_mode == "portfolio":
+        # 手动查询：随时获取当前 Alpaca 持仓快报，不等盘后 review，纯只读不触发交易
+        try:
+            await _sync_portfolio(bot, chat_ids, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("持仓查询失败: %s", e)
+
     elif scan_mode == "review_force":
         # 手动补发：跳过日期检查，重发 predictions.json 中当前 scan_date 的复盘消息
         # （用于复盘消息因故发送失败后，修复问题后手动重发，不触发扫描/下单）

@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / 留空=两者）'
         required: false
         default: ''
       test_buy_symbol:
