@@ -13,7 +13,13 @@
       "stop_loss": null,
       "verdict": "行业超卖反弹与均线空头互搏，观望等方向明确",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 64.36000061035156,
+      "actual_pct": 9.483399053269641e-07,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MRVL",
@@ -27,7 +33,13 @@
       "stop_loss": null,
       "verdict": "缩量死叉+财报连续miss，超卖反弹证据不足",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 243.27000427246094,
+      "actual_pct": 1.7562629700613247e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MU",
@@ -41,7 +53,13 @@
       "stop_loss": 856.0,
       "verdict": "回调不改主升浪，扩产利好驱动突破",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 991.6400146484375,
+      "actual_pct": 1.4771930855595197e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MXL",
@@ -55,7 +73,13 @@
       "stop_loss": null,
       "verdict": "缩量死叉+基本面疲弱，趋势能量耗尽，观望为宜",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 95.80000305175781,
+      "actual_pct": 3.185550955471995e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SOXL",
@@ -69,7 +93,13 @@
       "stop_loss": null,
       "verdict": "多空信号打架+高Beta杠杆ETF，观望等方向确认",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 192.4499969482422,
+      "actual_pct": -1.5857406085379666e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "WDC",
@@ -83,7 +113,13 @@
       "stop_loss": null,
       "verdict": "MACD死叉+缩量+短期空头排列，中期强势但短线信号矛盾",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 578.0499877929688,
+      "actual_pct": -2.1117604367312976e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MRNA",
@@ -97,7 +133,13 @@
       "stop_loss": null,
       "verdict": "量涨价背离+基本面崩坏，追高陷阱概率高",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 76.55999755859375,
+      "actual_pct": -3.1888796398559776e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "RJF",
@@ -111,7 +153,13 @@
       "stop_loss": 175.5,
       "verdict": "多重超买+周线转弱+顶背离，短线回调风险大",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 168.72000122070312,
+      "actual_pct": -0.41905139544170555,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "CRWD",
@@ -125,7 +173,13 @@
       "stop_loss": null,
       "verdict": "顶背离+缩量+分析师0%买入，追高风险大于机会",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 198.39999389648438,
+      "actual_pct": -3.0763687654658977e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "TECH",
@@ -139,7 +193,13 @@
       "stop_loss": 73.9,
       "verdict": "估值泡沫+盈利暴跌+机构下调，超买回调概率大",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 71.1500015258789,
+      "actual_pct": 2.1445943788695123e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "STT",
@@ -153,7 +213,13 @@
       "stop_loss": null,
       "verdict": "超买但趋势未破，缩量致信号失真，观望为主",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 180.16000366210938,
+      "actual_pct": -1.4846186399948735,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "ANET",
@@ -167,7 +233,13 @@
       "stop_loss": null,
       "verdict": "超买+量缩+ADX弱，动能衰竭需等回调确认",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 184.69000244140625,
+      "actual_pct": 1.3218941211076597e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "DELL",
@@ -181,7 +253,13 @@
       "stop_loss": null,
       "verdict": "超买区MACD死叉，趋势未破但追高性价比差",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 450.2200012207031,
+      "actual_pct": 2.711348002565765e-07,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SCHW",
@@ -195,7 +273,13 @@
       "stop_loss": null,
       "verdict": "超买缩量真假难辨，多头未破，等回调再定",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 101.91000366210938,
+      "actual_pct": 3.593474024541856e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "AJG",
@@ -209,7 +293,13 @@
       "stop_loss": 264.0,
       "verdict": "超买缩量+EPS暴雷+0%买入共识，回调概率大",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 253.75999450683594,
+      "actual_pct": -2.1647084069219157e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "INTC",
@@ -223,7 +313,13 @@
       "stop_loss": null,
       "verdict": "多空信号打架，基本面差，观望为上",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 112.54000091552734,
+      "actual_pct": 8.135128287695254e-07,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SNDK",
@@ -237,7 +333,13 @@
       "stop_loss": 1447.43,
       "verdict": "内存涨价催化+财报暴击超预期，短期回调是加仓机会",
       "source": "core",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 1858.27001953125,
+      "actual_pct": 1.0510447899492481e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "JKHY",
@@ -251,7 +353,13 @@
       "stop_loss": 159.0,
       "verdict": "短期严重超买叠加中期空头趋势，回调压力大",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 150.22000122070312,
+      "actual_pct": 8.126102557161951e-07,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "DASH",
@@ -265,7 +373,13 @@
       "stop_loss": 187.6,
       "verdict": "短期反弹但中期空头压制，博弈价值有限",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 192.35000610351562,
+      "actual_pct": 3.1731300393472013e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "CRL",
@@ -279,7 +393,13 @@
       "stop_loss": 247.5,
       "verdict": "超买缩量顶背离，强势股短期高位回调风险显著",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 233.60000610351562,
+      "actual_pct": 2.612806348751859e-06,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "HOOD",
@@ -293,7 +413,13 @@
       "stop_loss": null,
       "verdict": "超买+周线转空+分析师0%买入，多空信号剧烈冲突",
       "source": "screener",
-      "ai_failed": false
+      "ai_failed": false,
+      "close_price": 115.11000061035156,
+      "actual_pct": 5.302333099369596e-07,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     }
   ],
   "history": [
@@ -1037,7 +1163,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 64.36,
+          "t1_pct": 8.5054,
+          "t1_correct": null
         },
         {
           "symbol": "INTC",
@@ -1057,7 +1186,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 112.54,
+          "t1_pct": 2.0864,
+          "t1_correct": null
         },
         {
           "symbol": "MRVL",
@@ -1077,7 +1209,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 243.27,
+          "t1_pct": 4.989,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -1097,7 +1232,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 991.64,
+          "t1_pct": 4.5152,
+          "t1_correct": null
         },
         {
           "symbol": "MXL",
@@ -1117,7 +1255,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 95.8,
+          "t1_pct": 11.3306,
+          "t1_correct": null
         },
         {
           "symbol": "NVDA",
@@ -1137,7 +1278,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 202.78,
+          "t1_pct": -0.6565,
+          "t1_correct": null
         },
         {
           "symbol": "SNDK",
@@ -1157,7 +1301,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1858.27,
+          "t1_pct": 7.5898,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -1177,7 +1324,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 192.45,
+          "t1_pct": 10.0847,
+          "t1_correct": null
         },
         {
           "symbol": "WDC",
@@ -1197,7 +1347,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 578.05,
+          "t1_pct": 5.0427,
+          "t1_correct": null
         },
         {
           "symbol": "RMD",
@@ -1217,7 +1370,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 208.45,
+          "t1_pct": -5.1422,
+          "t1_correct": null
         },
         {
           "symbol": "MRNA",
@@ -1237,7 +1393,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 76.56,
+          "t1_pct": 3.7398,
+          "t1_correct": null
         },
         {
           "symbol": "SCHW",
@@ -1257,7 +1416,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 101.91,
+          "t1_pct": 0.2065,
+          "t1_correct": null
         },
         {
           "symbol": "AXON",
@@ -1277,7 +1439,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 582.0,
+          "t1_pct": -2.9677,
+          "t1_correct": null
         },
         {
           "symbol": "GPN",
@@ -1297,7 +1462,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 74.38,
+          "t1_pct": -4.1371,
+          "t1_correct": null
         },
         {
           "symbol": "SPGI",
@@ -1317,7 +1485,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 432.96,
+          "t1_pct": -2.3677,
+          "t1_correct": null
         },
         {
           "symbol": "COR",
@@ -1337,7 +1508,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 302.46,
+          "t1_pct": -2.2967,
+          "t1_correct": true
         },
         {
           "symbol": "RJF",
@@ -1357,7 +1531,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 168.72,
+          "t1_pct": 0.6683,
+          "t1_correct": null
         },
         {
           "symbol": "MCO",
@@ -1377,7 +1554,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 487.02,
+          "t1_pct": -2.6914,
+          "t1_correct": null
         },
         {
           "symbol": "AMP",
@@ -1397,7 +1577,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 500.16,
+          "t1_pct": -1.5123,
+          "t1_correct": null
         },
         {
           "symbol": "DASH",
@@ -1417,7 +1600,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 192.35,
+          "t1_pct": -1.7218,
+          "t1_correct": null
         },
         {
           "symbol": "BRO",
@@ -1437,7 +1623,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 67.84,
+          "t1_pct": -0.8332,
+          "t1_correct": null
         },
         {
           "symbol": "HOOD",
@@ -1457,7 +1646,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 115.11,
+          "t1_pct": 1.9575,
+          "t1_correct": null
         },
         {
           "symbol": "UHS",
@@ -1477,7 +1669,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 155.2,
+          "t1_pct": -3.7579,
+          "t1_correct": null
         },
         {
           "symbol": "TECH",
@@ -1497,7 +1692,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 71.15,
+          "t1_pct": 0.2678,
+          "t1_correct": null
         },
         {
           "symbol": "DVA",
@@ -1517,7 +1715,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 229.48,
+          "t1_pct": -0.6709,
+          "t1_correct": null
         },
         {
           "symbol": "AJG",
@@ -1537,7 +1738,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 253.76,
+          "t1_pct": -1.1106,
+          "t1_correct": true
         },
         {
           "symbol": "GPC",
@@ -1557,7 +1761,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 124.27,
+          "t1_pct": -0.3688,
+          "t1_correct": true
         },
         {
           "symbol": "ERIE",
@@ -1577,7 +1784,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 247.81,
+          "t1_pct": -3.3389,
+          "t1_correct": true
         },
         {
           "symbol": "WTW",
@@ -1597,7 +1807,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 289.13,
+          "t1_pct": -1.1792,
+          "t1_correct": true
         },
         {
           "symbol": "FIS",
@@ -1617,7 +1830,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 41.61,
+          "t1_pct": -2.3239,
+          "t1_correct": null
         },
         {
           "symbol": "FICO",
@@ -1637,7 +1853,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1279.41,
+          "t1_pct": -1.6043,
+          "t1_correct": null
         },
         {
           "symbol": "ASX",
@@ -1657,7 +1876,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 43.25,
+          "t1_pct": 9.9949,
+          "t1_correct": null
         },
         {
           "symbol": "PGR",
@@ -1677,7 +1899,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 229.52,
+          "t1_pct": -3.1765,
+          "t1_correct": null
         },
         {
           "symbol": "ALL",
@@ -1697,7 +1922,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 248.64,
+          "t1_pct": -1.4389,
+          "t1_correct": true
         },
         {
           "symbol": "ANET",
@@ -1717,7 +1945,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 184.69,
+          "t1_pct": 2.0105,
+          "t1_correct": true
         },
         {
           "symbol": "JKHY",
@@ -1737,7 +1968,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 150.22,
+          "t1_pct": 1.9339,
+          "t1_correct": null
         },
         {
           "symbol": "OXY",
@@ -1757,7 +1991,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 52.3,
+          "t1_pct": -2.4072,
+          "t1_correct": false
         }
       ]
     }
