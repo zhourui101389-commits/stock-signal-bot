@@ -1066,7 +1066,10 @@
           "hit_stop": false,
           "t1_close": 39.65,
           "t1_pct": -10.0907,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 44.23,
+          "t3_pct": 0.2948,
+          "t3_correct": null
         },
         {
           "symbol": "DRAM",
@@ -1086,7 +1089,10 @@
           "hit_stop": false,
           "t1_close": 60.59,
           "t1_pct": -7.7059,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 65.53,
+          "t3_pct": -0.181,
+          "t3_correct": null
         },
         {
           "symbol": "INTC",
@@ -1106,7 +1112,10 @@
           "hit_stop": false,
           "t1_close": 110.39,
           "t1_pct": -11.2929,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 116.35,
+          "t3_pct": -6.5036,
+          "t3_correct": null
         },
         {
           "symbol": "MRVL",
@@ -1126,7 +1135,10 @@
           "hit_stop": false,
           "t1_close": 230.7,
           "t1_pct": -9.8899,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 249.325,
+          "t3_pct": -2.615,
+          "t3_correct": false
         },
         {
           "symbol": "MU",
@@ -1146,7 +1158,10 @@
           "hit_stop": false,
           "t1_close": 938.38,
           "t1_pct": -7.0524,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 1018.1,
+          "t3_pct": 0.8439,
+          "t3_correct": true
         },
         {
           "symbol": "NVDA",
@@ -1166,7 +1181,10 @@
           "hit_stop": false,
           "t1_close": 196.93,
           "t1_pct": -0.1775,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 201.8151,
+          "t3_pct": 2.2988,
+          "t3_correct": null
         },
         {
           "symbol": "SNDK",
@@ -1186,7 +1204,10 @@
           "hit_stop": false,
           "t1_close": 1617.7,
           "t1_pct": -10.4333,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 1817.2,
+          "t3_pct": 0.6124,
+          "t3_correct": true
         },
         {
           "symbol": "SOXL",
@@ -1206,7 +1227,10 @@
           "hit_stop": false,
           "t1_close": 165.28,
           "t1_pct": -19.2969,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 203.41,
+          "t3_pct": -0.6787,
+          "t3_correct": null
         },
         {
           "symbol": "WDC",
@@ -1226,7 +1250,10 @@
           "hit_stop": false,
           "t1_close": 532.1,
           "t1_pct": -7.9428,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 594.03,
+          "t3_pct": 2.7716,
+          "t3_correct": true
         }
       ]
     },
