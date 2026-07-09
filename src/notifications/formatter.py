@@ -146,7 +146,7 @@ def _format_action_guide(result, price: float, pinned: bool,
         checks.append("⚠️ 周线趋势偏空，谨慎做多")
     atr_sl = atr_pct * 2
     if atr_sl > sl_pct * 100:
-        checks.append(f"⚠️ 2×ATR({atr_sl:.1f}%) > 止损({sl_pct*100:.0f}%)，波动偏大")
+        checks.append(f"⚠️ 2×ATR({atr_sl:.1f}%) &gt; 止损({sl_pct*100:.0f}%)，波动偏大")
     if result.next_earnings_date:
         from datetime import date
         try:
@@ -753,7 +753,7 @@ def format_economic_calendar(events: list[dict]) -> str:
             time_str = "全天"
 
         impact   = ev.get("impact", "")
-        cn_name  = ev.get("cn_name") or ev.get("event", "")[:28]
+        cn_name  = _html.escape(ev.get("cn_name") or ev.get("event", "")[:28])
         actual   = ev.get("actual")
         est      = ev.get("estimate")
         prev     = ev.get("prev")
@@ -968,7 +968,7 @@ def format_review_message(scan_date: str, reviewed: list[dict], ai_analysis: str
             apct     = r.get("actual_pct")
             dir_icon = {"看多": "📈", "看空": "📉", "中性": "⚪"}.get(r.get("final_direction", "中性"), "")
             apct_str = f"{'+' if apct>=0 else ''}{apct:.2f}%" if apct is not None else "无数据"
-            lines.append(f"  {sym}  {dir_icon}  {apct_str}（涨跌幅<0.5%，不计入统计）")
+            lines.append(f"  {sym}  {dir_icon}  {apct_str}（涨跌幅&lt;0.5%，不计入统计）")
 
     if neutral:
         lines.append(f"\n<b>⚪ 观望未持仓（{len(neutral)}只）</b>")
@@ -1247,7 +1247,7 @@ def format_weekly_report(recent_history: list[dict]) -> str:
                 f"{p['symbol']}(+{(p.get('holding_peak_pct',0) or 0)-(p.get('effective_exit_pct',0) or 0):.1f}%更多)"
                 for p in early_tp[:3]
             )
-            lines.append(f"  ⚠️ 止盈过早（触发后还涨>3%）: {items}")
+            lines.append(f"  ⚠️ 止盈过早（触发后还涨&gt;3%）: {items}")
 
         # 止损过紧（触发后反弹）
         tight_sl = [
@@ -1260,7 +1260,7 @@ def format_weekly_report(recent_history: list[dict]) -> str:
                 f"{p['symbol']}(反弹{(p.get('holding_peak_pct',0) or 0)-(p.get('effective_exit_pct',0) or 0):.1f}%)"
                 for p in tight_sl[:3]
             )
-            lines.append(f"  ⚠️ 止损过紧（触发后反弹>2%）: {items}")
+            lines.append(f"  ⚠️ 止损过紧（触发后反弹&gt;2%）: {items}")
 
     lines.append(f"\n<i>统计周期: {recent_history[0].get('scan_date','')} ~ {recent_history[-1].get('scan_date','')}</i>")
     return "\n".join(lines)
