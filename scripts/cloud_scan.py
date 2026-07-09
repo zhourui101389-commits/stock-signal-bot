@@ -1267,6 +1267,15 @@ async def main():
         except Exception as e:
             logger.warning("Alpaca 持仓同步失败: %s", e)
 
+    elif scan_mode == "review_force":
+        # 手动补发：跳过日期检查，重发 predictions.json 中当前 scan_date 的复盘消息
+        # （用于复盘消息因故发送失败后，修复问题后手动重发，不触发扫描/下单）
+        try:
+            await _run_review(bot, chat_ids, anthropic_key, finnhub_client,
+                              strict_date_check=False)
+        except Exception as e:
+            logger.error("补发复盘失败: %s", e)
+
     elif scan_mode == "scan":
         today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
         # 盘前执行：信号生成后立即下单
