@@ -2,12 +2,13 @@ name: Daily Stock Scan
 
 on:
   schedule:
-    # 13:00 UTC = 9:00 EDT（美股开盘前30分钟），盘前扫描
-    - cron: '0 13 * * 1-5'
-    # 19:00 UTC = 15:00 EDT（收盘前1小时，power hour），盘中复查
-    - cron: '0 19 * * 1-5'
-    # 21:00 UTC = 17:00 EDT（美股收盘后1小时），盘后复盘
-    - cron: '0 21 * * 1-5'
+    # 13:07 UTC ≈ 9:07 EDT（美股开盘前后），盘前扫描
+    # 整点(0分)故意避开：GitHub Actions在整点扎堆触发，高峰期经常被直接丢弃而不只是延迟
+    - cron: '7 13 * * 1-5'
+    # 19:12 UTC ≈ 15:12 EDT（收盘前1小时，power hour），盘中复查
+    - cron: '12 19 * * 1-5'
+    # 21:17 UTC ≈ 17:17 EDT（美股收盘后1小时），盘后复盘
+    - cron: '17 21 * * 1-5'
   workflow_dispatch:
     inputs:
       scan_mode:
@@ -53,11 +54,11 @@ jobs:
         run: |
           if [ -n "${{ github.event.inputs.scan_mode }}" ]; then
             echo "SCAN_MODE=${{ github.event.inputs.scan_mode }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "7 13 * * 1-5" ]; then
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 19 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "12 19 * * 1-5" ]; then
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 21 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "17 21 * * 1-5" ]; then
             echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
           else
             echo "SCAN_MODE=" >> $GITHUB_OUTPUT
