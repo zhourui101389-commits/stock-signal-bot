@@ -38,9 +38,16 @@ def save_predictions(
         merged = predictions
     elif existing_preds and existing_date == today:
         # 同一天第二次扫描（如盘中复查）：按symbol合并而非整体覆盖，
-        # 重新扫过的股票用新结果，没重新扫的股票保留原预测，不丢数据
+        # 重新扫过的股票用新结果，没重新扫的股票保留原预测，不丢数据。
+        # 但如果已有记录带 trigger_session（说明是盘前/盘后哨兵真实下单
+        # 成交的记录，entry_price是Alpaca真实成交价），后面同一天常规扫描
+        # 重新分析同一标的产生的新记录不能覆盖它——那笔真实交易的价格
+        # 会被换成一个从未真正下单的分析结果，复盘/校准用的入场价就错了
         by_symbol = {p["symbol"]: p for p in existing_preds}
         for p in predictions:
+            existing_p = by_symbol.get(p["symbol"])
+            if existing_p and existing_p.get("trigger_session"):
+                continue
             by_symbol[p["symbol"]] = p
         merged = list(by_symbol.values())
     else:

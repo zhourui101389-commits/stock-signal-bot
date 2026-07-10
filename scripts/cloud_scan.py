@@ -1219,12 +1219,20 @@ async def _run_extended_watch(
         moved_pct = (q_now["price"] - entry["entry_price"]) / entry["entry_price"] * 100
         retry_count = entry.get("retry_count", 0)
         if moved_pct >= _EXTENDED_RETRY_THRESHOLD_PCT and retry_count < _EXTENDED_MAX_RETRIES and alpaca:
-            alpaca.cancel_order(entry["order_id"])
-            removed_protection_ids.add(entry["order_id"])
-            already_alerted.discard(sym)
-            retry_candidates.append((sym, q_now, retry_count + 1))
-            logger.info("哨兵 %s 原挂单$%.2f未成交，现价$%.2f（+%.1f%%），撤单重挂（第%d次重试）",
-                        sym, entry["entry_price"], q_now["price"], moved_pct, retry_count + 1)
+            # 撤单失败最可能的原因就是"刚好在这一刻成交了"（撤单和成交的竞态）——
+            # 这种情况绝不能按"重挂"处理：那样会把这笔已经成交、且刚被判定为
+            # "未持有"（上面held_symbols检查用的是本轮开始时的快照）的仓位的
+            # 保护记录删掉，还会再开一张重复的买单，变成裸仓+超额下单两个问题
+            # 叠一起。撤单失败就原样保留，让下一轮用最新的持仓快照重新判断
+            if alpaca.cancel_order(entry["order_id"]):
+                removed_protection_ids.add(entry["order_id"])
+                already_alerted.discard(sym)
+                retry_candidates.append((sym, q_now, retry_count + 1))
+                logger.info("哨兵 %s 原挂单$%.2f未成交，现价$%.2f（+%.1f%%），撤单重挂（第%d次重试）",
+                            sym, entry["entry_price"], q_now["price"], moved_pct, retry_count + 1)
+            else:
+                logger.warning("哨兵 %s 撤单失败（可能刚好成交），本轮不重挂，留给下一轮重新判断", sym)
+                still_pending_entries.append(entry)
         else:
             still_pending_entries.append(entry)
 
@@ -1873,12 +1881,19 @@ async def main():
             logger.error("Alpaca 执行失败: %s", e)
 
     else:
-        # all-in-one 模式
+        # all-in-one 模式（手动触发且没填scan_mode时落到这支）
         try:
             await _run_review(bot, chat_ids, anthropic_key, finnhub_client,
                               strict_date_check=False)
         except Exception as e:
             logger.error("复盘失败: %s", e)
+        # 跟 scan 分支一样，先给盘前/盘后裸单成交的仓位补挂止损止盈保护——
+        # 漏了这步的话，手动触发all-in-one时留下的隔夜裸仓要等到下一次
+        # 正常的scan分支才会被处理
+        try:
+            await _attach_pending_protection(bot, chat_ids, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("补挂保护失败: %s", e)
         today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
         try:
             await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret,
