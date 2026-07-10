@@ -9,10 +9,18 @@ on:
     - cron: '12 19 * * 1-5'
     # 21:17 UTC ≈ 17:17 EDT（美股收盘后1小时），盘后复盘
     - cron: '17 21 * * 1-5'
+    # 盘前哨兵：8:05-12:45 UTC ≈ 4:05-8:45 EDT，每20分钟一次，纯yfinance检测
+    # 不烧AI配额，只有异动超阈值才触发完整分析（见 _run_extended_watch）
+    - cron: '5,25,45 8-12 * * 1-5'
+    # 盘后哨兵：20:05-23:45 UTC ≈ 16:05-19:45 EDT，同日部分
+    - cron: '5,25,45 20-23 * * 1-5'
+    # 盘后哨兵：00:05-00:45 UTC（次日）≈ 20:05-20:45 EDT，跨零点部分
+    # UTC日期已跨到下一天，星期几要相应+1（周一盘后对应UTC周二凌晨，故 2-6）
+    - cron: '5,25,45 0 * * 2-6'
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / extended_watch=手动触发盘前盘后哨兵 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / test_data=行情诊断 / 留空=两者）'
         required: false
         default: ''
       test_buy_symbol:
@@ -60,6 +68,12 @@ jobs:
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "17 21 * * 1-5" ]; then
             echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "5,25,45 8-12 * * 1-5" ]; then
+            echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "5,25,45 20-23 * * 1-5" ]; then
+            echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "5,25,45 0 * * 2-6" ]; then
+            echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           else
             echo "SCAN_MODE=" >> $GITHUB_OUTPUT
           fi

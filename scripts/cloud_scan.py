@@ -34,6 +34,9 @@ _MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动
 
 _SCREENER_TOP_N = 15   # 市场初筛（标普500+中概）每日入选候选数
 
+# ── 盘前/盘后哨兵参数 ──────────────────────────────────────
+_EXTENDED_MOVE_THRESHOLD_PCT = 3.0   # 相对昨收涨跌幅超过这个才触发完整技术+AI分析
+
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
     if len(msg) <= limit:
@@ -797,6 +800,80 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     return today_predictions
 
 
+def _build_tier_maps(config) -> tuple[dict, dict]:
+    """构建 tier 映射（决定仓位上限）。_run_execution 和 _run_extended_watch 共用。"""
+    tier_map: dict[str, str] = {}
+    for s in config.tier_core:        tier_map[s] = "core"
+    for s in config.tier_swing:       tier_map[s] = "swing"
+    for s in config.tier_speculative: tier_map[s] = "speculative"
+    tier_cap = {"core": 0.15, "swing": 0.08, "speculative": 0.05}  # 仓位上限（占总资产）
+    return tier_map, tier_cap
+
+
+def _gate_and_size_position(
+    sym: str, action: str, final_dir: str,
+    entry: float, stop: float, target: float,
+    source: str,
+    held_symbols: set, open_positions: int, deployed: float, available_cash: float,
+    capital_base: float, tier_map: dict, tier_cap: dict, win_rate_cache: dict,
+) -> tuple[int | None, str | None]:
+    """
+    买入前的全部风控门禁 + 仓位计算。_run_execution（常规时段）和
+    _run_extended_watch（盘前盘后哨兵）共用同一套逻辑，扩展时段不允许
+    绕开任何一道门禁（最大持仓数/总敞口/历史胜率/单笔最大亏损）。
+    返回 (股数, None) 表示可以下单；(None, 跳过原因) 表示不下单。
+    """
+    if action not in ("积极买入", "谨慎买入") or final_dir != "看多":
+        return None, f"{sym}({action or '观望'})"
+
+    if sym in held_symbols:
+        return None, f"{sym}(已持仓)"
+
+    if not entry or not stop or not target:
+        return None, f"{sym}(缺价格参数)"
+
+    if open_positions >= _MAX_POSITIONS:
+        return None, f"{sym}(已达最大持仓数{_MAX_POSITIONS})"
+
+    if deployed >= capital_base * _MAX_TOTAL_EXPOSURE_PCT:
+        return None, f"{sym}(总敞口已达上限)"
+
+    if action not in win_rate_cache:
+        win_rate_cache[action] = _action_win_rate(action)
+    win_rate, sample_n = win_rate_cache[action]
+    if sample_n >= _MIN_WINRATE_SAMPLES and win_rate is not None and win_rate < _MIN_WINRATE:
+        return None, f"{sym}({action}历史胜率{win_rate*100:.0f}%过低)"
+
+    # 仓位计算：按单笔最大亏损反推股数（入场价-止损价 为每股风险），
+    # 再用 tier 上限、剩余现金、总敞口余量分别封顶取最小值
+    risk_per_share = entry - stop
+    if risk_per_share <= 0:
+        return None, f"{sym}(止损价格异常)"
+
+    max_loss_usd = capital_base * _MAX_LOSS_PER_TRADE_PCT
+    if action == "谨慎买入":
+        max_loss_usd *= 0.5
+    risk_based_amount = (max_loss_usd / risk_per_share) * entry
+
+    # 市场初筛发现的新标的未经长期观察，仓位上限按更保守的speculative档处理
+    default_tier    = "speculative" if source == "screener" else "swing"
+    tier            = tier_map.get(sym, default_tier)
+    tier_cap_amount = capital_base * tier_cap.get(tier, 0.05)
+    exposure_room   = capital_base * _MAX_TOTAL_EXPOSURE_PCT - deployed
+
+    position_amount = min(risk_based_amount, tier_cap_amount, exposure_room)
+    # 单笔不超过剩余可用资金的 40%，防止满仓
+    position_amount = min(position_amount, available_cash * 0.40)
+    shares = int(position_amount / entry)
+
+    if shares <= 0:
+        return None, f"{sym}(仓位不足1股)"
+    if position_amount > available_cash:
+        return None, f"{sym}(现金不足)"
+
+    return shares, None
+
+
 async def _run_execution(
     bot: Bot,
     chat_ids: list[int],
@@ -833,14 +910,7 @@ async def _run_execution(
     deployed       = sum(p["market_value"] for p in positions)  # 按实际持仓市值算，不依赖broker总现金
     available_cash = min(capital_base - deployed, account["cash"])
     open_positions = len(held_symbols)
-
-    # 构建 tier 映射（决定仓位上限）
-    tier_map: dict[str, str] = {}
-    for s in config.tier_core:        tier_map[s] = "core"
-    for s in config.tier_swing:       tier_map[s] = "swing"
-    for s in config.tier_speculative: tier_map[s] = "speculative"
-
-    tier_cap = {"core": 0.15, "swing": 0.08, "speculative": 0.05}  # 仓位上限（占总资产）
+    tier_map, tier_cap = _build_tier_maps(config)
 
     executed: list[dict] = []
     skipped:  list[str]  = []
@@ -871,67 +941,14 @@ async def _run_execution(
                         available_cash += freed
             continue
 
-        # 只处理明确买入信号
-        if action not in ("积极买入", "谨慎买入") or final_dir != "看多":
-            skipped.append(f"{sym}({action or '观望'})")
-            continue
-
-        # 已有持仓：跳过避免重复建仓
-        if sym in held_symbols:
-            skipped.append(f"{sym}(已持仓)")
-            continue
-
-        # 缺少止盈/止损价：跳过
-        if not entry or not stop or not target:
-            skipped.append(f"{sym}(缺价格参数)")
-            continue
-
-        # 硬顶1：最大持仓数
-        if open_positions >= _MAX_POSITIONS:
-            skipped.append(f"{sym}(已达最大持仓数{_MAX_POSITIONS})")
-            continue
-
-        # 硬顶2：总仓位敞口
-        if deployed >= capital_base * _MAX_TOTAL_EXPOSURE_PCT:
-            skipped.append(f"{sym}(总敞口已达上限)")
-            continue
-
-        # 门禁：该 action 历史胜率过低时暂停自动执行（样本不足时不生效）
-        if action not in win_rate_cache:
-            win_rate_cache[action] = _action_win_rate(action)
-        win_rate, sample_n = win_rate_cache[action]
-        if sample_n >= _MIN_WINRATE_SAMPLES and win_rate is not None and win_rate < _MIN_WINRATE:
-            skipped.append(f"{sym}({action}历史胜率{win_rate*100:.0f}%过低)")
-            continue
-
-        # 仓位计算：按单笔最大亏损反推股数（入场价-止损价 为每股风险），
-        # 再用 tier 上限、剩余现金、总敞口余量分别封顶取最小值
-        risk_per_share = entry - stop
-        if risk_per_share <= 0:
-            skipped.append(f"{sym}(止损价格异常)")
-            continue
-
-        max_loss_usd = capital_base * _MAX_LOSS_PER_TRADE_PCT
-        if action == "谨慎买入":
-            max_loss_usd *= 0.5
-        risk_based_amount = (max_loss_usd / risk_per_share) * entry
-
-        # 市场初筛发现的新标的未经长期观察，仓位上限按更保守的speculative档处理
-        default_tier    = "speculative" if pred.get("source") == "screener" else "swing"
-        tier            = tier_map.get(sym, default_tier)
-        tier_cap_amount = capital_base * tier_cap.get(tier, 0.05)
-        exposure_room   = capital_base * _MAX_TOTAL_EXPOSURE_PCT - deployed
-
-        position_amount = min(risk_based_amount, tier_cap_amount, exposure_room)
-        # 单笔不超过剩余可用资金的 40%，防止满仓
-        position_amount = min(position_amount, available_cash * 0.40)
-        shares = int(position_amount / entry)
-
-        if shares <= 0:
-            skipped.append(f"{sym}(仓位不足1股)")
-            continue
-        if position_amount > available_cash:
-            skipped.append(f"{sym}(现金不足)")
+        shares, skip_reason = _gate_and_size_position(
+            sym, action, final_dir, entry, stop, target,
+            pred.get("source", "core"),
+            held_symbols, open_positions, deployed, available_cash,
+            capital_base, tier_map, tier_cap, win_rate_cache,
+        )
+        if skip_reason:
+            skipped.append(skip_reason)
             continue
 
         result = alpaca.place_bracket_order(sym, shares, entry, stop, target)
@@ -988,6 +1005,258 @@ async def _run_execution(
             logger.warning("执行报告发送失败: %s", e)
     logger.info("执行完成：下单 %d 笔，平仓 %d 笔，跳过 %d 笔",
                 len(executed), len(closed), len(skipped))
+
+
+def _current_extended_session() -> str | None:
+    """判断当前处于盘前('pre')/盘后('post')/都不是(None)。按美东时区判断。"""
+    from zoneinfo import ZoneInfo
+    now = datetime.datetime.now(ZoneInfo("America/New_York"))
+    if now.weekday() >= 5:
+        return None
+    t = now.time()
+    if datetime.time(4, 0) <= t < datetime.time(9, 30):
+        return "pre"
+    if datetime.time(16, 0) <= t < datetime.time(20, 0):
+        return "post"
+    return None
+
+
+async def _run_extended_watch(
+    config, bot, chat_ids, finnhub_client, anthropic_key, alpaca_key, alpaca_secret,
+) -> None:
+    """
+    盘前/盘后哨兵：每次触发只用免费的 yfinance 分钟线扫一遍核心watchlist的
+    最新价（不烧AI配额），只有涨跌幅超过 _EXTENDED_MOVE_THRESHOLD_PCT 才触发
+    完整技术+AI分析——把AI调用限制在"真正有异动"的标的上，不是每次轮询都花钱。
+
+    确认买入信号后用纯限价单(extended_hours=True)入场——Alpaca扩展时段只
+    接受纯限价单，没法带止损止盈的括号单保护——所以下单后记入
+    pending_protection，等常规时段开盘由 _attach_pending_protection() 补挂。
+
+    同一个标的同一个时段（当天pre或post）只触发一次完整分析，避免异动持续
+    几小时时每20分钟都重新分析一遍、重复推送。
+    """
+    if not _is_us_trading_day():
+        return
+    session = _current_extended_session()
+    if not session:
+        logger.info("当前不在盘前/盘后时段，跳过哨兵检测")
+        return
+
+    today_str  = str(datetime.date.today())
+    alert_key  = f"{today_str}_{session}"
+
+    data              = load_predictions()
+    extended_alerts   = dict(data.get("extended_alerts", {}))
+    already_alerted   = set(extended_alerts.get(alert_key, []))
+    pending_protection = list(data.get("pending_protection", []))
+    _pending_len_at_load = len(pending_protection)
+
+    symbols = watchlist_repo.get_all_symbols()
+    client  = YFinanceDataClient()
+
+    candidates = []
+    for sym in symbols:
+        if sym in already_alerted:
+            continue
+        q = client.get_extended_hours_quote(sym)
+        if not q:
+            continue
+        chg = q["change_pct"]
+        logger.info("哨兵 %s: %s时段 %+.2f%%（现价$%.2f / 前收$%.2f）",
+                    sym, session, chg, q["price"], q["prev_close"])
+        if abs(chg) >= _EXTENDED_MOVE_THRESHOLD_PCT:
+            candidates.append((sym, q))
+
+    if not candidates:
+        return
+
+    logger.info("哨兵发现 %d 只异动标的: %s", len(candidates), [c[0] for c in candidates])
+
+    use_ai = bool(anthropic_key)
+    alpaca = None
+    account = positions = None
+    held_symbols: set = set()
+    capital_base = deployed = available_cash = 0.0
+    open_positions = 0
+    tier_map = tier_cap = {}
+    win_rate_cache: dict[str, tuple] = {}
+
+    if alpaca_key and alpaca_secret:
+        from src.execution.alpaca_client import AlpacaClient
+        alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+        try:
+            account   = alpaca.get_account()
+            positions = alpaca.get_positions()
+            held_symbols   = {p["symbol"] for p in positions}
+            capital_base   = min(account["equity"], config.alpaca_capital_base)
+            deployed       = sum(p["market_value"] for p in positions)
+            available_cash = min(capital_base - deployed, account["cash"])
+            open_positions = len(held_symbols)
+            tier_map, tier_cap = _build_tier_maps(config)
+        except Exception as e:
+            logger.error("哨兵获取 Alpaca 账户失败，本轮不下单: %s", e)
+            alpaca = None
+
+    macro_context = _get_macro_context(finnhub_client)
+    session_label = "盘前" if session == "pre" else "盘后"
+
+    for sym, q in candidates:
+        already_alerted.add(sym)
+        try:
+            result = analyze_symbol(
+                client, sym,
+                config.signals.get("lookback_days", 250),
+                config.signals.get("lookback_weeks", 104),
+                config.total_capital, config.max_position_pct,
+            )
+        except Exception as e:
+            logger.error("哨兵技术分析 %s 失败: %s", sym, e)
+            continue
+
+        ai_result = {}
+        if use_ai:
+            try:
+                symbol_history = get_symbol_history(sym)
+                extended_note = (
+                    f"【{session_label}异动提醒】{sym} 相对昨日收盘 {q['change_pct']:+.2f}%"
+                    f"（现价${q['price']:.2f}，昨收${q['prev_close']:.2f}），"
+                    f"这个异动发生在{session_label}时段，尚未反映在常规日线技术指标里，"
+                    f"请结合基本面/消息面判断是追涨机会还是情绪性过冲，不要单纯因为已经涨了就回避，"
+                    f"也不要单纯因为技术面滞后就无视这个价格变化。"
+                )
+                ai_result = run_ai_analysis(
+                    result, finnhub_client, anthropic_key,
+                    macro_context=(macro_context + "\n\n" + extended_note),
+                    symbol_history=symbol_history,
+                )
+                if ai_result:
+                    logger.info("哨兵AI研判 %s: %s 置信度%s",
+                                sym, ai_result.get("final_direction", "?"),
+                                ai_result.get("conviction", "?"))
+            except Exception as e:
+                logger.error("哨兵AI分析 %s 失败: %s", sym, e)
+
+        action    = ai_result.get("action", "") if ai_result else ""
+        final_dir = ai_result.get("final_direction", "中性") if ai_result else "中性"
+
+        msg = (
+            f"🌙 <b>{session_label}异动</b>\n{'─'*28}\n"
+            f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
+        )
+        if ai_result:
+            msg += f"AI研判: {final_dir} / {action or '观望'}（置信度{ai_result.get('conviction','?')}）\n"
+            if ai_result.get("verdict"):
+                msg += f"{_html.escape(str(ai_result['verdict'])[:300])}\n"
+        else:
+            msg += "AI研判: 未获取（本条不触发下单）\n"
+
+        if alpaca and ai_result:
+            entry = q["price"]
+            stop  = ai_result.get("stop_loss")
+            target = ai_result.get("target_price")
+            shares, skip_reason = _gate_and_size_position(
+                sym, action, final_dir, entry, stop, target, "core",
+                held_symbols, open_positions, deployed, available_cash,
+                capital_base, tier_map, tier_cap, win_rate_cache,
+            )
+            if shares:
+                order = alpaca.place_extended_hours_order(sym, shares, entry)
+                if order:
+                    held_symbols.add(sym)
+                    open_positions += 1
+                    cost = shares * entry
+                    deployed += cost
+                    available_cash -= cost
+                    pending_protection.append({
+                        "symbol":    sym,
+                        "qty":       shares,
+                        "stop":      stop,
+                        "target":    target,
+                        "order_id":  order["order_id"],
+                        "opened_at": datetime.datetime.now().isoformat(),
+                    })
+                    msg += (f"\n✅ 已挂{session_label}限价单 ×{shares}股 @${entry:.2f}"
+                            f"（无保护，等常规时段开盘补挂 止损${stop:.2f}/止盈${target:.2f}）")
+            elif skip_reason:
+                msg += f"\n⏭ 未下单：{skip_reason}"
+
+        for chat_id in chat_ids:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+
+    # 重新读一遍最新数据再合并写回，避免和并发跑的常规扫描/复盘/别的哨兵tick
+    # 互相覆盖（这几个cron间隔只有20分钟，触发延迟时完全可能重叠执行）
+    newly_added_protection = pending_protection[_pending_len_at_load:]
+    fresh = load_predictions()
+    fresh_alerts = dict(fresh.get("extended_alerts", {}))
+    fresh_alerts[alert_key] = sorted(set(fresh_alerts.get(alert_key, [])) | already_alerted)
+    fresh["extended_alerts"]    = fresh_alerts
+    fresh["pending_protection"] = list(fresh.get("pending_protection", [])) + newly_added_protection
+    save_raw(fresh)
+
+
+async def _attach_pending_protection(
+    bot, chat_ids, alpaca_key: str, alpaca_secret: str,
+) -> None:
+    """
+    补挂保护：检查 pending_protection 里盘前/盘后裸单入场的仓位，
+    只要 Alpaca 那边已经显示实际持仓（说明限价单成交了），就补上止损止盈
+    OCO 保护单。在常规时段一开盘（_run_scan 最前面）调用。
+    未成交、当天也没成交的裸单会在 Alpaca 那边随 DAY 单自动过期作废，
+    这里直接从待办列表里清掉即可，不用额外撤单。
+    """
+    if not alpaca_key or not alpaca_secret:
+        return
+    data = load_predictions()
+    pending = list(data.get("pending_protection", []))
+    if not pending:
+        return
+
+    from src.execution.alpaca_client import AlpacaClient
+    alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+    try:
+        positions = alpaca.get_positions()
+    except Exception as e:
+        logger.error("补挂保护：获取持仓失败: %s", e)
+        return
+    held_qty = {p["symbol"]: p["qty"] for p in positions}
+
+    still_pending = []
+    attached = []
+    for item in pending:
+        sym = item["symbol"]
+        actual_qty = held_qty.get(sym, 0)
+        if actual_qty <= 0:
+            logger.info("补挂保护：%s 盘前盘后限价单未成交（已随DAY单过期），移出待办", sym)
+            continue
+        qty = min(item["qty"], int(actual_qty))
+        result = alpaca.attach_protection(sym, qty, item["stop"], item["target"])
+        if result:
+            attached.append({**item, "qty": qty})
+        else:
+            still_pending.append(item)  # 补挂失败，留到下次再试
+
+    # 重新读一遍最新数据：只摘除"本轮明确处理过"的条目(按order_id匹配)，
+    # 保留期间可能被并发哨兵tick新加进来的条目，避免互相覆盖
+    processed_ids = {item["order_id"] for item in pending}
+    fresh = load_predictions()
+    fresh["pending_protection"] = [
+        item for item in fresh.get("pending_protection", [])
+        if item["order_id"] not in processed_ids
+    ] + still_pending
+    save_raw(fresh)
+
+    if attached:
+        lines = ["🛡 <b>盘前/盘后仓位补挂保护</b>", "─" * 28]
+        for a in attached:
+            lines.append(f"  {a['symbol']} ×{a['qty']}股  止损${a['stop']:.2f}  止盈${a['target']:.2f}")
+        msg = "\n".join(lines)
+        for chat_id in chat_ids:
+            try:
+                await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+            except Exception as e:
+                logger.warning("补挂保护通知发送失败: %s", e)
+        logger.info("补挂保护完成：%d 笔", len(attached))
 
 
 async def _run_test_buy(
@@ -1343,7 +1612,20 @@ async def main():
         except Exception as e:
             logger.error("补发复盘失败: %s", e)
 
+    elif scan_mode == "extended_watch":
+        # 盘前/盘后哨兵：检测异动、按需触发AI分析、扩展时段裸单入场
+        try:
+            await _run_extended_watch(config, bot, chat_ids, finnhub_client, anthropic_key,
+                                      alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("盘前盘后哨兵失败: %s", e)
+
     elif scan_mode == "scan":
+        # 常规时段开盘：先给盘前/盘后裸单成交的仓位补挂止损止盈保护
+        try:
+            await _attach_pending_protection(bot, chat_ids, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("补挂保护失败: %s", e)
         today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
         # 盘前执行：信号生成后立即下单
         try:

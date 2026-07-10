@@ -170,6 +170,100 @@ class AlpacaClient:
             logger.error("下单失败 %s: %s", symbol, e)
             return None
 
+    def place_extended_hours_order(
+        self,
+        symbol: str,
+        qty: int,
+        limit_price: float,
+    ) -> Optional[dict]:
+        """
+        盘前盘后入场：纯限价单 + extended_hours=True。
+        Alpaca 扩展时段只接受"纯限价单"，括号单(止损/止盈)在扩展时段一律拒收，
+        所以这里下的是"裸单"——成交后没有服务端保护，止损止盈要等常规时段
+        用 attach_protection() 补挂（见 _run_extended_watch 调用方）。
+        """
+        from alpaca.trading.requests import LimitOrderRequest
+        from alpaca.trading.enums import OrderSide, TimeInForce
+
+        if qty <= 0:
+            logger.warning("下单数量为0，跳过 %s", symbol)
+            return None
+
+        try:
+            order = self._client.submit_order(
+                LimitOrderRequest(
+                    symbol=symbol,
+                    qty=qty,
+                    side=OrderSide.BUY,
+                    time_in_force=TimeInForce.DAY,
+                    limit_price=round(limit_price, 2),
+                    extended_hours=True,
+                )
+            )
+            logger.info("盘前盘后限价单成功 %s ×%d @%.2f（无保护，待补挂）",
+                        symbol, qty, limit_price)
+            return {
+                "order_id": str(order.id),
+                "symbol":   symbol,
+                "qty":      qty,
+                "entry":    limit_price,
+                "status":   str(order.status),
+            }
+        except Exception as e:
+            logger.error("盘前盘后下单失败 %s: %s", symbol, e)
+            return None
+
+    def attach_protection(
+        self,
+        symbol: str,
+        qty: int,
+        stop_loss: float,
+        take_profit: float,
+    ) -> Optional[dict]:
+        """
+        给已经持有、尚无保护的仓位补挂止损止盈（OCO 卖出对），只能在常规
+        交易时段提交（OCO 同样不支持扩展时段）。用于盘前盘后裸单成交后、
+        常规时段一开盘就补上保护。
+        """
+        from alpaca.trading.requests import (
+            LimitOrderRequest, TakeProfitRequest, StopLossRequest,
+        )
+        from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
+
+        if qty <= 0:
+            return None
+        if stop_loss >= take_profit:
+            logger.warning("止损价(%.2f) >= 止盈价(%.2f)，跳过补挂 %s",
+                           stop_loss, take_profit, symbol)
+            return None
+
+        try:
+            order = self._client.submit_order(
+                LimitOrderRequest(
+                    symbol=symbol,
+                    qty=qty,
+                    side=OrderSide.SELL,
+                    time_in_force=TimeInForce.GTC,
+                    limit_price=round(take_profit, 2),
+                    order_class=OrderClass.OCO,
+                    take_profit=TakeProfitRequest(limit_price=round(take_profit, 2)),
+                    stop_loss=StopLossRequest(stop_price=round(stop_loss, 2)),
+                )
+            )
+            logger.info("补挂保护成功 %s ×%d 止损%.2f 止盈%.2f",
+                        symbol, qty, stop_loss, take_profit)
+            return {
+                "order_id": str(order.id),
+                "symbol":   symbol,
+                "qty":      qty,
+                "stop":     stop_loss,
+                "target":   take_profit,
+                "status":   str(order.status),
+            }
+        except Exception as e:
+            logger.error("补挂保护失败 %s: %s", symbol, e)
+            return None
+
     def close_position(self, symbol: str) -> Optional[dict]:
         """全部平仓，轮询到成交，返回实际成交价/股数供详细记账用；失败返回None。"""
         try:

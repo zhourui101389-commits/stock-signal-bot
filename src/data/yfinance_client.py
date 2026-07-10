@@ -133,6 +133,42 @@ class YFinanceDataClient:
             return {"symbol": symbol}
 
     # ──────────────────────────────────────────────
+    # 盘前/盘后最新成交（用于扩展时段哨兵检测）
+    # ──────────────────────────────────────────────
+
+    def get_extended_hours_quote(self, symbol: str) -> dict:
+        """
+        盘前/盘后最新成交价：复用 1 分钟线 + prepost=True 的方式获取，而不是
+        .info 里经常返回 None 的 preMarketPrice/postMarketPrice 字段（后者在
+        get_quote() 里已经因为不稳定被禁用）。这个 1 分钟线机制已经在
+        _is_us_trading_day() 里跑了很久证明可用，这里复用同一套思路。
+        """
+        try:
+            hist = yf.Ticker(symbol).history(period="1d", interval="1m", prepost=True)
+            if hist.empty:
+                return {}
+            latest_price = float(hist["Close"].iloc[-1])
+            latest_ts    = hist.index[-1]
+
+            info = yf.Ticker(symbol).info or {}
+            prev_close = info.get("previousClose") or info.get("regularMarketPreviousClose")
+            if not prev_close:
+                return {}
+            prev_close = float(prev_close)
+            change_pct = (latest_price - prev_close) / prev_close * 100
+
+            return {
+                "symbol":     symbol,
+                "price":      latest_price,
+                "prev_close": prev_close,
+                "change_pct": change_pct,
+                "timestamp":  latest_ts,
+            }
+        except Exception as e:
+            logger.warning("get_extended_hours_quote %s 失败: %s", symbol, e)
+            return {}
+
+    # ──────────────────────────────────────────────
     # 资金流向（不支持，返回空）
     # ──────────────────────────────────────────────
 
