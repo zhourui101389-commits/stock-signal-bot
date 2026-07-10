@@ -1141,6 +1141,54 @@ async def _run_test_ai(bot: Bot, chat_ids: list[int], anthropic_key: str) -> Non
             logger.warning("AI诊断结果发送失败: %s", e)
 
 
+async def _run_test_data(bot: Bot, chat_ids: list[int], alpaca_key: str, alpaca_secret: str) -> None:
+    """
+    诊断用：查询 Alpaca 免费(IEX)行情在盘前/盘后时段是否有真实报价更新，
+    还是像 Finnhub 免费版一样冻结在收盘价。查最新成交(trade)和报价(quote)
+    的时间戳，判断是否覆盖 4:00-9:30 / 16:00-20:00 ET 扩展时段。
+    """
+    if not alpaca_key or not alpaca_secret:
+        logger.info("ALPACA_API_KEY 未配置，跳过行情诊断")
+        return
+
+    from alpaca.data.historical import StockHistoricalDataClient
+    from alpaca.data.requests import StockLatestTradeRequest, StockLatestQuoteRequest
+
+    symbols = ["AAPL", "QQQ", "MRVL"]
+    client = StockHistoricalDataClient(alpaca_key, alpaca_secret)
+
+    lines = ["📡 <b>Alpaca 行情诊断</b>", "─" * 28]
+    try:
+        trades = client.get_stock_latest_trade(StockLatestTradeRequest(symbol_or_symbols=symbols))
+        quotes = client.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=symbols))
+        import datetime
+        now_et = datetime.datetime.now(datetime.timezone.utc)
+        for sym in symbols:
+            t = trades.get(sym)
+            q = quotes.get(sym)
+            t_age_min = (now_et - t.timestamp).total_seconds() / 60 if t else None
+            line = (
+                f"{sym}: 最新成交 ${t.price:.2f} @ {t.timestamp.isoformat()} "
+                f"({t_age_min:.0f}分钟前)" if t else f"{sym}: 无成交数据"
+            )
+            logger.info("行情诊断 %s", line)
+            lines.append(line)
+            if q:
+                q_line = f"  报价 买${q.bid_price:.2f}/卖${q.ask_price:.2f} @ {q.timestamp.isoformat()}"
+                logger.info("行情诊断 %s", q_line)
+                lines.append(q_line)
+    except Exception as e:
+        logger.error("行情诊断失败: %s", e)
+        lines.append(f"❌ 查询失败: {e}")
+
+    msg = "\n".join(lines)
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("行情诊断结果发送失败: %s", e)
+
+
 async def _sync_portfolio(
     bot: Bot,
     chat_ids: list[int],
@@ -1242,6 +1290,13 @@ async def main():
             await _run_test_ai(bot, chat_ids, anthropic_key)
         except Exception as e:
             logger.error("AI诊断失败: %s", e)
+        return
+
+    if scan_mode == "test_data":
+        try:
+            await _run_test_data(bot, chat_ids, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("行情诊断失败: %s", e)
         return
 
     if scan_mode == "test_buy":
