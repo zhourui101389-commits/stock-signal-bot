@@ -35,7 +35,9 @@ _MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动
 _SCREENER_TOP_N = 15   # 市场初筛（标普500+中概）每日入选候选数
 
 # ── 盘前/盘后哨兵参数 ──────────────────────────────────────
-_EXTENDED_MOVE_THRESHOLD_PCT = 3.0   # 相对昨收涨跌幅超过这个才触发完整技术+AI分析
+_EXTENDED_MOVE_THRESHOLD_PCT  = 3.0   # 相对昨收涨跌幅超过这个才触发完整技术+AI分析
+_EXTENDED_RETRY_THRESHOLD_PCT = 2.0   # 挂单未成交、价格继续朝买入方向运行超过这个才撤单重挂
+_EXTENDED_MAX_RETRIES         = 1     # 每个标的每个时段最多重挂几次，防止单边行情反复触发AI分析
 
 def _safe_truncate(msg: str, limit: int = _TG_MAX_CHARS) -> str:
     """Telegram 消息超过限制时截断并加提示，避免发送失败。"""
@@ -1054,10 +1056,16 @@ async def _run_extended_watch(
     data              = load_predictions()
     extended_alerts   = dict(data.get("extended_alerts", {}))
     already_alerted   = set(extended_alerts.get(alert_key, []))
-    pending_protection = list(data.get("pending_protection", []))
-    _pending_len_at_load = len(pending_protection)
+    pending_entries   = list(data.get("pending_entries", []))
+    _entries_at_load  = list(pending_entries)  # 快照，写回时用来判断哪些是本轮"处理过"的
     trigger_counts    = dict(data.get("extended_trigger_count", {}))
     trigger_count     = trigger_counts.get(alert_key, 0)
+
+    # pending_protection 不在本函数里维护完整列表——最终写回时按 order_id
+    # 精确增删（见函数末尾），避免"先在本地列表里增删元素、再用长度切片算新增
+    # 项"这种写法在reconcile阶段先删后loop阶段再加时算错新增范围
+    removed_protection_ids: set[str] = set()
+    added_protection: list[dict] = []
 
     # 检测范围：固定核心票 + 当天/最近一次常规扫描里市场初筛选出的标的
     # （不是只盯用户的固定清单，也不是每20分钟重新跑一次全市场初筛——
@@ -1070,24 +1078,6 @@ async def _run_extended_watch(
     })
     symbols = list(dict.fromkeys(core_symbols + screener_symbols))
     client  = YFinanceDataClient()
-
-    candidates = []
-    for sym in symbols:
-        if sym in already_alerted:
-            continue
-        q = client.get_extended_hours_quote(sym)
-        if not q:
-            continue
-        chg = q["change_pct"]
-        logger.info("哨兵 %s: %s时段 %+.2f%%（现价$%.2f / 前收$%.2f）",
-                    sym, session, chg, q["price"], q["prev_close"])
-        if abs(chg) >= _EXTENDED_MOVE_THRESHOLD_PCT:
-            candidates.append((sym, q))
-
-    if not candidates:
-        return
-
-    logger.info("哨兵发现 %d 只异动标的: %s", len(candidates), [c[0] for c in candidates])
 
     use_ai = bool(anthropic_key)
     alpaca = None
@@ -1114,15 +1104,58 @@ async def _run_extended_watch(
             logger.error("哨兵获取 Alpaca 账户失败，本轮不下单: %s", e)
             alpaca = None
 
-    macro_context = _get_macro_context(finnhub_client)
+    # ── 重挂检查：上一轮挂的盘前盘后限价单成交了吗？没成交且价格已经继续
+    # 朝买入方向运行超过阈值——说明原来那个价位已经买不到了，撤单按新价重挂，
+    # 让AI重新评估这个更高的价位还值不值得追（不是机械地"价格涨多少就跟着追多少"）
+    still_pending_entries: list[dict] = []
+    retry_candidates: list[tuple] = []   # (symbol, quote, retry_count)
+    for entry in pending_entries:
+        if entry.get("alert_key") != alert_key:
+            continue  # 不是本时段挂的单，DAY单早随Alpaca自动过期，直接丢弃
+        sym = entry["symbol"]
+        if sym in held_symbols:
+            continue  # 已成交，交给pending_protection那条线去补保护，这里不用管了
+        q_now = client.get_extended_hours_quote(sym)
+        if not q_now:
+            still_pending_entries.append(entry)
+            continue
+        moved_pct = (q_now["price"] - entry["entry_price"]) / entry["entry_price"] * 100
+        retry_count = entry.get("retry_count", 0)
+        if moved_pct >= _EXTENDED_RETRY_THRESHOLD_PCT and retry_count < _EXTENDED_MAX_RETRIES and alpaca:
+            alpaca.cancel_order(entry["order_id"])
+            removed_protection_ids.add(entry["order_id"])
+            already_alerted.discard(sym)
+            retry_candidates.append((sym, q_now, retry_count + 1))
+            logger.info("哨兵 %s 原挂单$%.2f未成交，现价$%.2f（+%.1f%%），撤单重挂（第%d次重试）",
+                        sym, entry["entry_price"], q_now["price"], moved_pct, retry_count + 1)
+        else:
+            still_pending_entries.append(entry)
+
+    retry_syms = {c[0] for c in retry_candidates}
+
+    candidates = list(retry_candidates)
+    for sym in symbols:
+        if sym in already_alerted or sym in retry_syms:
+            continue
+        q = client.get_extended_hours_quote(sym)
+        if not q:
+            continue
+        chg = q["change_pct"]
+        logger.info("哨兵 %s: %s时段 %+.2f%%（现价$%.2f / 前收$%.2f）",
+                    sym, session, chg, q["price"], q["prev_close"])
+        if abs(chg) >= _EXTENDED_MOVE_THRESHOLD_PCT:
+            candidates.append((sym, q, 0))
+
     session_label = "盘前" if session == "pre" else "盘后"
-
-    # 只在"真的下单"时才发Telegram——触发分析本身不通知，避免异动一多就刷屏。
-    # 每次真正进入完整技术+AI分析都计一次数，买入时把这个次数带上，方便你
-    # 知道这次买入是筛了几个候选之后才决定的，而不是随手一次分析就买
     trigger_count_start = trigger_count
+    newly_placed_entries: list[dict] = []
 
-    for sym, q in candidates:
+    if candidates:
+        logger.info("哨兵发现 %d 只候选（含%d个重挂）: %s",
+                    len(candidates), len(retry_candidates), [c[0] for c in candidates])
+        macro_context = _get_macro_context(finnhub_client)
+
+    for sym, q, retry_count in candidates:
         already_alerted.add(sym)
         trigger_count += 1
         try:
@@ -1169,8 +1202,11 @@ async def _run_extended_watch(
         entry = q["price"]
         stop  = ai_result.get("stop_loss")
         target = ai_result.get("target_price")
+        # 初筛发现的标的（不在用户固定tier里）按更保守的speculative档处理，
+        # 跟常规扫描（_run_scan/_run_execution）的口径保持一致
+        source = "screener" if sym in screener_symbols else "core"
         shares, skip_reason = _gate_and_size_position(
-            sym, action, final_dir, entry, stop, target, "core",
+            sym, action, final_dir, entry, stop, target, source,
             held_symbols, open_positions, deployed, available_cash,
             capital_base, tier_map, tier_cap, win_rate_cache,
         )
@@ -1187,7 +1223,7 @@ async def _run_extended_watch(
         cost = shares * entry
         deployed += cost
         available_cash -= cost
-        pending_protection.append({
+        added_protection.append({
             "symbol":    sym,
             "qty":       shares,
             "stop":      stop,
@@ -1195,9 +1231,17 @@ async def _run_extended_watch(
             "order_id":  order["order_id"],
             "opened_at": datetime.datetime.now().isoformat(),
         })
+        newly_placed_entries.append({
+            "symbol":      sym,
+            "order_id":    order["order_id"],
+            "entry_price": entry,
+            "retry_count": retry_count,
+            "alert_key":   alert_key,
+        })
 
+        retry_note = f"（第{retry_count + 1}次尝试后成交挂单）" if retry_count else ""
         msg = (
-            f"🌙 <b>{session_label}异动买入</b>\n{'─'*28}\n"
+            f"🌙 <b>{session_label}异动买入</b>{retry_note}\n{'─'*28}\n"
             f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
             f"AI研判: {final_dir} / {action}（置信度{ai_result.get('conviction','?')}）\n"
             f"{('本' + session_label + '共触发' + str(trigger_count - trigger_count_start) + '次分析，这是其中筛出的买入')}\n"
@@ -1211,17 +1255,34 @@ async def _run_extended_watch(
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
 
     # 重新读一遍最新数据再合并写回，避免和并发跑的常规扫描/复盘/别的哨兵tick
-    # 互相覆盖（这几个cron间隔只有20分钟，触发延迟时完全可能重叠执行）
-    newly_added_protection = pending_protection[_pending_len_at_load:]
+    # 互相覆盖（这几个cron间隔只有20分钟，触发延迟时完全可能重叠执行）。
+    # pending_entries/pending_protection 都用 order_id 精确匹配增删，而不是
+    # 整体覆盖，避免丢掉并发tick期间新增的条目
     trigger_increment = trigger_count - trigger_count_start
+    processed_entry_ids = {e["order_id"] for e in _entries_at_load if e.get("alert_key") == alert_key}
+
     fresh = load_predictions()
     fresh_alerts = dict(fresh.get("extended_alerts", {}))
     fresh_alerts[alert_key] = sorted(set(fresh_alerts.get(alert_key, [])) | already_alerted)
     fresh_counts = dict(fresh.get("extended_trigger_count", {}))
     fresh_counts[alert_key] = fresh_counts.get(alert_key, 0) + trigger_increment
+    # 顺带清掉跨天的陈旧条目：DAY单不会跨自然日存活，昨天及更早、没被今天
+    # 任何一次哨兵tick处理过的条目一定已经过期，否则会在pending_entries里
+    # 永远堆积（旧alert_key不会再被今天的reconcile循环命中）
+    fresh_entries = [
+        e for e in fresh.get("pending_entries", [])
+        if e["order_id"] not in processed_entry_ids and e.get("alert_key", "").startswith(today_str)
+    ] + still_pending_entries + newly_placed_entries
+
+    fresh_protection = [
+        p for p in fresh.get("pending_protection", [])
+        if p.get("order_id") not in removed_protection_ids
+    ] + added_protection
+
     fresh["extended_alerts"]         = fresh_alerts
     fresh["extended_trigger_count"]  = fresh_counts
-    fresh["pending_protection"]      = list(fresh.get("pending_protection", [])) + newly_added_protection
+    fresh["pending_protection"]      = fresh_protection
+    fresh["pending_entries"]         = fresh_entries
     save_raw(fresh)
 
 

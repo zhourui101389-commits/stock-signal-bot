@@ -264,6 +264,16 @@ class AlpacaClient:
             logger.error("补挂保护失败 %s: %s", symbol, e)
             return None
 
+    def cancel_order(self, order_id: str) -> bool:
+        """撤销未成交订单。用于盘前盘后限价单迟迟不成交、价格已经继续走远时撤单重挂。"""
+        try:
+            self._client.cancel_order_by_id(order_id)
+            logger.info("撤单成功 order_id=%s", order_id)
+            return True
+        except Exception as e:
+            logger.warning("撤单失败 order_id=%s: %s", order_id, e)
+            return False
+
     def close_position(self, symbol: str) -> Optional[dict]:
         """全部平仓，轮询到成交，返回实际成交价/股数供详细记账用；失败返回None。"""
         try:
