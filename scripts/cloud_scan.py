@@ -1697,7 +1697,7 @@ async def _run_test_shadow(bot: Bot, chat_ids: list[int], gemini_key: str) -> No
                 _GEMINI_URL,
                 params={"key": gemini_key},
                 json={"contents": [{"role": "user", "parts": [{"text": "reply with the single word OK"}]}]},
-                timeout=20,
+                timeout=30,
             )
             resp.raise_for_status()
             data = resp.json()
