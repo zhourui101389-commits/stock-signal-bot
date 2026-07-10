@@ -1197,6 +1197,11 @@ async def _sync_portfolio(
         except Exception as e:
             logger.warning("持仓快报发送失败: %s", e)
     logger.info("Alpaca 持仓快报已发送，持仓 %d 只", len(positions))
+    for p in positions:
+        logger.info("  持仓明细: %s ×%.0f 均价$%.2f 现价$%s 浮盈%+.0f(%+.1f%%)",
+                     p["symbol"], p["qty"], p["avg_entry_price"],
+                     f"{p['current_price']:.2f}" if p["current_price"] else "N/A",
+                     p["unrealized_pl"], p["unrealized_plpc"])
 
 
 async def main():
