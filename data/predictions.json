@@ -2387,5 +2387,19 @@
         }
       ]
     }
-  ]
+  ],
+  "extended_alerts": {
+    "2026-07-10_post": [
+      "DELL",
+      "META",
+      "MXL",
+      "NVDA",
+      "SNDK"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-10_post": 5
+  },
+  "pending_protection": [],
+  "pending_entries": []
 }
