@@ -385,6 +385,85 @@ def _action_win_rate(action: str, path: str = None) -> tuple[float | None, int]:
     return wins / total, total
 
 
+_MIN_CALIBRATION_SAMPLES = 6   # 校准维度样本不足时不展示，避免小样本噪音被当成规律
+
+
+def _compute_ai_calibration(path: str = None) -> str:
+    """
+    AI自我校准摘要：不是训练模型，是把系统级的历史表现（不是单只股票的，是
+    across所有股票聚合的）显式喂回下一次分析的prompt里，让AI"看见"自己过去
+    在不同维度上的判断准不准，而不是每次都从零开始判断。
+    这是当前架构下能做到的、诚实的"自我改进"方式——没有模型权重更新，靠的是
+    每次调用都带着最新的战绩简报。
+
+    统计四个维度（各自样本量不足时跳过，不展示）：
+    - 置信度校准：说"高"置信度时，历史上到底有多准（跨全部股票，样本量比
+      单只股票大得多，统计意义更强）
+    - 推翻vs确认：AI推翻技术信号时，比起单纯确认，历史上谁更准——如果推翻
+      的胜率明显更低，说明该抬高推翻的门槛
+    - 来源校准：初筛发现的新标的 vs 固定核心票，判断准确率是否有系统性差异
+    - 触发时段校准：盘前/盘后哨兵触发的判断 vs 常规时段的判断，准确率是否
+      有系统性差异（比如盘前盘后信息更少、更容易受情绪性过冲干扰）
+    """
+    path = path or os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
+    data = load_predictions(path)
+    all_preds = [p for day in data.get("history", []) for p in day.get("predictions", [])]
+    if len(all_preds) < _MIN_CALIBRATION_SAMPLES:
+        return ""
+
+    def _bucket_rate(preds: list[dict], key_fn) -> dict:
+        buckets: dict = {}
+        for p in preds:
+            c = _effective_correct(p)
+            if c is None:
+                continue
+            key = key_fn(p)
+            if key is None:
+                continue
+            buckets.setdefault(key, []).append(c)
+        return {k: (sum(v) / len(v), len(v)) for k, v in buckets.items()
+                if len(v) >= _MIN_CALIBRATION_SAMPLES}
+
+    lines = []
+
+    conv_rates = _bucket_rate(all_preds, lambda p: p.get("conviction") or None)
+    if conv_rates:
+        parts = [f"{k}{v[0]*100:.0f}%({v[1]}次)" for k, v in
+                  sorted(conv_rates.items(), key=lambda x: -x[1][0])]
+        lines.append(f"置信度校准（全部标的聚合，非本股票）：{' / '.join(parts)}")
+
+    confirm_rates = _bucket_rate(
+        all_preds, lambda p: {"True": "确认技术信号", "False": "推翻技术信号"}.get(str(p.get("tech_confirmed")))
+    )
+    if confirm_rates:
+        parts = [f"{k} {v[0]*100:.0f}%({v[1]}次)" for k, v in confirm_rates.items()]
+        lines.append(f"确认vs推翻校准：{' / '.join(parts)}")
+        conf = confirm_rates.get("确认技术信号")
+        override = confirm_rates.get("推翻技术信号")
+        if conf and override and override[0] < conf[0] - 0.1:
+            lines.append("  → 推翻技术信号的历史胜率明显低于确认，除非证据非常充分，倾向于相信技术面")
+
+    source_rates = _bucket_rate(
+        all_preds, lambda p: {"core": "固定核心票", "screener": "初筛新发现"}.get(p.get("source"))
+    )
+    if source_rates:
+        parts = [f"{k} {v[0]*100:.0f}%({v[1]}次)" for k, v in source_rates.items()]
+        lines.append(f"来源校准：{' / '.join(parts)}")
+
+    session_rates = _bucket_rate(
+        all_preds, lambda p: {
+            "extended_pre": "盘前触发", "extended_post": "盘后触发",
+        }.get(p.get("trigger_session"), "常规时段触发")
+    )
+    if session_rates:
+        parts = [f"{k} {v[0]*100:.0f}%({v[1]}次)" for k, v in session_rates.items()]
+        lines.append(f"触发时段校准：{' / '.join(parts)}")
+
+    if not lines:
+        return ""
+    return "系统级历史校准（供参考，反映过去判断的系统性偏差，不是硬性规则）：\n" + "\n".join(lines)
+
+
 def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     import yfinance as yf
     parts = []
@@ -425,6 +504,15 @@ def _get_macro_context(finnhub: FinnhubClient | None) -> str:
                 parts.append("近期市场新闻：\n" + "\n".join(headlines))
         except Exception:
             pass
+
+    # AI自我校准：把系统级历史表现带进每一次分析（见 _compute_ai_calibration
+    # 说明），这个函数本身每次运行只调用一次（不是每只股票都算一遍）
+    try:
+        calibration = _compute_ai_calibration()
+        if calibration:
+            parts.append(calibration)
+    except Exception as e:
+        logger.debug("AI校准摘要计算失败: %s", e)
 
     return "\n".join(parts) if parts else "宏观数据暂不可用"
 
@@ -759,6 +847,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 "verdict":         ai_result.get("verdict", "") if ai_result else "",
                 "source":          "screener" if is_discovered else "core",
                 "ai_failed":       ai_failed,
+                "tech_confirmed":  ai_result.get("tech_confirmed") if ai_result else None,
             })
 
             await asyncio.sleep(0.8)
@@ -1157,6 +1246,7 @@ async def _run_extended_watch(
     session_label = "盘前" if session == "pre" else "盘后"
     trigger_count_start = trigger_count
     newly_placed_entries: list[dict] = []
+    newly_recorded_predictions: list[dict] = []   # 真正下单的才记进predictions.json，供复盘/校准使用
 
     if candidates:
         logger.info("哨兵发现 %d 只候选（含%d个重挂）: %s",
@@ -1271,6 +1361,24 @@ async def _run_extended_watch(
             "retry_count": retry_count,
             "alert_key":   alert_key,
         })
+        # 记进predictions.json主列表，跟常规扫描的信号用同一套复盘/校准逻辑，
+        # 否则盘前盘后触发的判断永远不会被复盘，也就永远进不了_compute_ai_calibration
+        newly_recorded_predictions.append({
+            "symbol":          sym,
+            "direction":       "BUY",
+            "final_direction": final_dir,
+            "action":          action,
+            "conviction":      ai_result.get("conviction", ""),
+            "horizon":         ai_result.get("horizon", "3-5天"),
+            "entry_price":     round(entry, 4),
+            "target_price":    target,
+            "stop_loss":       stop,
+            "verdict":         ai_result.get("verdict", ""),
+            "source":          source,   # core/screener，跟常规扫描口径一致，不要跟触发时段混在一个字段里
+            "trigger_session": f"extended_{session}",  # 额外记录触发时段，供校准单独统计
+            "ai_failed":       False,
+            "tech_confirmed":  ai_result.get("tech_confirmed"),
+        })
 
         retry_note = f"（第{retry_count + 1}次尝试后成交挂单）" if retry_count else ""
         msg = (
@@ -1286,6 +1394,12 @@ async def _run_extended_watch(
 
         for chat_id in chat_ids:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+
+    # 真正下单的记进predictions.json主列表，复用save_predictions()已有的
+    # "同一天二次扫描按symbol合并"逻辑——必须在下面读fresh之前调用，
+    # 这样fresh读到的就是包含这次新记录的最新版本，不会被后面的save_raw覆盖掉
+    if newly_recorded_predictions:
+        save_predictions(newly_recorded_predictions)
 
     # 重新读一遍最新数据再合并写回，避免和并发跑的常规扫描/复盘/别的哨兵tick
     # 互相覆盖（这几个cron间隔只有20分钟，触发延迟时完全可能重叠执行）。
