@@ -506,7 +506,14 @@ def run_ai_analysis(
                 model=_MODEL,
                 max_tokens=4096,  # Sonnet 5默认自适应思考，thinking占用同一个max_tokens预算，
                                   # 留够余量避免JSON回答被截断（1024是给纯直出回答的旧值）
-                system=_SYSTEM_PROMPT,
+                # system prompt对每只股票、每次调用都完全一样（同一天扫描26只+
+                # 盘前盘后哨兵触发都复用这同一段规则），标成可缓存块——缓存命中
+                # 只收10%的input价格，一天几十次调用里只有第一次真正全价，
+                # 换来的是纯粹的省钱，不改变任何输出质量
+                system=[
+                    {"type": "text", "text": _SYSTEM_PROMPT,
+                     "cache_control": {"type": "ephemeral"}},
+                ],
                 messages=[{"role": "user", "content": prompt}],
             )
             # Sonnet 5开启自适应思考时，content[0]会是thinking块而不是text块
@@ -525,6 +532,14 @@ def run_ai_analysis(
             end   = raw.rfind("}") + 1
             if start >= 0 and end > start:
                 raw = raw[start:end]
+
+            usage = getattr(message, "usage", None)
+            if usage:
+                cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+                cache_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                if cache_read or cache_write:
+                    logger.info("AI缓存命中 %s: 命中%d tokens / 新写入%d tokens（命中部分按10%%计费）",
+                                symbol, cache_read, cache_write)
 
             analysis = json.loads(raw)
             analysis["symbol"] = symbol
