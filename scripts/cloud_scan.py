@@ -61,6 +61,7 @@ from src.data.yfinance_client import YFinanceDataClient
 from src.data.finnhub_client import FinnhubClient
 from src.analysis.multi_timeframe import analyze_symbol
 from src.analysis.ai_analyst import run_ai_analysis
+from src.analysis.shadow_analyst import run_shadow_analysis
 from src.analysis.screener import screen_top_candidates
 from src.notifications.formatter import (
     format_signal_message,
@@ -740,7 +741,7 @@ async def _run_review(
         logger.info("复盘消息已发送")
 
 
-async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
+async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key=""):
     """盘前扫描：分析信号、调用 AI、推送 Telegram、保存今日预测。"""
     if not _is_us_trading_day():
         logger.info("今日非美股交易日（节假日/周末），跳过盘前扫描")
@@ -758,6 +759,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     pinned  = set(config.pinned_symbols)
     min_str = config.signals.get("min_strength", 30)
     use_ai  = bool(anthropic_key)
+    use_shadow = bool(gemini_key)
 
     # 市场初筛：从标普500+中概池里用动量/成交量打分选出候选，并入今日分析列表。
     # 不改动 watchlist_repo（不持久化），只影响当次扫描；失败不影响核心票扫描。
@@ -773,9 +775,9 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
     except Exception as e:
         logger.warning("市场初筛失败，跳过: %s", e)
 
-    logger.info("开始扫描 %d 只股票（核心%d + 初筛发现%d，AI分析: %s）→ 推送到 %d 个 chat",
+    logger.info("开始扫描 %d 只股票（核心%d + 初筛发现%d，AI分析: %s，影子模式: %s）→ 推送到 %d 个 chat",
                 len(symbols), len(symbols) - len(discovered), len(discovered),
-                "开启" if use_ai else "关闭", len(chat_ids))
+                "开启" if use_ai else "关闭", "开启" if use_shadow else "关闭", len(chat_ids))
 
     client = YFinanceDataClient()
     macro_context = _get_macro_context(finnhub_client)
@@ -819,6 +821,18 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                     ai_failed = True
                     logger.error("AI 分析失败 %s: %s", sym, e)
 
+            # 影子模式：免费模型独立跑一遍同样的输入，只记录不下单，
+            # 不看Claude是否成功——两边判断需要各自独立，不能互相依赖
+            shadow_result = {}
+            if use_shadow:
+                try:
+                    shadow_result = run_shadow_analysis(
+                        result, finnhub_client, gemini_key, macro_context,
+                        symbol_history=get_symbol_history(sym),
+                    )
+                except Exception as e:
+                    logger.info("影子模式 %s 异常，跳过（不影响主流程）: %s", sym, e)
+
             price = result.current_price
             is_discovered = sym in discovered
             # AI 尝试研判但失败时，消息不能悄悄退回纯技术信号当"买入建议"——
@@ -848,6 +862,16 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key):
                 "source":          "screener" if is_discovered else "core",
                 "ai_failed":       ai_failed,
                 "tech_confirmed":  ai_result.get("tech_confirmed") if ai_result else None,
+                # 影子模式：免费模型(Gemini)独立跑的判断，只留对比用的关键字段，
+                # 不进任何执行/校准逻辑——避免JSON体积膨胀，也避免被误用为下单依据
+                "shadow_verdict": ({
+                    "model":          shadow_result.get("_shadow_model"),
+                    "final_direction": shadow_result.get("final_direction"),
+                    "conviction":      shadow_result.get("conviction"),
+                    "action":          shadow_result.get("action"),
+                    "tech_confirmed":  shadow_result.get("tech_confirmed"),
+                    "verdict":         shadow_result.get("verdict"),
+                } if shadow_result else None),
             })
 
             await asyncio.sleep(0.8)
@@ -1656,6 +1680,41 @@ async def _run_test_ai(bot: Bot, chat_ids: list[int], anthropic_key: str) -> Non
             logger.warning("AI诊断结果发送失败: %s", e)
 
 
+async def _run_test_shadow(bot: Bot, chat_ids: list[int], gemini_key: str) -> None:
+    """
+    诊断用：单次最小 Gemini API 调用，验证 GEMINI_API_KEY 这个 GitHub Secret
+    在云端 runner 上确实能连通、密钥没有被截断或带上尾随换行——不用等真正
+    盘前扫描触发影子模式才发现配置错了。
+    """
+    if not gemini_key:
+        text = "❌ GEMINI_API_KEY 未配置，跳过影子模式诊断"
+        logger.info(text)
+    else:
+        import requests
+        from src.analysis.shadow_analyst import _GEMINI_MODEL, _GEMINI_URL
+        try:
+            resp = requests.post(
+                _GEMINI_URL,
+                params={"key": gemini_key},
+                json={"contents": [{"role": "user", "parts": [{"text": "reply with the single word OK"}]}]},
+                timeout=20,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            reply = data["candidates"][0]["content"]["parts"][0]["text"][:100]
+            text = f"✅ 影子模式(Gemini)连接正常\n模型: {_GEMINI_MODEL}\n回复: {reply}"
+            logger.info("影子模式诊断成功: %s", reply)
+        except Exception as e:
+            text = f"❌ 影子模式(Gemini)连接失败\n异常类型: {type(e).__name__}\n消息: {e}"
+            logger.error("影子模式诊断失败 类型=%s 消息=%s", type(e).__name__, e)
+
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=text)
+        except Exception as e:
+            logger.warning("影子模式诊断结果发送失败: %s", e)
+
+
 async def _run_test_data(bot: Bot, chat_ids: list[int], alpaca_key: str, alpaca_secret: str) -> None:
     """
     诊断用：查询 Alpaca 免费(IEX)行情在盘前/盘后时段是否有真实报价更新，
@@ -1794,6 +1853,7 @@ async def main():
 
     finnhub_key    = config.FINNHUB_API_KEY
     anthropic_key  = config.ANTHROPIC_API_KEY
+    gemini_key     = config.GEMINI_API_KEY
     alpaca_key     = os.environ.get("ALPACA_API_KEY", "").strip()
     alpaca_secret  = os.environ.get("ALPACA_API_SECRET", "").strip()
     finnhub_client = FinnhubClient(finnhub_key) if finnhub_key else None
@@ -1812,6 +1872,13 @@ async def main():
             await _run_test_data(bot, chat_ids, alpaca_key, alpaca_secret)
         except Exception as e:
             logger.error("行情诊断失败: %s", e)
+        return
+
+    if scan_mode == "test_shadow":
+        try:
+            await _run_test_shadow(bot, chat_ids, gemini_key)
+        except Exception as e:
+            logger.error("影子模式诊断失败: %s", e)
         return
 
     if scan_mode == "test_buy":
@@ -1872,7 +1939,7 @@ async def main():
             await _attach_pending_protection(bot, chat_ids, alpaca_key, alpaca_secret)
         except Exception as e:
             logger.error("补挂保护失败: %s", e)
-        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key)
         # 盘前执行：信号生成后立即下单
         try:
             await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret,
@@ -1894,7 +1961,7 @@ async def main():
             await _attach_pending_protection(bot, chat_ids, alpaca_key, alpaca_secret)
         except Exception as e:
             logger.error("补挂保护失败: %s", e)
-        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key)
+        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key)
         try:
             await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret,
                                  today_preds or [], config)

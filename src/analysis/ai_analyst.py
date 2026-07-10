@@ -375,21 +375,18 @@ def _fmt_history(history: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def run_ai_analysis(
+# 供影子模式（src/analysis/shadow_analyst.py）复用：影子模型要跟正式研判
+# 拿到完全相同的输入，对比才有意义，不能各喂各的数据
+SYSTEM_PROMPT = _SYSTEM_PROMPT
+
+
+def build_prompt(
     result,
     finnhub,
-    anthropic_key: str,
     macro_context: str = "",
     symbol_history: list[dict] = None,
-) -> dict:
-    """
-    综合技术信号和基本面，输出统一操作判断。
-    返回结构化 dict，失败时返回 {}。
-    """
-    if not anthropic_key:
-        logger.warning("ANTHROPIC_API_KEY 未配置，跳过 AI 分析")
-        return {}
-
+) -> str:
+    """构建研判用户 prompt（技术面+基本面+新闻+历史记录），不含 API 调用。"""
     symbol = result.symbol
     price  = result.current_price if not math.isnan(result.current_price) else result.close_price
 
@@ -497,6 +494,26 @@ def run_ai_analysis(
         history=_fmt_history(symbol_history or []),
         macro_context=macro_context or "当前无特别宏观事件",
     )
+    return prompt
+
+
+def run_ai_analysis(
+    result,
+    finnhub,
+    anthropic_key: str,
+    macro_context: str = "",
+    symbol_history: list[dict] = None,
+) -> dict:
+    """
+    综合技术信号和基本面，输出统一操作判断。
+    返回结构化 dict，失败时返回 {}。
+    """
+    if not anthropic_key:
+        logger.warning("ANTHROPIC_API_KEY 未配置，跳过 AI 分析")
+        return {}
+
+    symbol = result.symbol
+    prompt = build_prompt(result, finnhub, macro_context, symbol_history)
 
     client = anthropic.Anthropic(api_key=anthropic_key)
     raw = ""

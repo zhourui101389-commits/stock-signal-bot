@@ -17,6 +17,8 @@ class Config:
     # 报错信息是"Connection error"，很难联想到是密钥本身多了个\n
     FINNHUB_API_KEY: str = os.environ.get("FINNHUB_API_KEY", "").strip()
     ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    # 影子模式用：免费模型，只记录不下单，不配置则自动跳过整个影子流程
+    GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "").strip()
 
     def __init__(self) -> None:
         with open("config/settings.yaml", encoding="utf-8") as f:

@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / extended_watch=手动触发盘前盘后哨兵 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / test_data=行情诊断 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / extended_watch=手动触发盘前盘后哨兵 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / test_data=行情诊断 / test_shadow=影子模式(Gemini)连接诊断 / 留空=两者）'
         required: false
         default: ''
       test_buy_symbol:
@@ -83,6 +83,7 @@ jobs:
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
           DB_PATH: /tmp/signals.db
