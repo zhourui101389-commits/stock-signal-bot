@@ -1025,9 +1025,11 @@ async def _run_extended_watch(
     config, bot, chat_ids, finnhub_client, anthropic_key, alpaca_key, alpaca_secret,
 ) -> None:
     """
-    盘前/盘后哨兵：每次触发只用免费的 yfinance 分钟线扫一遍核心watchlist的
-    最新价（不烧AI配额），只有涨跌幅超过 _EXTENDED_MOVE_THRESHOLD_PCT 才触发
-    完整技术+AI分析——把AI调用限制在"真正有异动"的标的上，不是每次轮询都花钱。
+    盘前/盘后哨兵：每次触发只用免费的 yfinance 分钟线扫一遍"核心watchlist +
+    最近一次常规扫描初筛出的标的"的最新价（不烧AI配额），只有涨跌幅超过
+    _EXTENDED_MOVE_THRESHOLD_PCT 才触发完整技术+AI分析——把AI调用限制在
+    "真正有异动"的标的上，不是每次轮询都花钱，也不是每20分钟重新跑一次
+    全市场初筛（复用9:07 ET那次常规扫描已经算好的结果）。
 
     确认买入信号后用纯限价单(extended_hours=True)入场——Alpaca扩展时段只
     接受纯限价单，没法带止损止盈的括号单保护——所以下单后记入
@@ -1035,6 +1037,9 @@ async def _run_extended_watch(
 
     同一个标的同一个时段（当天pre或post）只触发一次完整分析，避免异动持续
     几小时时每20分钟都重新分析一遍、重复推送。
+
+    只有真正下单时才发Telegram通知（带上"本时段共触发N次分析"），单纯触发
+    分析但没买入不通知，避免异动一多就刷屏。
     """
     if not _is_us_trading_day():
         return
@@ -1051,8 +1056,19 @@ async def _run_extended_watch(
     already_alerted   = set(extended_alerts.get(alert_key, []))
     pending_protection = list(data.get("pending_protection", []))
     _pending_len_at_load = len(pending_protection)
+    trigger_counts    = dict(data.get("extended_trigger_count", {}))
+    trigger_count     = trigger_counts.get(alert_key, 0)
 
-    symbols = watchlist_repo.get_all_symbols()
+    # 检测范围：固定核心票 + 当天/最近一次常规扫描里市场初筛选出的标的
+    # （不是只盯用户的固定清单，也不是每20分钟重新跑一次全市场初筛——
+    # 复用 predictions.json 里最近一次常规扫描（9:07 ET）已经算好的结果，
+    # 免费又不重复计算）
+    core_symbols     = watchlist_repo.get_all_symbols()
+    screener_symbols = sorted({
+        p["symbol"] for p in data.get("predictions", [])
+        if p.get("source") == "screener"
+    })
+    symbols = list(dict.fromkeys(core_symbols + screener_symbols))
     client  = YFinanceDataClient()
 
     candidates = []
@@ -1101,8 +1117,14 @@ async def _run_extended_watch(
     macro_context = _get_macro_context(finnhub_client)
     session_label = "盘前" if session == "pre" else "盘后"
 
+    # 只在"真的下单"时才发Telegram——触发分析本身不通知，避免异动一多就刷屏。
+    # 每次真正进入完整技术+AI分析都计一次数，买入时把这个次数带上，方便你
+    # 知道这次买入是筛了几个候选之后才决定的，而不是随手一次分析就买
+    trigger_count_start = trigger_count
+
     for sym, q in candidates:
         already_alerted.add(sym)
+        trigger_count += 1
         try:
             result = analyze_symbol(
                 client, sym,
@@ -1131,55 +1153,59 @@ async def _run_extended_watch(
                     symbol_history=symbol_history,
                 )
                 if ai_result:
-                    logger.info("哨兵AI研判 %s: %s 置信度%s",
+                    logger.info("哨兵AI研判 %s: %s 置信度%s（第%d次触发）",
                                 sym, ai_result.get("final_direction", "?"),
-                                ai_result.get("conviction", "?"))
+                                ai_result.get("conviction", "?"), trigger_count)
             except Exception as e:
                 logger.error("哨兵AI分析 %s 失败: %s", sym, e)
 
         action    = ai_result.get("action", "") if ai_result else ""
         final_dir = ai_result.get("final_direction", "中性") if ai_result else "中性"
 
-        msg = (
-            f"🌙 <b>{session_label}异动</b>\n{'─'*28}\n"
-            f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
-        )
-        if ai_result:
-            msg += f"AI研判: {final_dir} / {action or '观望'}（置信度{ai_result.get('conviction','?')}）\n"
-            if ai_result.get("verdict"):
-                msg += f"{_html.escape(str(ai_result['verdict'])[:300])}\n"
-        else:
-            msg += "AI研判: 未获取（本条不触发下单）\n"
+        if not (alpaca and ai_result):
+            logger.info("哨兵 %s 本次不下单（无AI结果或Alpaca未就绪）", sym)
+            continue
 
-        if alpaca and ai_result:
-            entry = q["price"]
-            stop  = ai_result.get("stop_loss")
-            target = ai_result.get("target_price")
-            shares, skip_reason = _gate_and_size_position(
-                sym, action, final_dir, entry, stop, target, "core",
-                held_symbols, open_positions, deployed, available_cash,
-                capital_base, tier_map, tier_cap, win_rate_cache,
-            )
-            if shares:
-                order = alpaca.place_extended_hours_order(sym, shares, entry)
-                if order:
-                    held_symbols.add(sym)
-                    open_positions += 1
-                    cost = shares * entry
-                    deployed += cost
-                    available_cash -= cost
-                    pending_protection.append({
-                        "symbol":    sym,
-                        "qty":       shares,
-                        "stop":      stop,
-                        "target":    target,
-                        "order_id":  order["order_id"],
-                        "opened_at": datetime.datetime.now().isoformat(),
-                    })
-                    msg += (f"\n✅ 已挂{session_label}限价单 ×{shares}股 @${entry:.2f}"
-                            f"（无保护，等常规时段开盘补挂 止损${stop:.2f}/止盈${target:.2f}）")
-            elif skip_reason:
-                msg += f"\n⏭ 未下单：{skip_reason}"
+        entry = q["price"]
+        stop  = ai_result.get("stop_loss")
+        target = ai_result.get("target_price")
+        shares, skip_reason = _gate_and_size_position(
+            sym, action, final_dir, entry, stop, target, "core",
+            held_symbols, open_positions, deployed, available_cash,
+            capital_base, tier_map, tier_cap, win_rate_cache,
+        )
+        if not shares:
+            logger.info("哨兵 %s 不下单：%s", sym, skip_reason)
+            continue
+
+        order = alpaca.place_extended_hours_order(sym, shares, entry)
+        if not order:
+            continue
+
+        held_symbols.add(sym)
+        open_positions += 1
+        cost = shares * entry
+        deployed += cost
+        available_cash -= cost
+        pending_protection.append({
+            "symbol":    sym,
+            "qty":       shares,
+            "stop":      stop,
+            "target":    target,
+            "order_id":  order["order_id"],
+            "opened_at": datetime.datetime.now().isoformat(),
+        })
+
+        msg = (
+            f"🌙 <b>{session_label}异动买入</b>\n{'─'*28}\n"
+            f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
+            f"AI研判: {final_dir} / {action}（置信度{ai_result.get('conviction','?')}）\n"
+            f"{('本' + session_label + '共触发' + str(trigger_count - trigger_count_start) + '次分析，这是其中筛出的买入')}\n"
+        )
+        if ai_result.get("verdict"):
+            msg += f"{_html.escape(str(ai_result['verdict'])[:300])}\n"
+        msg += (f"\n✅ 已挂{session_label}限价单 ×{shares}股 @${entry:.2f}"
+                f"（无保护，等常规时段开盘补挂 止损${stop:.2f}/止盈${target:.2f}）")
 
         for chat_id in chat_ids:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
@@ -1187,11 +1213,15 @@ async def _run_extended_watch(
     # 重新读一遍最新数据再合并写回，避免和并发跑的常规扫描/复盘/别的哨兵tick
     # 互相覆盖（这几个cron间隔只有20分钟，触发延迟时完全可能重叠执行）
     newly_added_protection = pending_protection[_pending_len_at_load:]
+    trigger_increment = trigger_count - trigger_count_start
     fresh = load_predictions()
     fresh_alerts = dict(fresh.get("extended_alerts", {}))
     fresh_alerts[alert_key] = sorted(set(fresh_alerts.get(alert_key, [])) | already_alerted)
-    fresh["extended_alerts"]    = fresh_alerts
-    fresh["pending_protection"] = list(fresh.get("pending_protection", [])) + newly_added_protection
+    fresh_counts = dict(fresh.get("extended_trigger_count", {}))
+    fresh_counts[alert_key] = fresh_counts.get(alert_key, 0) + trigger_increment
+    fresh["extended_alerts"]         = fresh_alerts
+    fresh["extended_trigger_count"]  = fresh_counts
+    fresh["pending_protection"]      = list(fresh.get("pending_protection", [])) + newly_added_protection
     save_raw(fresh)
 
 
