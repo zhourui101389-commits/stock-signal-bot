@@ -291,6 +291,63 @@ class AlpacaClient:
             logger.error("平仓失败 %s: %s", symbol, e)
             return None
 
+    def get_open_orders(self, symbol: str) -> list[dict]:
+        """获取某标的当前挂着的未成交订单（含OCO保护单），用于扩展时段平仓前先撤单腾出股数。"""
+        from alpaca.trading.requests import GetOrdersRequest
+        from alpaca.trading.enums import QueryOrderStatus
+        try:
+            orders = self._client.get_orders(
+                GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+            )
+            return [{"order_id": str(o.id), "symbol": o.symbol, "status": str(o.status)} for o in orders]
+        except Exception as e:
+            logger.error("获取未成交订单失败 %s: %s", symbol, e)
+            return []
+
+    def close_position_extended_hours(
+        self,
+        symbol: str,
+        qty: int,
+        limit_price: float,
+    ) -> Optional[dict]:
+        """
+        盘前盘后平仓：close_position() 内部用市价单，扩展时段一律拒收，
+        所以不能直接复用——改成纯限价卖单 + extended_hours=True。
+        如果这个仓位之前挂了保护性OCO止损止盈单，得先撤掉才能腾出股数，
+        否则会因为"可用股数已经被OCO占着"被拒单。
+        """
+        from alpaca.trading.requests import LimitOrderRequest
+        from alpaca.trading.enums import OrderSide, TimeInForce
+
+        if qty <= 0:
+            return None
+
+        for o in self.get_open_orders(symbol):
+            self.cancel_order(o["order_id"])
+
+        try:
+            order = self._client.submit_order(
+                LimitOrderRequest(
+                    symbol=symbol,
+                    qty=qty,
+                    side=OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY,
+                    limit_price=round(limit_price, 2),
+                    extended_hours=True,
+                )
+            )
+            logger.info("盘前盘后平仓限价单成功 %s ×%d @%.2f", symbol, qty, limit_price)
+            return {
+                "order_id":    str(order.id),
+                "symbol":      symbol,
+                "qty":         qty,
+                "limit_price": limit_price,
+                "status":      str(order.status),
+            }
+        except Exception as e:
+            logger.error("盘前盘后平仓下单失败 %s: %s", symbol, e)
+            return None
+
     def get_closed_orders(self, limit: int = 50) -> list[dict]:
         """获取近期已成交或已关闭的订单，用于复盘回填"""
         from alpaca.trading.requests import GetOrdersRequest

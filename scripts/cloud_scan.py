@@ -1037,11 +1037,16 @@ async def _run_extended_watch(
     接受纯限价单，没法带止损止盈的括号单保护——所以下单后记入
     pending_protection，等常规时段开盘由 _attach_pending_protection() 补挂。
 
+    如果AI判断持有中的标的转为看空/回避，盘前盘后也会平仓——跟常规时段
+    (_run_execution)判断逻辑一致，只是执行手段不同：close_position()内部
+    是市价单，扩展时段一律拒收，这里用纯限价卖单(close_position_extended_hours)，
+    如果原持仓挂了止损止盈保护会先撤掉再挂平仓单。
+
     同一个标的同一个时段（当天pre或post）只触发一次完整分析，避免异动持续
     几小时时每20分钟都重新分析一遍、重复推送。
 
-    只有真正下单时才发Telegram通知（带上"本时段共触发N次分析"），单纯触发
-    分析但没买入不通知，避免异动一多就刷屏。
+    只有真正下单/平仓时才发Telegram通知（带上"本时段共触发N次分析"），单纯
+    触发分析但没动作不通知，避免异动一多就刷屏。
     """
     if not _is_us_trading_day():
         logger.info("今日非美股交易日（节假日/周末/凌晨当日数据尚未生成），跳过哨兵检测")
@@ -1089,6 +1094,7 @@ async def _run_extended_watch(
     tier_map = tier_cap = {}
     win_rate_cache: dict[str, tuple] = {}
 
+    positions_by_symbol: dict = {}
     if alpaca_key and alpaca_secret:
         from src.execution.alpaca_client import AlpacaClient
         alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
@@ -1096,6 +1102,7 @@ async def _run_extended_watch(
             account   = alpaca.get_account()
             positions = alpaca.get_positions()
             held_symbols   = {p["symbol"] for p in positions}
+            positions_by_symbol = {p["symbol"]: p for p in positions}
             capital_base   = min(account["equity"], config.alpaca_capital_base)
             deployed       = sum(p["market_value"] for p in positions)
             available_cash = min(capital_base - deployed, account["cash"])
@@ -1198,6 +1205,31 @@ async def _run_extended_watch(
 
         if not (alpaca and ai_result):
             logger.info("哨兵 %s 本次不下单（无AI结果或Alpaca未就绪）", sym)
+            continue
+
+        # 看空/回避且当前持有：盘前盘后也平仓，跟常规时段(_run_execution)判断
+        # 逻辑一致，只是执行手段不同——close_position()内部是市价单，扩展时段
+        # 一律拒收，只能用纯限价卖单(close_position_extended_hours)
+        if (action in ("回避", "减仓") or final_dir == "看空") and sym in held_symbols:
+            pos = positions_by_symbol.get(sym, {})
+            qty = int(pos.get("qty", 0))
+            if qty > 0:
+                result = alpaca.close_position_extended_hours(sym, qty, q["price"])
+                if result:
+                    held_symbols.discard(sym)
+                    open_positions -= 1
+                    freed = pos.get("market_value", 0.0)
+                    deployed       -= freed
+                    available_cash += freed
+                    msg = (
+                        f"🌙 <b>{session_label}异动平仓</b>\n{'─'*28}\n"
+                        f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
+                        f"AI研判: {final_dir} / {action}（置信度{ai_result.get('conviction','?')}）\n"
+                        f"\n✅ 已挂{session_label}平仓限价单 ×{qty}股 @${q['price']:.2f}"
+                        f"（限价单，未必立即成交；若已有止损止盈保护单会先撤掉）"
+                    )
+                    for chat_id in chat_ids:
+                        await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
             continue
 
         entry = q["price"]
