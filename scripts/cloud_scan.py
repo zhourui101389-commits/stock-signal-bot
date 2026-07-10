@@ -1044,6 +1044,7 @@ async def _run_extended_watch(
     分析但没买入不通知，避免异动一多就刷屏。
     """
     if not _is_us_trading_day():
+        logger.info("今日非美股交易日（节假日/周末/凌晨当日数据尚未生成），跳过哨兵检测")
         return
     session = _current_extended_session()
     if not session:

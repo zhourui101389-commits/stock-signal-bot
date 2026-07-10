@@ -12,11 +12,12 @@ on:
     # 盘前哨兵：8:05-12:45 UTC ≈ 4:05-8:45 EDT，每20分钟一次，纯yfinance检测
     # 不烧AI配额，只有异动超阈值才触发完整分析（见 _run_extended_watch）
     - cron: '5,25,45 8-12 * * 1-5'
-    # 盘后哨兵：20:05-23:45 UTC ≈ 16:05-19:45 EDT，同日部分
+    # 盘后哨兵：20:05-23:45 UTC ≈ 16:05-19:45 EDT
+    # 盘后时段本身20:00 ET截止，最后一次tick(19:45)离截止只差15分钟，够用了；
+    # 曾经加过一组跨零点(00:05-00:45 UTC≈20:05-20:45 EDT)的tick，算错了——
+    # 那几个时间点已经过了20:00 ET收盘线，_current_extended_session()永远
+    # 判None，纯粹空转，删掉
     - cron: '5,25,45 20-23 * * 1-5'
-    # 盘后哨兵：00:05-00:45 UTC（次日）≈ 20:05-20:45 EDT，跨零点部分
-    # UTC日期已跨到下一天，星期几要相应+1（周一盘后对应UTC周二凌晨，故 2-6）
-    - cron: '5,25,45 0 * * 2-6'
   workflow_dispatch:
     inputs:
       scan_mode:
@@ -71,8 +72,6 @@ jobs:
           elif [ "${{ github.event.schedule }}" = "5,25,45 8-12 * * 1-5" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "5,25,45 20-23 * * 1-5" ]; then
-            echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "5,25,45 0 * * 2-6" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           else
             echo "SCAN_MODE=" >> $GITHUB_OUTPUT
