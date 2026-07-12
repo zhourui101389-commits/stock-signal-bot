@@ -57,15 +57,44 @@ class FinnhubClient:
             })
         return result
 
+    # 供应链/地缘政治关键词：突发新闻密集期（如地缘冲突）里，纯"最新8条"
+    # 排序会把还在发酵、真正影响个股基本面的供应链新闻挤出窗口——实测过：
+    # 中国暂停氦气出口(影响半导体制造，07-10发布)在Iran冲突刷屏后掉到
+    # 全量100条里的第35位，"最新8条"完全看不到。命中关键词的新闻即使
+    # 不在最新8条内也强制带上，不受排名影响
+    _MACRO_KEYWORDS = (
+        "helium", "export ban", "export control", "export curb", "tariff",
+        "sanctions", "hormuz", "taiwan strait", "chip export", "chip ban",
+        "supply chain", "semiconductor export", "rare earth", "rare-earth",
+    )
+
     def get_market_news(self, category: str = "general") -> list[dict]:
-        """大盘宏观新闻（category: general / forex / crypto / merger）。"""
+        """
+        大盘宏观新闻（category: general / forex / crypto / merger）。
+        最新8条 + 命中供应链/地缘关键词的最多5条（哪怕排名靠后），按时间倒序合并。
+        """
         data = self._get("/news", {"category": category})
         if not isinstance(data, list):
             return []
-        items = sorted(data, key=lambda x: x.get("datetime", 0), reverse=True)[:8]
+        items_sorted = sorted(data, key=lambda x: x.get("datetime", 0), reverse=True)
+        recent = items_sorted[:8]
+        # 按关键词分槽而非按时间取前5：单一话题刷屏时（如中东冲突里"hormuz"
+        # 反复出现）会占满所有槽位，把只出现一次但同样重要的不同话题
+        # （如"helium"）挤掉——每个关键词最多贡献1条（取该关键词下最新的），
+        # 保证话题多样性而不是话题热度
+        keyword_hits = []
+        seen_keywords = set()
+        for i in items_sorted[8:]:
+            headline_lower = i.get("headline", "").lower()
+            for kw in self._MACRO_KEYWORDS:
+                if kw in headline_lower and kw not in seen_keywords:
+                    seen_keywords.add(kw)
+                    keyword_hits.append(i)
+                    break
+        merged = sorted(recent + keyword_hits, key=lambda x: x.get("datetime", 0), reverse=True)
         return [{"headline": i.get("headline", ""), "source": i.get("source", ""),
                  "time": datetime.fromtimestamp(i.get("datetime", 0), tz=timezone.utc)
-                                 .strftime("%m-%d %H:%M")} for i in items]
+                                 .strftime("%m-%d %H:%M")} for i in merged]
 
     def get_recommendation_trend(self, symbol: str) -> list[dict]:
         """最近几个月的分析师评级趋势（strongBuy/buy/hold/sell/strongSell 人数）。"""

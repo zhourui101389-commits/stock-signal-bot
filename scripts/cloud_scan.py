@@ -496,12 +496,14 @@ def _get_macro_context(finnhub: FinnhubClient | None) -> str:
     except Exception as e:
         logger.debug("宏观指标获取失败: %s", e)
 
-    # 市场新闻
+    # 市场新闻：get_market_news 已经把"最新8条+关键词命中5条"合并去重过，
+    # 这里不再二次截断到5条——否则会把关键词命中的供应链新闻又挤掉，
+    # 白做了那层过滤
     if finnhub:
         try:
             news = finnhub.get_market_news("general")
             if news:
-                headlines = [f"- {n['headline']}" for n in news[:5]]
+                headlines = [f"- {n['headline']}" for n in news]
                 parts.append("近期市场新闻：\n" + "\n".join(headlines))
         except Exception:
             pass
