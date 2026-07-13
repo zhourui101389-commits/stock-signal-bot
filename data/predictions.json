@@ -3729,6 +3729,7 @@
   ],
   "extended_alerts": {
     "2026-07-13_post": [
+      "AJG",
       "ANET",
       "ASX",
       "CF",
@@ -3752,7 +3753,7 @@
     ]
   },
   "extended_trigger_count": {
-    "2026-07-13_post": 20
+    "2026-07-13_post": 21
   },
   "pending_protection": [],
   "pending_entries": []
