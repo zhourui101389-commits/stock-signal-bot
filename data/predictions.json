@@ -7,11 +7,11 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "低",
-      "horizon": "3-5天",
-      "entry_price": 57.01,
+      "horizon": "1-2周",
+      "entry_price": 57.38,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量反弹+均线空头+零分析师买入，多空互搏观望为宜",
+      "verdict": "多空信号互搏+零分析师支持+地缘风险，观望优于抢反弹",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -24,26 +24,33 @@
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 104.87,
+      "entry_price": 105.1701,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量反弹不可信，地缘风险压制芯片股，观望为宜",
+      "verdict": "缩量反弹遇死叉+0%买入共识，地缘风险压制，观望为宜",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": false,
-      "shadow_verdict": null
+      "shadow_verdict": {
+        "model": "gemini-flash-latest",
+        "final_direction": "中性",
+        "conviction": "中",
+        "action": "回避",
+        "tech_confirmed": false,
+        "verdict": "地缘风险压制半导体，无量反弹宜观望。"
+      }
     },
     {
       "symbol": "MRVL",
       "direction": "BUY",
       "final_direction": "中性",
       "action": "持有观望",
-      "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 220.445,
+      "conviction": "低",
+      "horizon": "3-5天",
+      "entry_price": 220.47,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量反弹证据不足，财报miss+空头排列压制，观望",
+      "verdict": "缩量反弹+短期死叉排列，证据不足，观望为宜",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -52,17 +59,17 @@
     {
       "symbol": "MU",
       "direction": "BUY",
-      "final_direction": "中性",
-      "action": "持有观望",
-      "conviction": "低",
-      "horizon": "3-5天",
-      "entry_price": 906.7935,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "缩量死叉矛盾信号，历史同类交易刚吃止损，观望为宜",
+      "final_direction": "看多",
+      "action": "谨慎买入",
+      "conviction": "中",
+      "horizon": "2-4周",
+      "entry_price": 925.43,
+      "target_price": 1150,
+      "stop_loss": 753,
+      "verdict": "基本面强支撑但缩量死叉降低短期确定性",
       "source": "core",
       "ai_failed": false,
-      "tech_confirmed": false,
+      "tech_confirmed": true,
       "shadow_verdict": null
     },
     {
@@ -72,10 +79,10 @@
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 84.02,
+      "entry_price": 85.63,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量死叉信号矛盾，地缘风险下宁观望",
+      "verdict": "缩量死叉+数据矛盾+地缘风险，观望等待方向明朗",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -104,10 +111,10 @@
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 166.0,
+      "entry_price": 171.245,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量反弹+地缘风险升温，杠杆ETF观望为宜",
+      "verdict": "缩量反弹不可信+地缘风险升温，观望等方向确认",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -115,18 +122,18 @@
     },
     {
       "symbol": "WDC",
-      "direction": "BUY",
+      "direction": "NEUTRAL",
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 533.26,
+      "entry_price": 541.7199,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量+死叉+新闻背离+芯片股承压，信号不可信",
+      "verdict": "缩量死叉+芯片股承压+估值畸高，观望为上",
       "source": "core",
       "ai_failed": false,
-      "tech_confirmed": false,
+      "tech_confirmed": true,
       "shadow_verdict": null
     },
     {
@@ -135,11 +142,11 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "3-5天",
-      "entry_price": 185.705,
+      "horizon": "1-2周",
+      "entry_price": 185.22,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "超买缩量+OBV顶背离，动能衰竭待回调确认",
+      "verdict": "超买+缩量+OBV顶背离，等回调确认再入场",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -151,11 +158,11 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 294.5951,
+      "horizon": "3-5天",
+      "entry_price": 294.05,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "极度超买+分析师0%买入共识，追高风险大于地缘政治红利",
+      "verdict": "极度超买+缩量上涨+0%分析师共识，追高风险远大于地缘红利",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -166,12 +173,12 @@
       "direction": "SELL",
       "final_direction": "中性",
       "action": "持有观望",
-      "conviction": "低",
-      "horizon": "1-2周",
-      "entry_price": 195.01,
+      "conviction": "中",
+      "horizon": "3-5天",
+      "entry_price": 194.365,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "超买但缩量，基本面催化剂对冲，等待方向确认",
+      "verdict": "缩量超买信号存疑，基本面强但追高风险大，观望为主",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -182,12 +189,12 @@
       "direction": "NEUTRAL",
       "final_direction": "中性",
       "action": "持有观望",
-      "conviction": "低",
-      "horizon": "1-2周",
-      "entry_price": 36.3399,
+      "conviction": "中",
+      "horizon": "3-5天",
+      "entry_price": 36.385,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量超买叠加周线空头，追多风险大于机会",
+      "verdict": "缩量超买+周线空头，追多性价比差，等回调确认",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -200,10 +207,10 @@
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 152.475,
+      "entry_price": 152.4425,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "极度缩量下技术信号失真，多空数据打架，观望为上",
+      "verdict": "极度缩量致信号失真，基本面强但短期无催化剂，观望为宜",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -228,17 +235,17 @@
     {
       "symbol": "TECH",
       "direction": "SELL",
-      "final_direction": "中性",
-      "action": "持有观望",
-      "conviction": "低",
+      "final_direction": "看空",
+      "action": "减仓",
+      "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 71.345,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "缩量+多空信号打架，暂不做方向判断",
+      "entry_price": 71.26,
+      "target_price": 64.8,
+      "stop_loss": 74.5,
+      "verdict": "估值泡沫+盈利暴跌主导，超买缩量降低追空强度",
       "source": "screener",
       "ai_failed": false,
-      "tech_confirmed": false,
+      "tech_confirmed": true,
       "shadow_verdict": null
     },
     {
@@ -293,13 +300,13 @@
       "symbol": "BABA",
       "direction": "NEUTRAL",
       "final_direction": "看空",
-      "action": "减仓",
+      "action": "回避",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 113.96,
-      "target_price": 102.46,
-      "stop_loss": 119.71,
-      "verdict": "基本面持续崩塌+机构清仓+周线空头，反弹即卖点",
+      "entry_price": 113.065,
+      "target_price": 98,
+      "stop_loss": 120.5,
+      "verdict": "基本面崩塌+机构清仓，周线空头反弹即卖点",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": false,
@@ -309,13 +316,13 @@
       "symbol": "DASH",
       "direction": "SELL",
       "final_direction": "看空",
-      "action": "谨慎买入",
+      "action": "减仓",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 192.95,
-      "target_price": 168.61,
-      "stop_loss": 205.12,
-      "verdict": "缩量反弹撞MA200阻力，估值离谱+资金出逃，看空延续",
+      "entry_price": 193.245,
+      "target_price": 168.65,
+      "stop_loss": 181.09,
+      "verdict": "缩量滞涨撞阻力，估值离谱+资金出逃，看空延续",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -323,18 +330,66 @@
     },
     {
       "symbol": "VLO",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "持有观望",
+      "conviction": "中",
+      "horizon": "3-5天",
+      "entry_price": 289.79,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "严重超买+缩量+OBV背离，追高风险大于收益",
+      "source": "screener",
+      "ai_failed": false,
+      "tech_confirmed": true,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "CDW",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "持有观望",
+      "conviction": "低",
+      "horizon": "1-2周",
+      "entry_price": 144.245,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "日线超买+周线空头背离，信号自相矛盾，观望为宜",
+      "source": "screener",
+      "ai_failed": false,
+      "tech_confirmed": true,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "AJG",
       "direction": "SELL",
       "final_direction": "看空",
       "action": "减仓",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 291.4807,
-      "target_price": 261.0,
-      "stop_loss": 306.8,
-      "verdict": "严重超买+缩量滞涨，短线获利了结压力大",
+      "entry_price": 257.8676,
+      "target_price": 232.0,
+      "stop_loss": 271.0,
+      "verdict": "超买顶背离+基本面暴雷共振，缩量降低确信度",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "DG",
+      "direction": "SELL",
+      "final_direction": "中性",
+      "action": "持有观望",
+      "conviction": "中",
+      "horizon": "1-2周",
+      "entry_price": 125.14,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "缩量假死叉遇基本面强支撑，观望等确认",
+      "source": "screener",
+      "ai_failed": false,
+      "tech_confirmed": false,
       "shadow_verdict": null
     }
   ],
@@ -2832,7 +2887,10 @@
           "source": "core",
           "trigger_session": "extended_pre",
           "ai_failed": false,
-          "tech_confirmed": false
+          "tech_confirmed": false,
+          "t1_close": 40.86,
+          "t1_pct": -4.733,
+          "t1_correct": false
         },
         {
           "symbol": "WDC",
@@ -2848,7 +2906,10 @@
           "source": "core",
           "trigger_session": "extended_pre",
           "ai_failed": false,
-          "tech_confirmed": false
+          "tech_confirmed": false,
+          "t1_close": 537.01,
+          "t1_pct": -6.4442,
+          "t1_correct": false
         },
         {
           "symbol": "DRAM",
@@ -2870,7 +2931,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 57.0999,
+          "t1_pct": -8.9606,
+          "t1_correct": null
         },
         {
           "symbol": "INTC",
@@ -2892,7 +2956,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 104.5999,
+          "t1_pct": -4.7707,
+          "t1_correct": null
         },
         {
           "symbol": "MRVL",
@@ -2914,7 +2981,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 219.19,
+          "t1_pct": -7.1847,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -2936,7 +3006,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 916.175,
+          "t1_pct": -6.4459,
+          "t1_correct": null
         },
         {
           "symbol": "MXL",
@@ -2958,7 +3031,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 84.33,
+          "t1_pct": -7.6342,
+          "t1_correct": null
         },
         {
           "symbol": "SNDK",
@@ -2980,7 +3056,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1719.48,
+          "t1_pct": -10.253,
+          "t1_correct": false
         },
         {
           "symbol": "SOXL",
@@ -3002,7 +3081,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 167.19,
+          "t1_pct": -13.0396,
+          "t1_correct": null
         },
         {
           "symbol": "BABA",
@@ -3024,7 +3106,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 114.06,
+          "t1_pct": 1.5401,
+          "t1_correct": null
         },
         {
           "symbol": "CRL",
@@ -3046,7 +3131,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 230.33,
+          "t1_pct": -1.3196,
+          "t1_correct": true
         },
         {
           "symbol": "TECH",
@@ -3068,7 +3156,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 71.28,
+          "t1_pct": -0.0281,
+          "t1_correct": null
         },
         {
           "symbol": "AMD",
@@ -3090,7 +3181,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 531.02,
+          "t1_pct": -4.8164,
+          "t1_correct": null
         },
         {
           "symbol": "AVGO",
@@ -3112,7 +3206,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 387.345,
+          "t1_pct": -3.1565,
+          "t1_correct": false
         },
         {
           "symbol": "ZBRA",
@@ -3134,7 +3231,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 269.92,
+          "t1_pct": -0.9541,
+          "t1_correct": true
         },
         {
           "symbol": "VRT",
@@ -3156,7 +3256,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 309.91,
+          "t1_pct": -3.1138,
+          "t1_correct": false
         },
         {
           "symbol": "STX",
@@ -3178,7 +3281,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 846.73,
+          "t1_pct": -6.9875,
+          "t1_correct": false
         },
         {
           "symbol": "ANET",
@@ -3200,7 +3306,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 183.86,
+          "t1_pct": -1.6581,
+          "t1_correct": null
         },
         {
           "symbol": "DASH",
@@ -3222,7 +3331,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 193.295,
+          "t1_pct": 0.2515,
+          "t1_correct": null
         },
         {
           "symbol": "DELL",
@@ -3244,7 +3356,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 422.0,
+          "t1_pct": -2.9818,
+          "t1_correct": null
         },
         {
           "symbol": "META",
@@ -3266,7 +3381,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 664.285,
+          "t1_pct": -0.7359,
+          "t1_correct": null
         },
         {
           "symbol": "NTAP",
@@ -3288,7 +3406,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 161.135,
+          "t1_pct": -6.629,
+          "t1_correct": null
         },
         {
           "symbol": "NVDA",
@@ -3310,7 +3431,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 207.16,
+          "t1_pct": -1.8013,
+          "t1_correct": false
         },
         {
           "symbol": "SCHW",
@@ -3332,9 +3456,13 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 102.565,
+          "t1_pct": -0.5382,
+          "t1_correct": null
         }
       ]
     }
-  ]
+  ],
+  "last_full_scan_date": "2026-07-13"
 }
