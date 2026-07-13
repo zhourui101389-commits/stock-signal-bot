@@ -2780,10 +2780,24 @@
       "MXL",
       "NVDA",
       "SNDK"
+    ],
+    "2026-07-13_pre": [
+      "ASX",
+      "DELL",
+      "DRAM",
+      "INTC",
+      "META",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SOXL",
+      "VRT",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
-    "2026-07-10_post": 5
+    "2026-07-10_post": 5,
+    "2026-07-13_pre": 11
   },
   "pending_protection": [],
   "pending_entries": []
