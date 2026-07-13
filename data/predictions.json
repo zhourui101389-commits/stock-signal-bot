@@ -3726,5 +3726,34 @@
         }
       ]
     }
-  ]
+  ],
+  "extended_alerts": {
+    "2026-07-13_post": [
+      "ANET",
+      "ASX",
+      "CF",
+      "CMG",
+      "DG",
+      "DRAM",
+      "INTC",
+      "MPC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "OXY",
+      "PSX",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "VEEV",
+      "VLO",
+      "WDC"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-13_post": 20
+  },
+  "pending_protection": [],
+  "pending_entries": []
 }
