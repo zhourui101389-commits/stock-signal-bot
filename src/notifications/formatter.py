@@ -1138,6 +1138,20 @@ def format_weekly_report(recent_history: list[dict]) -> str:
     best  = ranked[:3]
     worst = ranked[-3:][::-1]
 
+    # 有效退出准确率（市场驱动）
+    # 必须定义在第一次调用之前——之前这段代码在下面的sym_stats循环里就调用了
+    # 这个函数，但def语句本身在循环之后，Python在整个函数体里只要出现过
+    # def就会把这个名字当成局部变量处理，循环执行到那一行时函数还没定义，
+    # 直接报UnboundLocalError，导致周一的周报每次都发送失败（周报是每周一
+    # 才触发一次，这个bug一直没被跑到过）
+    def _eff_exit_correct(p: dict):
+        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
+            ep = p["effective_exit_pct"]
+            d  = p.get("final_direction", "中性")
+            return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
+        t3 = p.get("t3_correct")
+        return t3 if t3 is not None else p.get("correct")
+
     # 按股票统计准确率（≥3次，以有效出局为准）
     sym_stats: dict[str, list[int]] = {}
     for p in all_preds:
@@ -1149,15 +1163,6 @@ def format_weekly_report(recent_history: list[dict]) -> str:
             if c:
                 sym_stats[s][0] += 1
     flagged = [(s, v[0], v[1]) for s, v in sym_stats.items() if v[1] >= 3 and v[0] / v[1] < 0.4]
-
-    # 有效退出准确率（市场驱动）
-    def _eff_exit_correct(p: dict):
-        if p.get("exit_tracked") and p.get("effective_exit_pct") is not None:
-            ep = p["effective_exit_pct"]
-            d  = p.get("final_direction", "中性")
-            return (ep > 0) if d == "看多" else ((ep < 0) if d == "看空" else None)
-        t3 = p.get("t3_correct")
-        return t3 if t3 is not None else p.get("correct")
 
     eff_right = [p for p in all_preds if _eff_exit_correct(p) is True]
     eff_wrong = [p for p in all_preds if _eff_exit_correct(p) is False]

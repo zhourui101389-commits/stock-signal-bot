@@ -9,15 +9,17 @@ on:
     - cron: '12 19 * * 1-5'
     # 21:17 UTC ≈ 17:17 EDT（美股收盘后1小时），盘后复盘
     - cron: '17 21 * * 1-5'
-    # 盘前哨兵：8:05-12:45 UTC ≈ 4:05-8:45 EDT，每20分钟一次，纯yfinance检测
-    # 不烧AI配额，只有异动超阈值才触发完整分析（见 _run_extended_watch）
-    - cron: '5,25,45 8-12 * * 1-5'
-    # 盘后哨兵：20:05-23:45 UTC ≈ 16:05-19:45 EDT
-    # 盘后时段本身20:00 ET截止，最后一次tick(19:45)离截止只差15分钟，够用了；
-    # 曾经加过一组跨零点(00:05-00:45 UTC≈20:05-20:45 EDT)的tick，算错了——
-    # 那几个时间点已经过了20:00 ET收盘线，_current_extended_session()永远
-    # 判None，纯粹空转，删掉
-    - cron: '5,25,45 20-23 * * 1-5'
+    # 盘前哨兵：8:05-12:35 UTC ≈ 4:05-8:35 EDT，每30分钟一次，纯yfinance检测
+    # 不烧AI配额，只有异动超阈值才触发完整分析（见 _run_extended_watch）。
+    # 原来是每20分钟一次(15个触发点)，跟主扫描一起把这个workflow的schedule
+    # 触发数堆到近30个/天——实测过9:07ET主扫描当天被GitHub Actions完全丢弃
+    # （官方文档写明高负载会直接丢弃触发，不只是延迟），降到每30分钟(10个
+    # 触发点)减少排队拥堵；main()里新加的_catch_up_missed_scan()自愈逻辑
+    # 兜底剩下的风险——就算某次触发还是被丢，当天后续任何一次tick都会
+    # 检测到并补跑
+    - cron: '5,35 8-12 * * 1-5'
+    # 盘后哨兵：20:05-23:35 UTC ≈ 16:05-19:35 EDT，同样降到每30分钟一次
+    - cron: '5,35 20-23 * * 1-5'
   workflow_dispatch:
     inputs:
       scan_mode:
@@ -69,9 +71,9 @@ jobs:
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "17 21 * * 1-5" ]; then
             echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "5,25,45 8-12 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "5,35 8-12 * * 1-5" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "5,25,45 20-23 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "5,35 20-23 * * 1-5" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           else
             echo "SCAN_MODE=" >> $GITHUB_OUTPUT

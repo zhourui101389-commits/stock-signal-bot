@@ -890,6 +890,16 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
 
     if today_predictions:
         save_predictions(today_predictions)
+        # 标记"今天的完整常规扫描真的跑完了"，供 main() 里的自愈检查
+        # (_catch_up_missed_scan) 用——不能只看 predictions.json 的 scan_date，
+        # 哨兵单笔下单时也会把 scan_date 设成今天，会让自愈检查误判成
+        # "已经跑过常规扫描"，实际上整个常规扫描都被 GitHub Actions 丢了
+        try:
+            _fresh = load_predictions()
+            _fresh["last_full_scan_date"] = str(datetime.date.today())
+            save_raw(_fresh)
+        except Exception as e:
+            logger.warning("写入 last_full_scan_date 标记失败: %s", e)
 
     # ── 相关性风险提示 ─────────────────────────────────
     if len(today_predictions) >= 2:
@@ -1828,6 +1838,58 @@ async def _sync_portfolio(
                      p["unrealized_pl"], p["unrealized_plpc"])
 
 
+async def _catch_up_missed_scan(
+    config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key, alpaca_key, alpaca_secret,
+) -> None:
+    """
+    自愈兜底：GitHub Actions 官方文档写明 schedule 触发在高负载时可能被直接
+    丢弃（不是延迟，是完全不触发）——实测复现过：9:07 ET 的主扫描当天在
+    GitHub API 里连一次触发记录都没有，导致当天完全没推送、没下单。
+
+    这个函数在每次运行（不管这次本来触发的是哨兵/复盘/其他任何模式）开头
+    检查一遍：如果已经过了主扫描该跑的时间点+缓冲，但今天的完整常规扫描
+    (_run_scan) 确认没跑过（看 last_full_scan_date 标记，不能看 scan_date，
+    哨兵下单也会碰 scan_date），就用这次能触发的机会替它补跑一遍——
+    只要当天后续还有任何一次 tick 能成功触发（哨兵每20分钟一次，全天
+    加起来近30次机会），当天的分析和交易就不会因为某一次触发被丢就完全
+    消失，最坏情况下也只是推送/下单变晚，而不是整天音讯全无。
+
+    每天只会真正触发一次：跑完 _run_scan 会写 last_full_scan_date，
+    之后同一天的其他 tick 检查到标记已存在就会跳过。
+    """
+    if not _is_us_trading_day():
+        return
+
+    from zoneinfo import ZoneInfo
+    now_et = datetime.datetime.now(ZoneInfo("America/New_York"))
+    # 9:07 ET 是主扫描的计划触发时间，给38分钟缓冲排除"只是延迟没有被丢"
+    # 的情况；15:30 ET 之后不再补跑——当天盘中复查(15:12 ET)那次tick本身
+    # 就是 scan_mode=scan，会自己跑 _run_scan，不需要这里重复补
+    if now_et.time() < datetime.time(9, 45) or now_et.time() >= datetime.time(15, 30):
+        return
+
+    data = load_predictions()
+    if data.get("last_full_scan_date") == str(datetime.date.today()):
+        return
+
+    logger.warning("检测到今日 %s ET 前常规扫描疑似被 GitHub Actions 丢弃触发，自动补跑", now_et.strftime("%H:%M"))
+    warn_msg = (
+        f"⚠️ <b>自愈补跑</b>\n今天 9:07 ET 的常规扫描没有正常触发"
+        f"（GitHub Actions 高负载丢弃，非代码故障），现在（{now_et.strftime('%H:%M')} ET）自动补跑一次。"
+    )
+    for chat_id in chat_ids:
+        try:
+            await bot.send_message(chat_id=chat_id, text=warn_msg, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            logger.warning("自愈补跑提示发送失败: %s", e)
+
+    try:
+        today_preds = await _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key)
+        await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret, today_preds or [], config)
+    except Exception as e:
+        logger.error("自愈补跑失败: %s", e)
+
+
 async def main():
     # SCAN_MODE: "scan"（仅扫描）| "review"（仅复盘）| 不设（两者都跑，向后兼容）
     scan_mode = os.environ.get("SCAN_MODE", "").lower()
@@ -1899,6 +1961,17 @@ async def main():
         except Exception as e:
             logger.error("测试卖单失败: %s", e)
         return
+
+    # 自愈兜底：不管这次触发本来是什么模式（哨兵/复盘/查询持仓...），先检查
+    # 今天该跑的常规扫描是不是被 GitHub Actions 丢了，丢了就借这次机会补跑。
+    # scan_mode=="scan" 或留空(all-in-one) 下面本身就会正常跑一遍 _run_scan，
+    # 不需要在这里重复跑一次浪费AI调用
+    if scan_mode not in ("scan", ""):
+        try:
+            await _catch_up_missed_scan(config, bot, chat_ids, finnhub_client, anthropic_key,
+                                        gemini_key, alpaca_key, alpaca_secret)
+        except Exception as e:
+            logger.error("自愈补跑检查失败: %s", e)
 
     if scan_mode == "review":
         try:
