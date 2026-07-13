@@ -587,7 +587,56 @@ def _ai_review_analysis(
         return ""
 
 
-async def _send_weekly_report(bot: Bot, chat_ids: list[int]) -> None:
+def _ai_weekly_reflection(recent_history: list[dict], anthropic_key: str) -> str:
+    """
+    周报专用：之前周报只有一堆胜率数字，看不出AI有没有真的从上周结果里学到
+    东西、下周判断会不会有变化——这里让AI显式回答"哪类逻辑被验证/被证伪、
+    下周具体调整什么"，而不是把_compute_ai_calibration()的校准摘要只悄悄
+    塞进下次分析的prompt里，用户永远看不到。用Haiku控制成本，跟日常复盘
+    模型一致。
+    """
+    if not anthropic_key:
+        return ""
+    all_preds = [p for day in recent_history for p in day.get("predictions", [])]
+    if len(all_preds) < 5:
+        return ""
+
+    def _fmt(p: dict) -> str:
+        eff = p.get("effective_exit_pct")
+        if eff is not None:
+            outcome = f"{eff:+.2f}%（{p.get('effective_exit_reason', '')}）"
+        elif p.get("t3_pct") is not None:
+            outcome = f"{p['t3_pct']:+.2f}%（T+3）"
+        else:
+            outcome = "无数据"
+        return (f"- {p.get('symbol', '?')}：{p.get('final_direction', '?')}"
+                f"[{p.get('conviction', '')}]「{p.get('verdict', '')}」→ {outcome}")
+
+    lines = "\n".join(_fmt(p) for p in all_preds[:40])
+    calibration = _compute_ai_calibration()
+    prompt = (
+        "量化交易系统周度校准复盘，以下是过去一周全部预测和实际结果：\n\n"
+        f"{lines}\n\n"
+        f"{calibration}\n\n"
+        "用150字以内直接回答：①本周哪类判断逻辑被验证有效、哪类被证明是错的"
+        "（要具体到指标或场景，比如'缩量死叉信号可信度低'这种颗粒度，不要泛泛而谈）；"
+        "②下周研判会针对性做什么调整。不用列序号，直接输出分析文字。"
+    )
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=anthropic_key)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return resp.content[0].text.strip()
+    except Exception as e:
+        logger.warning("周度校准复盘生成失败: %s", e)
+        return ""
+
+
+async def _send_weekly_report(bot: Bot, chat_ids: list[int], anthropic_key: str = "") -> None:
     """发送上周交易周期的绩效周报（每周一扫描前触发）。"""
     path = os.environ.get("PREDICTIONS_FILE", "/tmp/predictions.json")
     data = load_predictions(path)
@@ -606,6 +655,9 @@ async def _send_weekly_report(bot: Bot, chat_ids: list[int]) -> None:
         return
     msg = format_weekly_report(recent)
     if msg:
+        reflection = _ai_weekly_reflection(recent, anthropic_key)
+        if reflection:
+            msg += f"\n\n🧠 <b>本周判断校准</b>\n{_html.escape(reflection)}"
         for chat_id in chat_ids:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
         logger.info("周报已发送")
@@ -753,7 +805,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
     if datetime.date.today().weekday() == 0:
         try:
             _fill_multi_day_outcomes()
-            await _send_weekly_report(bot, chat_ids)
+            await _send_weekly_report(bot, chat_ids, anthropic_key)
         except Exception as e:
             logger.warning("周报发送失败: %s", e)
 
@@ -1056,14 +1108,20 @@ async def _run_execution(
         # 看空或回避：若已有多头持仓则平仓
         if action in ("回避", "减仓") or final_dir == "看空":
             if sym in held_symbols:
+                entry_snapshot = positions_by_symbol.get(sym, {})
                 result = alpaca.close_position(sym)
                 if result:
+                    # 平仓通知要能回答"为什么平的/持了多久/赚了还是亏了"，不能只有
+                    # 一行成交价，否则用户没法判断这次AI的止盈止损/反手判断是否合理
+                    result["close_reason"]    = pred.get("verdict") or f"AI转{final_dir or action}"
+                    result["avg_entry_price"] = entry_snapshot.get("avg_entry_price")
+                    result["entry_date"]      = alpaca.get_last_buy_fill_date(sym)
                     closed.append(result)
                     # 只有确认完全成交才释放持仓数/资金额度，避免用未成交的平仓
                     # 去解锁本轮后面的新买入（poll超时/部分成交时状态不是"filled"）
                     if result.get("status") == "filled":
                         open_positions -= 1
-                        freed = positions_by_symbol.get(sym, {}).get("market_value", 0.0)
+                        freed = entry_snapshot.get("market_value", 0.0)
                         deployed       -= freed
                         available_cash += freed
             continue
@@ -1111,11 +1169,24 @@ async def _run_execution(
     if closed:
         lines.append(f"\n🔴 <b>已平仓（{len(closed)}笔）</b>")
         for c in closed:
-            price = c.get("filled_price")
-            qty   = c.get("filled_qty") or 0
+            price     = c.get("filled_price")
+            qty       = c.get("filled_qty") or 0
+            avg_entry = c.get("avg_entry_price")
             if c.get("status") == "filled" and price:
                 proceeds = qty * price
-                lines.append(f"  {c['symbol']} ×{qty:.0f}股 @ ${price:.2f}  收入 ${proceeds:,.2f}")
+                line = f"  {c['symbol']} ×{qty:.0f}股 @ ${price:.2f}  收入 ${proceeds:,.2f}"
+                if avg_entry:
+                    pnl     = (price - avg_entry) * qty
+                    pnl_pct = (price / avg_entry - 1) * 100
+                    icon    = "🟢" if pnl >= 0 else "🔴"
+                    line += f"\n    {icon} 盈亏 {pnl:+,.2f}（{pnl_pct:+.1f}%），成本价 ${avg_entry:.2f}"
+                entry_date = c.get("entry_date")
+                if entry_date:
+                    line += f"\n    持仓 {entry_date} 至今"
+                reason = c.get("close_reason")
+                if reason:
+                    line += f"\n    平仓原因：{_html.escape(str(reason))}"
+                lines.append(line)
             else:
                 lines.append(f"  {c['symbol']}（成交价待确认，状态：{c.get('status', '?')}）")
     if skipped:
@@ -1355,11 +1426,23 @@ async def _run_extended_watch(
                     freed = pos.get("market_value", 0.0)
                     deployed       -= freed
                     available_cash += freed
+                    avg_entry = pos.get("avg_entry_price")
+                    pnl_line = ""
+                    if avg_entry:
+                        pnl     = (q["price"] - avg_entry) * qty
+                        pnl_pct = (q["price"] / avg_entry - 1) * 100
+                        icon    = "🟢" if pnl >= 0 else "🔴"
+                        pnl_line = f"\n{icon} 预估盈亏 {pnl:+,.2f}（{pnl_pct:+.1f}%），成本价 ${avg_entry:.2f}（挂限价单，以实际成交价为准）"
+                    entry_date = alpaca.get_last_buy_fill_date(sym)
+                    entry_line = f"\n持仓 {entry_date} 至今" if entry_date else ""
+                    verdict = ai_result.get("verdict") or ""
                     msg = (
                         f"🌙 <b>{session_label}异动平仓</b>\n{'─'*28}\n"
                         f"<b>{sym}</b>  相对昨收 {q['change_pct']:+.2f}%  现价 ${q['price']:.2f}\n"
-                        f"AI研判: {final_dir} / {action}（置信度{ai_result.get('conviction','?')}）\n"
-                        f"\n✅ 已挂{session_label}平仓限价单 ×{qty}股 @${q['price']:.2f}"
+                        f"AI研判: {final_dir} / {action}（置信度{ai_result.get('conviction','?')}）"
+                        + (f"\n平仓原因：{_html.escape(verdict)}" if verdict else "")
+                        + pnl_line + entry_line +
+                        f"\n\n✅ 已挂{session_label}平仓限价单 ×{qty}股 @${q['price']:.2f}"
                         f"（限价单，未必立即成交；若已有止损止盈保护单会先撤掉）"
                     )
                     for chat_id in chat_ids:

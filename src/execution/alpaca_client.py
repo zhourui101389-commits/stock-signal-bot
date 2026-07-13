@@ -291,6 +291,24 @@ class AlpacaClient:
             logger.error("平仓失败 %s: %s", symbol, e)
             return None
 
+    def get_last_buy_fill_date(self, symbol: str) -> Optional[str]:
+        """查询某标的最近一笔已成交买单的成交日期，平仓通知里用来显示持仓了多久。"""
+        from alpaca.trading.requests import GetOrdersRequest
+        from alpaca.trading.enums import QueryOrderStatus, OrderSide
+        try:
+            orders = self._client.get_orders(
+                GetOrdersRequest(status=QueryOrderStatus.CLOSED, symbols=[symbol],
+                                 side=OrderSide.BUY, limit=20)
+            )
+            filled = [o for o in orders if getattr(o, "filled_at", None)]
+            if not filled:
+                return None
+            latest = max(filled, key=lambda o: o.filled_at)
+            return latest.filled_at.strftime("%Y-%m-%d")
+        except Exception as e:
+            logger.warning("查询%s最近买单成交日期失败: %s", symbol, e)
+            return None
+
     def get_open_orders(self, symbol: str) -> list[dict]:
         """获取某标的当前挂着的未成交订单（含OCO保护单），用于扩展时段平仓前先撤单腾出股数。"""
         from alpaca.trading.requests import GetOrdersRequest

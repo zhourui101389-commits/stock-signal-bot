@@ -471,9 +471,13 @@ def analyze_symbol(
 
     # 仓位建议（用最终强度计算，放在所有评分完成后）
     if result.direction == "BUY" and current_price > 0:
-        position_usd = total_capital * max_position_pct * (result.strength / 100)
-        result.position_usd    = round(position_usd, 2)
-        result.position_shares = max(1, int(position_usd / current_price))
+        position_budget = total_capital * max_position_pct * (result.strength / 100)
+        result.position_shares = max(1, int(position_budget / current_price))
+        # 展示金额必须是"这些股数实际要花多少钱"，不能直接显示预算——预算除以
+        # 股价取整成股数后，真实花费经常跟预算差很多（股价较高、预算买不到
+        # 几股时尤其明显，比如预算$3050但股价$1722，只够买1股，之前直接显示
+        # $3050导致"建议仓位:1股(约$3050)"这种股数和金额对不上的误导性文案）
+        result.position_usd = round(result.position_shares * current_price, 2)
 
     logger.info(
         "%s → %s (强度 %d，预估 %+.1f%%，当前价 %.2f)",
