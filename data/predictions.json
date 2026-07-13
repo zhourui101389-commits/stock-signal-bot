@@ -323,19 +323,19 @@
     },
     {
       "symbol": "VLO",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "持有观望",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
       "conviction": "中",
       "horizon": "3-5天",
-      "entry_price": 295.79,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "超买+顶背离+缩量，追高风险大于趋势延续",
+      "entry_price": 297.0,
+      "target_price": 338.5,
+      "stop_loss": 276.1,
+      "verdict": "地缘政治推升裂解价差，超买高位仍可短线追但需紧止损",
       "source": "screener",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": true,
-      "shadow_verdict": null
+      "tech_confirmed": false
     },
     {
       "symbol": "CDW",
@@ -3553,5 +3553,48 @@
       ]
     }
   ],
-  "last_full_scan_date": "2026-07-13"
+  "extended_alerts": {
+    "2026-07-13_post": [
+      "AJG",
+      "ANET",
+      "ASX",
+      "CF",
+      "CMG",
+      "DRAM",
+      "INTC",
+      "MPC",
+      "MRVL",
+      "MU",
+      "NVDA",
+      "OXY",
+      "PSX",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "VLO",
+      "WDC"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-13_post": 18
+  },
+  "pending_protection": [
+    {
+      "symbol": "VLO",
+      "qty": 5,
+      "stop": 276.1,
+      "target": 338.5,
+      "order_id": "135e2495-4ce2-440b-8abb-a2f09c1d0c3e",
+      "opened_at": "2026-07-13T21:19:07.246243"
+    }
+  ],
+  "pending_entries": [
+    {
+      "symbol": "VLO",
+      "order_id": "135e2495-4ce2-440b-8abb-a2f09c1d0c3e",
+      "entry_price": 297.0,
+      "retry_count": 0,
+      "alert_key": "2026-07-13_post"
+    }
+  ]
 }
