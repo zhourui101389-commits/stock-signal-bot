@@ -27,8 +27,11 @@ _CORR_CLUSTERS = {
 
 # ── Alpaca 执行风控参数 ──────────────────────────────────────
 _MAX_LOSS_PER_TRADE_PCT = 0.005   # 单笔最大亏损占总资产比例（按入场-止损反推仓位）
-_MAX_TOTAL_EXPOSURE_PCT = 0.60    # 最大总仓位敞口（占总资产）
-_MAX_POSITIONS          = 8       # 最多同时持仓数
+_MAX_TOTAL_EXPOSURE_PCT = 0.60    # 最大总仓位敞口（占总资产）——持仓数量不再单独设硬上限，
+                                    # 靠这个总敞口%(加上下面的单笔风险%/tier仓位上限)控风险即可，
+                                    # 之前额外加的"最多8个持仓"是我自己拍的数字，没跟用户确认过，
+                                    # 2026-07-14实测挡掉了一笔AI置信度中的真实买入信号(SNDK)，
+                                    # 用户没有设置过这个限制，去掉后风险敞口的实际控制不变
 _MIN_WINRATE_SAMPLES    = 8       # 胜率门禁生效所需的最小历史样本数
 _MIN_WINRATE            = 0.45    # 低于此历史胜率的 action 暂停自动执行
 
@@ -1020,13 +1023,13 @@ def _gate_and_size_position(
     sym: str, action: str, final_dir: str,
     entry: float, stop: float, target: float,
     source: str,
-    held_symbols: set, open_positions: int, deployed: float, available_cash: float,
+    held_symbols: set, deployed: float, available_cash: float,
     capital_base: float, tier_map: dict, tier_cap: dict, win_rate_cache: dict,
 ) -> tuple[int | None, str | None]:
     """
     买入前的全部风控门禁 + 仓位计算。_run_execution（常规时段）和
     _run_extended_watch（盘前盘后哨兵）共用同一套逻辑，扩展时段不允许
-    绕开任何一道门禁（最大持仓数/总敞口/历史胜率/单笔最大亏损）。
+    绕开任何一道门禁（总敞口/历史胜率/单笔最大亏损）。
     返回 (股数, None) 表示可以下单；(None, 跳过原因) 表示不下单。
     """
     if action not in ("积极买入", "谨慎买入") or final_dir != "看多":
@@ -1037,9 +1040,6 @@ def _gate_and_size_position(
 
     if not entry or not stop or not target:
         return None, f"{sym}(缺价格参数)"
-
-    if open_positions >= _MAX_POSITIONS:
-        return None, f"{sym}(已达最大持仓数{_MAX_POSITIONS})"
 
     if deployed >= capital_base * _MAX_TOTAL_EXPOSURE_PCT:
         return None, f"{sym}(总敞口已达上限)"
@@ -1115,7 +1115,6 @@ async def _run_execution(
     capital_base   = min(account["equity"], config.alpaca_capital_base)
     deployed       = sum(p["market_value"] for p in positions)  # 按实际持仓市值算，不依赖broker总现金
     available_cash = min(capital_base - deployed, account["cash"])
-    open_positions = len(held_symbols)
     tier_map, tier_cap = _build_tier_maps(config)
 
     executed: list[dict] = []
@@ -1147,7 +1146,6 @@ async def _run_execution(
                     # 只有确认完全成交才释放持仓数/资金额度，避免用未成交的平仓
                     # 去解锁本轮后面的新买入（poll超时/部分成交时状态不是"filled"）
                     if result.get("status") == "filled":
-                        open_positions -= 1
                         freed = entry_snapshot.get("market_value", 0.0)
                         deployed       -= freed
                         available_cash += freed
@@ -1156,7 +1154,7 @@ async def _run_execution(
         shares, skip_reason = _gate_and_size_position(
             sym, action, final_dir, entry, stop, target,
             pred.get("source", "core"),
-            held_symbols, open_positions, deployed, available_cash,
+            held_symbols, deployed, available_cash,
             capital_base, tier_map, tier_cap, win_rate_cache,
         )
         if skip_reason:
@@ -1169,7 +1167,6 @@ async def _run_execution(
             cost = shares * entry
             available_cash -= cost   # 预扣，防止后续超额
             deployed        += cost
-            open_positions  += 1
         else:
             skipped.append(f"{sym}(下单失败)")
 
@@ -1313,7 +1310,6 @@ async def _run_extended_watch(
     account = positions = None
     held_symbols: set = set()
     capital_base = deployed = available_cash = 0.0
-    open_positions = 0
     tier_map = tier_cap = {}
     win_rate_cache: dict[str, tuple] = {}
 
@@ -1329,7 +1325,6 @@ async def _run_extended_watch(
             capital_base   = min(account["equity"], config.alpaca_capital_base)
             deployed       = sum(p["market_value"] for p in positions)
             available_cash = min(capital_base - deployed, account["cash"])
-            open_positions = len(held_symbols)
             tier_map, tier_cap = _build_tier_maps(config)
         except Exception as e:
             logger.error("哨兵获取 Alpaca 账户失败，本轮不下单: %s", e)
@@ -1449,7 +1444,6 @@ async def _run_extended_watch(
                 result = alpaca.close_position_extended_hours(sym, qty, q["price"])
                 if result:
                     held_symbols.discard(sym)
-                    open_positions -= 1
                     freed = pos.get("market_value", 0.0)
                     deployed       -= freed
                     available_cash += freed
@@ -1484,7 +1478,7 @@ async def _run_extended_watch(
         source = "screener" if sym in screener_symbols else "core"
         shares, skip_reason = _gate_and_size_position(
             sym, action, final_dir, entry, stop, target, source,
-            held_symbols, open_positions, deployed, available_cash,
+            held_symbols, deployed, available_cash,
             capital_base, tier_map, tier_cap, win_rate_cache,
         )
         if not shares:
@@ -1496,7 +1490,6 @@ async def _run_extended_watch(
             continue
 
         held_symbols.add(sym)
-        open_positions += 1
         cost = shares * entry
         deployed += cost
         available_cash -= cost
