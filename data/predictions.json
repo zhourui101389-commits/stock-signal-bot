@@ -3750,10 +3750,26 @@
       "VEEV",
       "VLO",
       "WDC"
+    ],
+    "2026-07-14_pre": [
+      "ASX",
+      "CF",
+      "CMG",
+      "DRAM",
+      "INTC",
+      "MPC",
+      "MRVL",
+      "OXY",
+      "PSX",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "VLO"
     ]
   },
   "extended_trigger_count": {
-    "2026-07-13_post": 21
+    "2026-07-13_post": 21,
+    "2026-07-14_pre": 13
   },
   "pending_protection": [],
   "pending_entries": []
