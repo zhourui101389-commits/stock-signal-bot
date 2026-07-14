@@ -20,18 +20,18 @@
     {
       "symbol": "INTC",
       "direction": "BUY",
-      "final_direction": "中性",
-      "action": "持有观望",
+      "final_direction": "看多",
+      "action": "谨慎买入",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 107.76,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "超卖反弹缺量能确认，分析师0%买入共识压顶",
+      "horizon": "3-5天",
+      "entry_price": 107.67,
+      "target_price": 122.5,
+      "stop_loss": 96.5,
+      "verdict": "盘后消息驱动突破僵局，超卖反弹配合资金真实流入",
       "source": "core",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": false,
-      "shadow_verdict": null
+      "tech_confirmed": true
     },
     {
       "symbol": "MRVL",
@@ -51,26 +51,19 @@
     },
     {
       "symbol": "MU",
-      "direction": "NEUTRAL",
+      "direction": "BUY",
       "final_direction": "看多",
       "action": "谨慎买入",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 983.12,
+      "horizon": "3-5天",
+      "entry_price": 979.5639,
       "target_price": 1235,
       "stop_loss": 857,
-      "verdict": "HBM需求爆发+周线多头，短期死叉为洗盘而非反转",
+      "verdict": "HBM4行业性暴涨驱动追涨，死叉为洗盘",
       "source": "core",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": false,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "短期死叉缩量整理，基本面强劲，静待企稳"
-      }
+      "tech_confirmed": false
     },
     {
       "symbol": "MXL",
@@ -90,19 +83,19 @@
     },
     {
       "symbol": "SOXL",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "持有观望",
-      "conviction": "低",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
+      "conviction": "中",
       "horizon": "3-5天",
-      "entry_price": 176.66,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "短期死叉vs超卖反弹信号打架，3倍杠杆不宜赌方向",
+      "entry_price": 176.83,
+      "target_price": 206.5,
+      "stop_loss": 162.0,
+      "verdict": "盘后异动+资金面催化剂共振，短线动能优先于滞后死叉信号",
       "source": "core",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": true,
-      "shadow_verdict": null
+      "tech_confirmed": false
     },
     {
       "symbol": "WDC",
@@ -122,19 +115,19 @@
     },
     {
       "symbol": "HPE",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "持有观望",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
       "conviction": "中",
       "horizon": "3-5天",
-      "entry_price": 49.56,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "缩量顶背离+估值离谱，追高风险大于催化剂",
+      "entry_price": 49.51,
+      "target_price": 57.9,
+      "stop_loss": 45.39,
+      "verdict": "盘后利好跳空+板块共振，但需放量确认防诱多",
       "source": "screener",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": true,
-      "shadow_verdict": null
+      "tech_confirmed": false
     },
     {
       "symbol": "BABA",
@@ -159,14 +152,14 @@
       "action": "谨慎买入",
       "conviction": "中",
       "horizon": "3-5天",
-      "entry_price": 210.73,
-      "target_price": 245.0,
-      "stop_loss": 195.0,
-      "verdict": "强动能但缩量新高+空间受限，短线谨慎跟随",
+      "entry_price": 211.7701,
+      "target_price": 242.0,
+      "stop_loss": 194.99,
+      "verdict": "盘后跳空+12.7%强势确认，追涨但需防获利了结",
       "source": "screener",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": true,
-      "shadow_verdict": null
+      "tech_confirmed": true
     },
     {
       "symbol": "CMG",
@@ -282,19 +275,19 @@
     },
     {
       "symbol": "PANW",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "持有观望",
-      "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 352.89,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "强趋势遇顶部背离，估值泡沫下不宜追高",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
+      "conviction": "低",
+      "horizon": "3-5天",
+      "entry_price": 352.835,
+      "target_price": 403.0,
+      "stop_loss": 327.9,
+      "verdict": "催化剂驱动跳空追涨，但估值泡沫和顶背离风险高需紧盯",
       "source": "screener",
+      "trigger_session": "extended_post",
       "ai_failed": false,
-      "tech_confirmed": true,
-      "shadow_verdict": null
+      "tech_confirmed": false
     },
     {
       "symbol": "ASX",
@@ -4146,5 +4139,117 @@
       ]
     }
   ],
-  "last_full_scan_date": "2026-07-14"
+  "extended_alerts": {
+    "2026-07-14_post": [
+      "CRWD",
+      "DDOG",
+      "DRAM",
+      "HPE",
+      "IBM",
+      "INTC",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PANW",
+      "SNDK",
+      "SOXL"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-14_post": 12
+  },
+  "pending_protection": [
+    {
+      "symbol": "INTC",
+      "qty": 11,
+      "stop": 96.5,
+      "target": 122.5,
+      "order_id": "d35db0a8-dca3-444e-aaa4-fe6ea9bb068d",
+      "opened_at": "2026-07-14T21:11:33.348947"
+    },
+    {
+      "symbol": "MU",
+      "qty": 1,
+      "stop": 857,
+      "target": 1235,
+      "order_id": "b6c2514f-8cec-4cdf-9d54-893fd85dc0b6",
+      "opened_at": "2026-07-14T21:12:10.818273"
+    },
+    {
+      "symbol": "SOXL",
+      "qty": 8,
+      "stop": 162.0,
+      "target": 206.5,
+      "order_id": "e71bc1f7-17d9-46c3-9872-b89ac282bc01",
+      "opened_at": "2026-07-14T21:15:11.918097"
+    },
+    {
+      "symbol": "CRWD",
+      "qty": 7,
+      "stop": 194.99,
+      "target": 242.0,
+      "order_id": "7135e3ed-38bc-46b3-9843-c0bc815945c8",
+      "opened_at": "2026-07-14T21:15:47.158546"
+    },
+    {
+      "symbol": "HPE",
+      "qty": 30,
+      "stop": 45.39,
+      "target": 57.9,
+      "order_id": "bfd2e57a-beb7-4641-a994-5b0eae3582bd",
+      "opened_at": "2026-07-14T21:17:17.738510"
+    },
+    {
+      "symbol": "PANW",
+      "qty": 5,
+      "stop": 327.9,
+      "target": 403.0,
+      "order_id": "daf550d1-91fe-4734-a22b-957afb05a277",
+      "opened_at": "2026-07-14T21:18:52.399725"
+    }
+  ],
+  "pending_entries": [
+    {
+      "symbol": "INTC",
+      "order_id": "d35db0a8-dca3-444e-aaa4-fe6ea9bb068d",
+      "entry_price": 107.67,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "MU",
+      "order_id": "b6c2514f-8cec-4cdf-9d54-893fd85dc0b6",
+      "entry_price": 979.5639,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "SOXL",
+      "order_id": "e71bc1f7-17d9-46c3-9872-b89ac282bc01",
+      "entry_price": 176.83,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "CRWD",
+      "order_id": "7135e3ed-38bc-46b3-9843-c0bc815945c8",
+      "entry_price": 211.7701,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "HPE",
+      "order_id": "bfd2e57a-beb7-4641-a994-5b0eae3582bd",
+      "entry_price": 49.51,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "PANW",
+      "order_id": "daf550d1-91fe-4734-a22b-957afb05a277",
+      "entry_price": 352.835,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    }
+  ]
 }
