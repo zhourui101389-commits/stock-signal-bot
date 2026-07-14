@@ -3755,8 +3755,11 @@
       "ASX",
       "CF",
       "CMG",
+      "DG",
       "DRAM",
+      "EXPE",
       "INTC",
+      "META",
       "MPC",
       "MRVL",
       "OXY",
@@ -3769,7 +3772,7 @@
   },
   "extended_trigger_count": {
     "2026-07-13_post": 21,
-    "2026-07-14_pre": 13
+    "2026-07-14_pre": 16
   },
   "pending_protection": [],
   "pending_entries": []
