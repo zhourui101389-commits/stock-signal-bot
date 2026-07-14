@@ -502,6 +502,112 @@ def format_signal_message(result: SignalResult, pinned: bool = False, ai_result:
     )
 
 
+def _strip_confirmations(action_block: str) -> str:
+    """
+    _format_action_guide() 里的入场检查清单混着✅确认项和⚠️警告项——确认项
+    （"✅ 量比达标"这种）对决策没有增量信息，只有警告才是真正需要用户
+    注意的，精简版消息只保留警告行。
+    """
+    if not action_block:
+        return ""
+    kept = [l for l in action_block.split("\n") if "✅ " not in l]
+    return "\n".join(kept)
+
+
+def format_signal_message_compact(result: SignalResult, pinned: bool = False, ai_result: dict = None,
+                                  discovered: bool = False, ai_failed: bool = False) -> str:
+    """
+    精简版信号消息：只保留能直接影响操作决策的内容——操作/置信度/仓位/
+    止损止盈/AI核心判断/关键警告。完整版(format_signal_message)会把资金
+    动向、估值水位、做空指标、分析师共识、内部人交易、关键价位等十几个
+    区块全部塞进一条消息，每条动辄40+行，一天二十几条信号推下来严重
+    冗长——这些细节数据不再逐条推送，仍然完整保存在predictions.json里
+    供AI自己下次分析复用，只是不再刷屏。
+    """
+    price = result.current_price if not math.isnan(result.current_price) else result.close_price
+
+    if ai_result:
+        ai_action_str    = ai_result.get("action", "持有观望")
+        conviction       = ai_result.get("conviction", "中")
+        horizon          = ai_result.get("horizon", "3-5天")
+        verdict          = _html.escape(ai_result.get("verdict", ""))
+        final_dir        = ai_result.get("final_direction", "中性")
+        tech_confirmed   = ai_result.get("tech_confirmed", True)
+        override_reason  = _html.escape(str(ai_result.get("override_reason") or ""))
+        catalyst         = _html.escape(str(ai_result.get("catalyst") or "")) or None
+        if ai_action_str in ("积极买入", "谨慎买入"):
+            action = f"✅ {ai_action_str}"
+        elif ai_action_str in ("减仓", "回避"):
+            action = f"❌ {ai_action_str}"
+        else:
+            action = "⏸ 持有观望"
+    elif ai_failed:
+        final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
+        conviction, horizon = "中", "3-5天"
+        verdict, tech_confirmed, override_reason, catalyst = "", True, "", None
+        action = "⚠️ AI研判失败，暂不建议操作"
+    else:
+        final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
+        conviction, horizon = "中", "3-5天"
+        verdict, tech_confirmed, override_reason, catalyst = "", True, "", None
+        action = ("✅ 建议买入" if result.direction == "BUY"
+                 else "❌ 建议卖出/减仓" if result.direction == "SELL" else "⏸ 观望")
+
+    dir_emoji  = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(final_dir, "⚪")
+    conv_emoji = {"高": "🔥", "中": "✅", "低": "💡"}.get(conviction, "💡")
+    today_chg  = _pct(result.today_change_pct)
+    pin_tag    = "📌 " if pinned else ""
+    disc_tag   = "🔍 " if discovered else ""
+    ts         = datetime.now(_CST).strftime("%H:%M")
+
+    earnings_warn = ""
+    if result.next_earnings_date:
+        from datetime import date
+        try:
+            days_left = (date.fromisoformat(result.next_earnings_date) - date.today()).days
+            if days_left <= 7:
+                earnings_warn = f"⚠️ 财报 {days_left} 天内"
+        except ValueError:
+            pass
+
+    total_capital = getattr(result, "_total_capital", 50000)
+    currency      = getattr(result, "_currency", "AUD")
+    action_block  = _strip_confirmations(
+        _format_action_guide(result, price, pinned, total_capital, currency, ai_result, ai_failed)
+    )
+
+    lines = [f"<b>{pin_tag}{disc_tag}{_scan_label()} — {result.symbol}</b>"]
+    if verdict:
+        lines.append(f"「{verdict}」")
+    lines.append(f"{action}  {conv_emoji}{conviction}置信 · {horizon}  {dir_emoji}{final_dir}")
+    lines.append(f"现价 <b>{_v(price)}</b>（{today_chg}）" + (f"  {earnings_warn}" if earnings_warn else ""))
+    if not tech_confirmed and override_reason:
+        lines.append(f"⚠️ AI推翻技术信号：{override_reason}")
+    if catalyst:
+        lines.append(f"⚡ {catalyst}")
+    if action_block:
+        lines.append(action_block)
+    lines.append(f"<i>⏱ {ts} CST · 仅供参考，盈亏自负</i>")
+
+    return "\n".join(l for l in lines if l)
+
+
+def format_watchlist_digest(entries: list[dict]) -> str:
+    """
+    观望/无操作标的当日合并摘要——之前每只都单独推一条完整卡片，现在
+    合并成一条消息一行一只，大幅减少消息条数。
+    entries: [{"symbol", "verdict", "strength", "final_direction"}, ...]
+    """
+    if not entries:
+        return ""
+    lines = [f"<b>📋 今日观望（{len(entries)}只，无操作建议）</b>", "─" * 28]
+    for e in entries:
+        dir_emoji = {"看多": "🟢", "看空": "🔴", "中性": "⚪"}.get(e.get("final_direction", "中性"), "⚪")
+        v = f" 「{e['verdict']}」" if e.get("verdict") else ""
+        lines.append(f"{dir_emoji} <b>{e['symbol']}</b> 强度{e.get('strength', '?')}{v}")
+    return "\n".join(lines)
+
+
 def _vol_label(vr: float) -> str:
     if math.isnan(vr):   return "N/A"
     if vr >= 2.0:        return f"{vr:.2f}x ⚡超大量"

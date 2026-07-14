@@ -64,7 +64,8 @@ from src.analysis.ai_analyst import run_ai_analysis
 from src.analysis.shadow_analyst import run_shadow_analysis
 from src.analysis.screener import screen_top_candidates
 from src.notifications.formatter import (
-    format_signal_message,
+    format_signal_message_compact,
+    format_watchlist_digest,
     format_review_message,
     format_weekly_report,
 )
@@ -838,6 +839,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
 
     pushed = 0
     today_predictions = []
+    watchlist_digest_entries: list[dict] = []
 
     for sym in symbols:
         try:
@@ -889,23 +891,41 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
 
             price = result.current_price
             is_discovered = sym in discovered
+            final_dir_cn = (ai_result.get("final_direction", "中性") if ai_result else
+                            {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性"))
+            # 只有真正actionable(有买卖建议)或pinned标的才单独推一条完整卡片，
+            # 观望/无操作的合并进日终摘要——之前不分青红皂白每只都推一条完整
+            # 40+行的消息，一天二十几条信号严重冗长刷屏
+            ai_action = ai_result.get("action", "") if ai_result else ""
+            actionable = (
+                is_pinned or ai_failed
+                or ai_action in ("积极买入", "谨慎买入", "减仓", "回避")
+                or (not ai_result and result.direction in ("BUY", "SELL"))
+            )
             # AI 尝试研判但失败时，消息不能悄悄退回纯技术信号当"买入建议"——
             # 执行层（_run_execution）没有 AI action 就不会下单，消息和实际动作
             # 必须保持一致，否则用户会以为系统已经买了
-            msg = format_signal_message(result, pinned=is_pinned, ai_result=ai_result or None,
-                                        discovered=is_discovered, ai_failed=ai_failed)
-            msg = _safe_truncate(msg)
-            for chat_id in chat_ids:
-                await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
-
-            logger.info("✅ 推送 %s: %s 强度%d", sym, result.direction, result.strength)
-            pushed += 1
+            if actionable:
+                msg = format_signal_message_compact(result, pinned=is_pinned, ai_result=ai_result or None,
+                                                    discovered=is_discovered, ai_failed=ai_failed)
+                msg = _safe_truncate(msg)
+                for chat_id in chat_ids:
+                    await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+                logger.info("✅ 推送 %s: %s 强度%d", sym, result.direction, result.strength)
+                pushed += 1
+            else:
+                watchlist_digest_entries.append({
+                    "symbol": sym,
+                    "verdict": ai_result.get("verdict", "") if ai_result else "",
+                    "strength": result.strength,
+                    "final_direction": final_dir_cn,
+                })
+                logger.info("📋 观望汇总 %s: %s 强度%d", sym, result.direction, result.strength)
 
             today_predictions.append({
                 "symbol":          sym,
                 "direction":       result.direction,
-                "final_direction": ai_result.get("final_direction", "中性") if ai_result else
-                                   {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性"),
+                "final_direction": final_dir_cn,
                 "action":          ai_result.get("action", "") if ai_result else "",
                 "conviction":      ai_result.get("conviction", "") if ai_result else "",
                 "horizon":         ai_result.get("horizon", "3-5天") if ai_result else "3-5天",
@@ -938,7 +958,14 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
             except Exception:
                 pass
 
-    logger.info("扫描完成，共推送 %d 条信号", pushed)
+    logger.info("扫描完成，共推送 %d 条信号（另有 %d 只观望汇总为一条）", pushed, len(watchlist_digest_entries))
+
+    if watchlist_digest_entries:
+        digest_msg = format_watchlist_digest(watchlist_digest_entries)
+        if digest_msg:
+            digest_msg = _safe_truncate(digest_msg)
+            for chat_id in chat_ids:
+                await bot.send_message(chat_id=chat_id, text=digest_msg, parse_mode=ParseMode.HTML)
 
     if today_predictions:
         save_predictions(today_predictions)
