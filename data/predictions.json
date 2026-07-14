@@ -4588,20 +4588,5 @@
       "opened_at": "2026-07-14T22:41:06.496604"
     }
   ],
-  "pending_entries": [
-    {
-      "symbol": "NVDA",
-      "order_id": "8bf8ec84-739a-4e85-b6a9-159658eb33ea",
-      "entry_price": 211.5087,
-      "retry_count": 0,
-      "alert_key": "2026-07-14_post"
-    },
-    {
-      "symbol": "HPE",
-      "order_id": "3125cb19-a4dd-4648-95d5-9fa07095663a",
-      "entry_price": 49.7,
-      "retry_count": 0,
-      "alert_key": "2026-07-14_post"
-    }
-  ]
+  "pending_entries": []
 }
