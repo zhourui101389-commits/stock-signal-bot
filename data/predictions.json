@@ -521,6 +521,22 @@
       "inconclusive": true,
       "hit_target": false,
       "hit_stop": false
+    },
+    {
+      "symbol": "NVDA",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
+      "conviction": "中",
+      "horizon": "1-2周",
+      "entry_price": 211.5087,
+      "target_price": 241.2,
+      "stop_loss": 197.1,
+      "verdict": "中国解禁H200采购构成实质利好，超买需控制仓位",
+      "source": "core",
+      "trigger_session": "extended_post",
+      "ai_failed": false,
+      "tech_confirmed": false
     }
   ],
   "history": [
@@ -4533,6 +4549,59 @@
           "t1_correct": null
         }
       ]
+    }
+  ],
+  "extended_alerts": {
+    "2026-07-14_post": [
+      "CRWD",
+      "DDOG",
+      "DRAM",
+      "HPE",
+      "IBM",
+      "INTC",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PANW",
+      "SNDK",
+      "SOXL"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-14_post": 12
+  },
+  "pending_protection": [
+    {
+      "symbol": "NVDA",
+      "qty": 8,
+      "stop": 197.1,
+      "target": 241.2,
+      "order_id": "8bf8ec84-739a-4e85-b6a9-159658eb33ea",
+      "opened_at": "2026-07-14T22:37:33.797939"
+    },
+    {
+      "symbol": "HPE",
+      "qty": 29,
+      "stop": 45.39,
+      "target": 57.9,
+      "order_id": "3125cb19-a4dd-4648-95d5-9fa07095663a",
+      "opened_at": "2026-07-14T22:41:06.496604"
+    }
+  ],
+  "pending_entries": [
+    {
+      "symbol": "NVDA",
+      "order_id": "8bf8ec84-739a-4e85-b6a9-159658eb33ea",
+      "entry_price": 211.5087,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
+    },
+    {
+      "symbol": "HPE",
+      "order_id": "3125cb19-a4dd-4648-95d5-9fa07095663a",
+      "entry_price": 49.7,
+      "retry_count": 0,
+      "alert_key": "2026-07-14_post"
     }
   ]
 }
