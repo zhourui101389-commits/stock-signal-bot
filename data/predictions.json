@@ -163,19 +163,19 @@
     },
     {
       "symbol": "GS",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
-      "action": "",
-      "conviction": "",
-      "horizon": "3-5天",
-      "entry_price": 1140.0,
-      "target_price": null,
-      "stop_loss": null,
-      "verdict": "",
+      "direction": "BUY",
+      "final_direction": "看多",
+      "action": "谨慎买入",
+      "conviction": "中",
+      "horizon": "1-2周",
+      "entry_price": 1144.89,
+      "target_price": 1276,
+      "stop_loss": 1072,
+      "verdict": "财报超预期+行业共振新高，谨慎追涨非狂热",
       "source": "screener",
+      "trigger_session": "extended_pre",
       "ai_failed": false,
-      "tech_confirmed": null,
-      "shadow_verdict": null
+      "tech_confirmed": false
     },
     {
       "symbol": "CRWD",
@@ -4890,6 +4890,46 @@
           "tech_confirmed": false
         }
       ]
+    }
+  ],
+  "extended_alerts": {
+    "2026-07-15_pre": [
+      "CRWD",
+      "DDOG",
+      "DRAM",
+      "GS",
+      "HPE",
+      "IBM",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PANW",
+      "SOXL",
+      "WFC"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-15_pre": 14
+  },
+  "pending_protection": [
+    {
+      "symbol": "GS",
+      "qty": 1,
+      "stop": 1072,
+      "target": 1276,
+      "order_id": "3497e189-5dc9-40a4-9d1f-d6332ca44969",
+      "opened_at": "2026-07-15T10:17:04.178825"
+    }
+  ],
+  "pending_entries": [
+    {
+      "symbol": "GS",
+      "order_id": "3497e189-5dc9-40a4-9d1f-d6332ca44969",
+      "entry_price": 1144.89,
+      "retry_count": 0,
+      "alert_key": "2026-07-15_pre"
     }
   ]
 }
