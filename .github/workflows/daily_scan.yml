@@ -20,10 +20,18 @@ on:
     - cron: '5,35 8-12 * * 1-5'
     # 盘后哨兵：20:05-23:35 UTC ≈ 16:05-19:35 EDT，同样降到每30分钟一次
     - cron: '5,35 20-23 * * 1-5'
-    # 盘中免费检查点：开盘后约30/90/150分钟(10:09/11:23/12:41 EDT)，
+    # 盘中免费检查点：开盘后约8/30/90/150分钟(9:47/10:09/11:23/12:41 EDT)，
     # 纯技术面扫描(RSI/MACD/均线/ATR，yfinance免费数据本地算)，不调用
     # Claude/Gemini，不产生任何AI费用；也不触发_run_execution，纯展示
     # 不下单——技术面SELL信号没有AI确认就不该拿去自动平仓
+    #
+    # 9:47 EDT那个是专门加的：9:07 EDT主扫描被GitHub Actions丢弃触发的情况
+    # 2026-07-15又实测复现了一次（第二次），在这之前_catch_up_missed_scan()
+    # 补跑逻辑虽然存在，但当天9:07之后下一个真正会触发的时间点是10:09
+    # EDT（scan_free），补跑窗口本身允许9:45起跑，中间这38分钟完全没有
+    # 任何tick能替它兜底——9:47这个点就是让补跑机制在窗口打开后尽快拿到
+    # 一次触发机会，把"被丢后多久才补上"从最坏62分钟压到38分钟左右
+    - cron: '47 13 * * 1-5'
     - cron: '9 14 * * 1-5'
     - cron: '23 15 * * 1-5'
     - cron: '41 16 * * 1-5'
@@ -82,6 +90,8 @@ jobs:
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "5,35 20-23 * * 1-5" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "47 13 * * 1-5" ]; then
+            echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "9 14 * * 1-5" ]; then
             echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "23 15 * * 1-5" ]; then
