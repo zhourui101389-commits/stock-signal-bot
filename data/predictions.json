@@ -4923,13 +4923,5 @@
       "opened_at": "2026-07-15T10:17:04.178825"
     }
   ],
-  "pending_entries": [
-    {
-      "symbol": "GS",
-      "order_id": "3497e189-5dc9-40a4-9d1f-d6332ca44969",
-      "entry_price": 1144.89,
-      "retry_count": 0,
-      "alert_key": "2026-07-15_pre"
-    }
-  ]
+  "pending_entries": []
 }
