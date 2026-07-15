@@ -20,10 +20,17 @@ on:
     - cron: '5,35 8-12 * * 1-5'
     # 盘后哨兵：20:05-23:35 UTC ≈ 16:05-19:35 EDT，同样降到每30分钟一次
     - cron: '5,35 20-23 * * 1-5'
+    # 盘中免费检查点：开盘后约30/90/150分钟(10:09/11:23/12:41 EDT)，
+    # 纯技术面扫描(RSI/MACD/均线/ATR，yfinance免费数据本地算)，不调用
+    # Claude/Gemini，不产生任何AI费用；也不触发_run_execution，纯展示
+    # 不下单——技术面SELL信号没有AI确认就不该拿去自动平仓
+    - cron: '9 14 * * 1-5'
+    - cron: '23 15 * * 1-5'
+    - cron: '41 16 * * 1-5'
   workflow_dispatch:
     inputs:
       scan_mode:
-        description: '运行模式（scan=仅扫描 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / extended_watch=手动触发盘前盘后哨兵 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / test_data=行情诊断 / test_shadow=影子模式(Gemini)连接诊断 / 留空=两者）'
+        description: '运行模式（scan=仅扫描 / scan_free=纯技术面免费扫描不调AI不下单 / review=仅复盘 / review_force=跳过日期检查强制补发复盘 / portfolio=查询Alpaca持仓快报 / extended_watch=手动触发盘前盘后哨兵 / test_buy=测试买入 / test_sell=测试卖出 / test_ai=AI连接诊断 / test_data=行情诊断 / test_shadow=影子模式(Gemini)连接诊断 / 留空=两者）'
         required: false
         default: ''
       test_buy_symbol:
@@ -75,6 +82,12 @@ jobs:
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "5,35 20-23 * * 1-5" ]; then
             echo "SCAN_MODE=extended_watch" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "9 14 * * 1-5" ]; then
+            echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "23 15 * * 1-5" ]; then
+            echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "41 16 * * 1-5" ]; then
+            echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
           else
             echo "SCAN_MODE=" >> $GITHUB_OUTPUT
           fi

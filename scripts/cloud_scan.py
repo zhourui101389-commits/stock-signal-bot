@@ -799,14 +799,17 @@ async def _run_review(
         logger.info("复盘消息已发送")
 
 
-async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key=""):
+async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key="",
+                    send_weekly: bool = True):
     """盘前扫描：分析信号、调用 AI、推送 Telegram、保存今日预测。"""
     if not _is_us_trading_day():
         logger.info("今日非美股交易日（节假日/周末），跳过盘前扫描")
         return
 
-    # 周一额外发送上周绩效周报（先补全多天数据再统计）
-    if datetime.date.today().weekday() == 0:
+    # 周一额外发送上周绩效周报（先补全多天数据再统计）——盘中免费检查点
+    # (scan_free) 也会调用本函数，send_weekly=False 防止周一那天被重复
+    # 触发3次周报
+    if send_weekly and datetime.date.today().weekday() == 0:
         try:
             _fill_multi_day_outcomes()
             await _send_weekly_report(bot, chat_ids, anthropic_key)
@@ -975,13 +978,17 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
         # 标记"今天的完整常规扫描真的跑完了"，供 main() 里的自愈检查
         # (_catch_up_missed_scan) 用——不能只看 predictions.json 的 scan_date，
         # 哨兵单笔下单时也会把 scan_date 设成今天，会让自愈检查误判成
-        # "已经跑过常规扫描"，实际上整个常规扫描都被 GitHub Actions 丢了
-        try:
-            _fresh = load_predictions()
-            _fresh["last_full_scan_date"] = str(datetime.date.today())
-            save_raw(_fresh)
-        except Exception as e:
-            logger.warning("写入 last_full_scan_date 标记失败: %s", e)
+        # "已经跑过常规扫描"，实际上整个常规扫描都被 GitHub Actions 丢了。
+        # 只有真正带AI研判的扫描才算数——scan_free(盘中免费技术面检查点)
+        # 不调AI，不能让它把标记写了，否则真正该补跑的AI扫描会被误判成
+        # "已经跑过"而永远不会被自愈机制补上
+        if use_ai:
+            try:
+                _fresh = load_predictions()
+                _fresh["last_full_scan_date"] = str(datetime.date.today())
+                save_raw(_fresh)
+            except Exception as e:
+                logger.warning("写入 last_full_scan_date 标记失败: %s", e)
 
     # ── 相关性风险提示 ─────────────────────────────────
     if len(today_predictions) >= 2:
@@ -2110,6 +2117,16 @@ async def main():
                                       alpaca_key, alpaca_secret)
         except Exception as e:
             logger.error("盘前盘后哨兵失败: %s", e)
+
+    elif scan_mode == "scan_free":
+        # 盘中免费检查点(开盘后约30/90/150分钟)：强制不传AI/Gemini key，
+        # 走纯技术面(RSI/MACD/均线/ATR)扫描，零AI费用；不调_run_execution，
+        # 纯展示不下单——技术面信号没有AI确认不该拿去自动交易
+        try:
+            await _run_scan(config, bot, chat_ids, finnhub_client,
+                            anthropic_key="", gemini_key="", send_weekly=False)
+        except Exception as e:
+            logger.error("盘中免费检查失败: %s", e)
 
     elif scan_mode == "scan":
         # 常规时段开盘：先给盘前/盘后裸单成交的仓位补挂止损止盈保护
