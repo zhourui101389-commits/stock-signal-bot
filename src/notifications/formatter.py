@@ -540,6 +540,8 @@ def format_signal_message_compact(result: SignalResult, pinned: bool = False, ai
         tech_confirmed   = ai_result.get("tech_confirmed", True)
         override_reason  = _html.escape(str(ai_result.get("override_reason") or ""))
         catalyst         = _html.escape(str(ai_result.get("catalyst") or "")) or None
+        invalidation     = _html.escape(str(ai_result.get("invalidation") or "")) or None
+        news_read        = ai_result.get("news_read") or {}
         if ai_action_str in ("积极买入", "谨慎买入"):
             action = f"✅ {ai_action_str}"
         elif ai_action_str in ("减仓", "回避"):
@@ -550,11 +552,13 @@ def format_signal_message_compact(result: SignalResult, pinned: bool = False, ai
         final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
         conviction, horizon = "中", "3-5天"
         verdict, tech_confirmed, override_reason, catalyst = "", True, "", None
+        invalidation, news_read = None, {}
         action = "⚠️ AI研判失败，暂不建议操作"
     else:
         final_dir = {"BUY": "看多", "SELL": "看空"}.get(result.direction, "中性")
         conviction, horizon = "中", "3-5天"
         verdict, tech_confirmed, override_reason, catalyst = "", True, "", None
+        invalidation, news_read = None, {}
         action = ("✅ 建议买入" if result.direction == "BUY"
                  else "❌ 建议卖出/减仓" if result.direction == "SELL" else "⏸ 观望")
 
@@ -589,7 +593,17 @@ def format_signal_message_compact(result: SignalResult, pinned: bool = False, ai
     if not tech_confirmed and override_reason:
         lines.append(f"⚠️ AI推翻技术信号：{override_reason}")
     if catalyst:
-        lines.append(f"⚡ {catalyst}")
+        # 预期差标注：已被价格充分消化/是过去几天的旧消息，都是"催化剂看着好
+        # 但可能没剩多少空间"的信号，直接标在催化剂后面，不单开一行占位置
+        tags = []
+        if news_read.get("priced_in") == "已充分反映":
+            tags.append("已price in")
+        if news_read.get("is_repeat"):
+            tags.append("旧消息")
+        tag_str = f"（{'/'.join(tags)}）" if tags else ""
+        lines.append(f"⚡ {catalyst}{tag_str}")
+    if invalidation and final_dir != "中性":
+        lines.append(f"🚫 失效条件：{invalidation}")
     if action_block:
         lines.append(action_block)
     lines.append(f"<i>⏱ {ts} CST · 仅供参考，盈亏自负</i>")
