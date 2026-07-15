@@ -31,15 +31,20 @@ def _m(val, na="N/A") -> str:
 
 
 def _scan_label() -> str:
-    hour = datetime.now(_CST).hour
-    if hour == 21:
+    """
+    之前按CST(UTC+8)整点分3档("30分钟"/"90分钟"/其余全部归成"150分钟")猜
+    大概第几分钟——一旦GitHub Actions触发延迟(经常发生)，实际跑到很晚
+    (比如开盘后5小时)也会落进"其余"档，被错误标成"150分钟"，显示的和
+    真实间隔对不上。改成用美东时间直接算距9:30 ET开盘的真实分钟数，
+    不管这次扫描准时还是被拖到很晚才跑，标签都如实反映。
+    """
+    from zoneinfo import ZoneInfo
+    now_et = datetime.now(ZoneInfo("America/New_York"))
+    market_open = now_et.replace(hour=9, minute=30, second=0, microsecond=0)
+    if now_et < market_open:
         return "🌅 盘前分析"
-    elif hour == 22:
-        return "📊 盘中报告 · 开盘约30分钟"
-    elif hour == 23:
-        return "📊 盘中报告 · 开盘约90分钟"
-    else:
-        return "📊 盘中报告 · 开盘约150分钟"
+    elapsed_min = int((now_et - market_open).total_seconds() // 60)
+    return f"📊 盘中报告 · 开盘约{elapsed_min}分钟"
 
 
 def _stars(n: int) -> str:
