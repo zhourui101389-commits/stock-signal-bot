@@ -5742,5 +5742,37 @@
         }
       ]
     }
-  ]
+  ],
+  "circuit_breaker": {
+    "daily_date": "2026-07-15",
+    "daily_start_equity": 50000.0,
+    "weekly_monday": "2026-07-13",
+    "weekly_start_equity": 50000.0,
+    "peak_equity": 50000.0
+  },
+  "extended_alerts": {
+    "2026-07-15_post": [
+      "BABA",
+      "CMG",
+      "DRAM",
+      "GPN",
+      "HPE",
+      "INTC",
+      "IVZ",
+      "MRVL",
+      "MU",
+      "MXL",
+      "PNR",
+      "PYPL",
+      "SNDK",
+      "SOXL",
+      "VLO",
+      "WDC"
+    ]
+  },
+  "extended_trigger_count": {
+    "2026-07-15_post": 16
+  },
+  "pending_protection": [],
+  "pending_entries": []
 }
