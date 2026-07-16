@@ -127,6 +127,32 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/predictions.json
-          git diff --staged --quiet || git commit -m "chore: 更新预测数据 $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
-          git push origin main
+          if git diff --staged --quiet; then
+            echo "无变更，跳过提交"
+            exit 0
+          fi
+          git commit -m "chore: 更新预测数据 $(date -u +%Y-%m-%d)"
+
+          # 多个workflow运行有时会在时间上重叠（GitHub Actions高负载积压触发
+          # 会导致这种情况变多），并发推送同一个文件之前实测出现过rebase冲突
+          # 直接导致整个job失败——这种失败是"if: always()"也救不回来的，本次
+          # 运行的完整分析结果（包括last_full_scan_date等标记）会连同那次
+          # commit一起被扔掉，github-actions runner销毁后就再也找不回来了。
+          # 2026-07-15当天就实测丢过一次42次AI调用的扫描结果。
+          # 用 -X theirs 让冲突时优先保留本次运行的结果（本次的分析更新，
+          # 优先级高于死等一次"完美合并"），重试几次以应对连续多个运行
+          # 前后脚推送的情况。
+          success=0
+          for i in 1 2 3 4 5; do
+            if git pull --rebase -X theirs origin main && git push origin main; then
+              success=1
+              break
+            fi
+            echo "第${i}次推送失败（可能与其它并发运行冲突），重试"
+            git rebase --abort 2>/dev/null || true
+            sleep $((RANDOM % 10 + 5))
+          done
+          if [ "$success" != "1" ]; then
+            echo "::error::多次重试后仍未能推送predictions.json，本次运行的分析结果未同步到远程"
+            exit 1
+          fi

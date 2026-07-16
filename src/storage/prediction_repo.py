@@ -53,11 +53,15 @@ def save_predictions(
     else:
         merged = predictions
 
-    data = {
-        "scan_date":   today,
-        "predictions": merged,
-        "history":     history,
-    }
+    # 从 existing 起手而不是新建一个只有3个键的dict——否则 last_full_scan_date/
+    # circuit_breaker/extended_alerts 等其它顶层标记会被静默清空。2026-07-15
+    # 就是被这个坑绊倒的：scan_free 补跑刚写完 last_full_scan_date，同一次
+    # 运行里紧接着自己的免费扫描又调一次 save_predictions()，标记被抹掉，
+    # 导致当天下午同一个补跑逻辑又重复触发了三次，白烧了120次AI调用。
+    data = dict(existing)
+    data["scan_date"]   = today
+    data["predictions"] = merged
+    data["history"]     = history
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     logger.info("已保存 %d 条预测记录（历史 %d 天）", len(merged), len(history))

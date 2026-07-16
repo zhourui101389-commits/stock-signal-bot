@@ -2058,7 +2058,7 @@ async def _sync_portfolio(
 
 async def _catch_up_missed_scan(
     config, bot, chat_ids, finnhub_client, anthropic_key, gemini_key, alpaca_key, alpaca_secret,
-) -> None:
+) -> bool:
     """
     自愈兜底：GitHub Actions 官方文档写明 schedule 触发在高负载时可能被直接
     丢弃（不是延迟，是完全不触发）——实测复现过：9:07 ET 的主扫描当天在
@@ -2074,9 +2074,16 @@ async def _catch_up_missed_scan(
 
     每天只会真正触发一次：跑完 _run_scan 会写 last_full_scan_date，
     之后同一天的其他 tick 检查到标记已存在就会跳过。
+
+    返回 True 表示本次真的执行了补跑，调用方应跳过自己接下来打算跑的
+    _run_scan，避免同一次执行里扫两遍——2026-07-15 就是因为 scan_free
+    紧跟着补跑之后又自己跑了一遍 _run_scan，两次 save_predictions() 叠加
+    暴露出 last_full_scan_date 被覆盖的问题；现在 save_predictions() 本身
+    已经改成不会清空其它顶层键，这里再加这层跳过纯粹是省时间/省重复
+    AI调用，双重保险。
     """
     if not _is_us_trading_day():
-        return
+        return False
 
     from zoneinfo import ZoneInfo
     now_et = datetime.datetime.now(ZoneInfo("America/New_York"))
@@ -2084,11 +2091,11 @@ async def _catch_up_missed_scan(
     # 的情况；15:30 ET 之后不再补跑——当天盘中复查(15:12 ET)那次tick本身
     # 就是 scan_mode=scan，会自己跑 _run_scan，不需要这里重复补
     if now_et.time() < datetime.time(9, 45) or now_et.time() >= datetime.time(15, 30):
-        return
+        return False
 
     data = load_predictions()
     if data.get("last_full_scan_date") == str(datetime.date.today()):
-        return
+        return False
 
     logger.warning("检测到今日 %s ET 前常规扫描疑似被 GitHub Actions 丢弃触发，自动补跑", now_et.strftime("%H:%M"))
     warn_msg = (
@@ -2106,6 +2113,7 @@ async def _catch_up_missed_scan(
         await _run_execution(bot, chat_ids, alpaca_key, alpaca_secret, today_preds or [], config)
     except Exception as e:
         logger.error("自愈补跑失败: %s", e)
+    return True
 
 
 async def main():
@@ -2184,10 +2192,11 @@ async def main():
     # 今天该跑的常规扫描是不是被 GitHub Actions 丢了，丢了就借这次机会补跑。
     # scan_mode=="scan" 或留空(all-in-one) 下面本身就会正常跑一遍 _run_scan，
     # 不需要在这里重复跑一次浪费AI调用
+    just_caught_up = False
     if scan_mode not in ("scan", ""):
         try:
-            await _catch_up_missed_scan(config, bot, chat_ids, finnhub_client, anthropic_key,
-                                        gemini_key, alpaca_key, alpaca_secret)
+            just_caught_up = await _catch_up_missed_scan(config, bot, chat_ids, finnhub_client, anthropic_key,
+                                                          gemini_key, alpaca_key, alpaca_secret)
         except Exception as e:
             logger.error("自愈补跑检查失败: %s", e)
 
@@ -2226,10 +2235,16 @@ async def main():
         except Exception as e:
             logger.error("盘前盘后哨兵失败: %s", e)
 
-    elif scan_mode == "scan_free":
+    elif scan_mode == "scan_free" and not just_caught_up:
         # 盘中免费检查点(开盘后约30/90/150分钟)：强制不传AI/Gemini key，
         # 走纯技术面(RSI/MACD/均线/ATR)扫描，零AI费用；不调_run_execution，
         # 纯展示不下单——技术面信号没有AI确认不该拿去自动交易
+        #
+        # just_caught_up 为 True 说明上面的自愈补跑刚在这次运行里做完一遍
+        # 带AI的完整扫描，今天的分析已经有了，没必要紧接着再跑一遍免费版——
+        # 不跳过的话，两次_run_scan()在同一次运行里连续调用save_predictions()，
+        # 就算文件层面现在已经不会互相清空对方的顶层键了，也还是白白多花
+        # 一次运行时间、多发一轮重复消息，没有必要
         try:
             await _run_scan(config, bot, chat_ids, finnhub_client,
                             anthropic_key="", gemini_key="", send_weekly=False)
