@@ -2235,21 +2235,29 @@ async def main():
         except Exception as e:
             logger.error("盘前盘后哨兵失败: %s", e)
 
-    elif scan_mode == "scan_free" and not just_caught_up:
+    elif scan_mode == "scan_free":
         # 盘中免费检查点(开盘后约30/90/150分钟)：强制不传AI/Gemini key，
         # 走纯技术面(RSI/MACD/均线/ATR)扫描，零AI费用；不调_run_execution，
         # 纯展示不下单——技术面信号没有AI确认不该拿去自动交易
         #
+        # 条件判断必须写在分支内部而不是elif条件里（血泪教训，2026-07-16
+        # 曾在这里写过"elif scan_mode == 'scan_free' and not just_caught_up:"，
+        # just_caught_up=True时这个elif条件为假，Python会继续往下匹配后面的
+        # elif/else——但后面没有别的分支能接住"scan_free"这个值，于是一路
+        # 落到最后的else（all-in-one兜底），又完整跑了一遍复盘+真实AI扫描+
+        # 执行，比原来还多烧一次。分支匹配和"要不要执行"必须分开写，不能
+        # 揉进同一个elif条件里）。
+        #
         # just_caught_up 为 True 说明上面的自愈补跑刚在这次运行里做完一遍
-        # 带AI的完整扫描，今天的分析已经有了，没必要紧接着再跑一遍免费版——
-        # 不跳过的话，两次_run_scan()在同一次运行里连续调用save_predictions()，
-        # 就算文件层面现在已经不会互相清空对方的顶层键了，也还是白白多花
-        # 一次运行时间、多发一轮重复消息，没有必要
-        try:
-            await _run_scan(config, bot, chat_ids, finnhub_client,
-                            anthropic_key="", gemini_key="", send_weekly=False)
-        except Exception as e:
-            logger.error("盘中免费检查失败: %s", e)
+        # 带AI的完整扫描，今天的分析已经有了，没必要紧接着再跑一遍免费版
+        if just_caught_up:
+            logger.info("本次运行已由自愈补跑完成完整扫描，跳过免费检查点，避免重复")
+        else:
+            try:
+                await _run_scan(config, bot, chat_ids, finnhub_client,
+                                anthropic_key="", gemini_key="", send_weekly=False)
+            except Exception as e:
+                logger.error("盘中免费检查失败: %s", e)
 
     elif scan_mode == "scan":
         # 常规时段开盘：先给盘前/盘后裸单成交的仓位补挂止损止盈保护
