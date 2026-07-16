@@ -6758,13 +6758,14 @@
       "MXL",
       "NDAQ",
       "PAYX",
+      "PSX",
       "SNDK",
       "SOXL",
       "WDC"
     ]
   },
   "extended_trigger_count": {
-    "2026-07-16_post": 18
+    "2026-07-16_post": 19
   },
   "pending_protection": [],
   "pending_entries": []
