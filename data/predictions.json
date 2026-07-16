@@ -5744,7 +5744,7 @@
     }
   ],
   "circuit_breaker": {
-    "daily_date": "2026-07-15",
+    "daily_date": "2026-07-16",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-07-13",
     "weekly_start_equity": 50000.0,
@@ -5769,10 +5769,29 @@
       "SOXL",
       "VLO",
       "WDC"
+    ],
+    "2026-07-16_pre": [
+      "BABA",
+      "CMG",
+      "DRAM",
+      "HPE",
+      "INTC",
+      "IVZ",
+      "META",
+      "MRVL",
+      "MU",
+      "MXL",
+      "PNR",
+      "PYPL",
+      "SNDK",
+      "SOXL",
+      "VLO",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
-    "2026-07-15_post": 17
+    "2026-07-15_post": 17,
+    "2026-07-16_pre": 16
   },
   "pending_protection": [],
   "pending_entries": []
