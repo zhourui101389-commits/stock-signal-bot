@@ -6757,6 +6757,7 @@
       "MU",
       "MXL",
       "NDAQ",
+      "NVDA",
       "PAYX",
       "PSX",
       "SNDK",
@@ -6765,7 +6766,7 @@
     ]
   },
   "extended_trigger_count": {
-    "2026-07-16_post": 19
+    "2026-07-16_post": 20
   },
   "pending_protection": [],
   "pending_entries": []
