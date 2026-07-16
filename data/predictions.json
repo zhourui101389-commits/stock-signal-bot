@@ -5774,6 +5774,7 @@
       "BABA",
       "CMG",
       "DRAM",
+      "GPN",
       "HPE",
       "INTC",
       "IVZ",
@@ -5782,6 +5783,7 @@
       "MU",
       "MXL",
       "PNR",
+      "PSX",
       "PYPL",
       "SNDK",
       "SOXL",
@@ -5791,7 +5793,7 @@
   },
   "extended_trigger_count": {
     "2026-07-15_post": 17,
-    "2026-07-16_pre": 16
+    "2026-07-16_pre": 18
   },
   "pending_protection": [],
   "pending_entries": []
