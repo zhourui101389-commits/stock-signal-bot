@@ -7238,11 +7238,18 @@
       "SOXL",
       "VLO",
       "WDC"
+    ],
+    "2026-07-17_post": [
+      "ASX",
+      "SNDK",
+      "SOXL",
+      "VLO"
     ]
   },
   "extended_trigger_count": {
     "2026-07-16_post": 20,
-    "2026-07-17_pre": 20
+    "2026-07-17_pre": 20,
+    "2026-07-17_post": 4
   },
   "pending_protection": [],
   "pending_entries": [],
