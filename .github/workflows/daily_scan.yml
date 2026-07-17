@@ -5,7 +5,10 @@ on:
     # 13:07 UTC ≈ 9:07 EDT（美股开盘前后），盘前扫描
     # 整点(0分)故意避开：GitHub Actions在整点扎堆触发，高峰期经常被直接丢弃而不只是延迟
     - cron: '7 13 * * 1-5'
-    # 19:12 UTC ≈ 15:12 EDT（收盘前1小时，power hour），盘中复查
+    # 19:12 UTC ≈ 15:12 EDT（收盘前1小时，power hour），盘中复查——
+    # 2026-07-17改为纯技术面(scan_free)不调AI：用户明确要求盘中(9:30-16:00
+    # ET常规交易时段内)不再调用AI，AI只在盘前(9:07 ET)和盘后(17:17 ET)
+    # 各跑一次，加上盘前/盘后哨兵超阈值时按需触发，别的时段一律免费检查
     - cron: '12 19 * * 1-5'
     # 21:17 UTC ≈ 17:17 EDT（美股收盘后1小时），盘后复盘
     - cron: '17 21 * * 1-5'
@@ -83,7 +86,7 @@ jobs:
           elif [ "${{ github.event.schedule }}" = "7 13 * * 1-5" ]; then
             echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "12 19 * * 1-5" ]; then
-            echo "SCAN_MODE=scan" >> $GITHUB_OUTPUT
+            echo "SCAN_MODE=scan_free" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "17 21 * * 1-5" ]; then
             echo "SCAN_MODE=review" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "5,35 8-12 * * 1-5" ]; then

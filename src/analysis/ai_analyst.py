@@ -14,6 +14,63 @@ logger = logging.getLogger(__name__)
 
 _MODEL = "claude-sonnet-5"
 
+# ── 每日AI预算硬上限 ──────────────────────────────────────────
+# 用户2026-07-17明确要求：每天Claude花费不能超过这个数，硬约束，不是
+# "尽量控制在这个数以内"。价格是Sonnet 5介绍期价格(2026-08-31前，
+# 之后标准价$3/$15，到时候要跟着改)：$2/M input + $10/M output，
+# 缓存命中部分按10%计费。
+_PRICE_PER_M_INPUT    = 2.0
+_PRICE_PER_M_OUTPUT   = 10.0
+_CACHE_HIT_DISCOUNT   = 0.1
+_DAILY_AI_BUDGET_USD  = 1.5
+
+
+class AIBudgetExceeded(Exception):
+    """今日AI花费已达硬上限，本次不调用API。跟真正的API失败要分开处理——
+    调用方不应该把这个当成"AI研判失败"推给用户，而是应该按纯技术信号
+    处理（等同于没配置AI key的降级路径），语气也不该是报错。"""
+    pass
+
+
+def _today_ai_spend() -> float:
+    from src.storage.prediction_repo import load_predictions
+    import datetime
+    data = load_predictions()
+    spend = data.get("ai_spend") or {}
+    if spend.get("date") != str(datetime.date.today()):
+        return 0.0
+    return spend.get("total_usd", 0.0)
+
+
+def _record_ai_spend(cost_usd: float) -> None:
+    """fresh-read + save_raw()写回，不能用save_predictions()——虽然它现在
+    已经不会清空其它顶层键了，但这里没有predictions数据要保存，直接用
+    save_raw()语义更清楚，也避免不必要的scan_date/history读写。"""
+    from src.storage.prediction_repo import load_predictions, save_raw
+    import datetime
+    today = str(datetime.date.today())
+    data = load_predictions()
+    spend = data.get("ai_spend") or {}
+    if spend.get("date") != today:
+        spend = {"date": today, "total_usd": 0.0}
+    spend["total_usd"] = round(spend.get("total_usd", 0.0) + cost_usd, 4)
+    data["ai_spend"] = spend
+    save_raw(data)
+
+
+def _estimate_cost(usage) -> float:
+    if not usage:
+        return 0.0
+    input_tokens  = getattr(usage, "input_tokens", 0) or 0
+    output_tokens = getattr(usage, "output_tokens", 0) or 0
+    cache_read    = getattr(usage, "cache_read_input_tokens", 0) or 0
+    cache_write   = getattr(usage, "cache_creation_input_tokens", 0) or 0
+    cost  = (input_tokens  / 1_000_000) * _PRICE_PER_M_INPUT
+    cost += (cache_read    / 1_000_000) * _PRICE_PER_M_INPUT * _CACHE_HIT_DISCOUNT
+    cost += (cache_write   / 1_000_000) * _PRICE_PER_M_INPUT   # 首次写缓存按正常input价
+    cost += (output_tokens / 1_000_000) * _PRICE_PER_M_OUTPUT
+    return cost
+
 _SYSTEM_PROMPT = """你是一位资深美股量化分析师，负责综合量化技术信号和基本面数据，给出一个最终统一的操作判断。
 
 你的工作规则：
@@ -534,10 +591,19 @@ def run_ai_analysis(
     """
     综合技术信号和基本面，输出统一操作判断。
     返回结构化 dict，失败时返回 {}。
+    今日AI花费达到_DAILY_AI_BUDGET_USD硬上限时抛AIBudgetExceeded（不是
+    返回{}）——调用方要能把"预算用完了，按纯技术信号处理"和"API真的
+    调用失败了"分开对待，两者语气和后续行为都不该一样。
     """
     if not anthropic_key:
         logger.warning("ANTHROPIC_API_KEY 未配置，跳过 AI 分析")
         return {}
+
+    spent = _today_ai_spend()
+    if spent >= _DAILY_AI_BUDGET_USD:
+        logger.warning("今日AI花费$%.2f已达上限$%.2f，%s 跳过AI分析（按纯技术信号处理）",
+                       spent, _DAILY_AI_BUDGET_USD, result.symbol)
+        raise AIBudgetExceeded(f"今日AI花费$%.2f已达上限$%.2f" % (spent, _DAILY_AI_BUDGET_USD))
 
     symbol = result.symbol
     prompt = build_prompt(result, finnhub, macro_context, symbol_history)
@@ -584,6 +650,11 @@ def run_ai_analysis(
                 if cache_read or cache_write:
                     logger.info("AI缓存命中 %s: 命中%d tokens / 新写入%d tokens（命中部分按10%%计费）",
                                 symbol, cache_read, cache_write)
+                # 不管JSON后面解析成不成功，这次API调用的钱已经花出去了，
+                # 必须计入——放在json.loads()之前，避免解析失败(下面走
+                # continue重试)时漏记这次调用的花费
+                cost = _estimate_cost(usage)
+                _record_ai_spend(cost)
 
             analysis = json.loads(raw)
             analysis["symbol"] = symbol

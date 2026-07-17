@@ -74,7 +74,7 @@ from src.storage.prediction_repo import (
 from src.data.yfinance_client import YFinanceDataClient
 from src.data.finnhub_client import FinnhubClient
 from src.analysis.multi_timeframe import analyze_symbol
-from src.analysis.ai_analyst import run_ai_analysis
+from src.analysis.ai_analyst import run_ai_analysis, AIBudgetExceeded, _DAILY_AI_BUDGET_USD
 from src.analysis.shadow_analyst import run_shadow_analysis
 from src.analysis.screener import screen_top_candidates
 from src.notifications.formatter import (
@@ -857,6 +857,7 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
     pushed = 0
     today_predictions = []
     watchlist_digest_entries: list[dict] = []
+    budget_notice_sent = False  # 本次运行只提示一次AI预算用尽，不逐个标的刷屏
 
     for sym in symbols:
         try:
@@ -890,6 +891,20 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
                     else:
                         ai_failed = True
                         logger.warning("AI 分析失败 %s：未生成结果，本条不作为执行建议", sym)
+                except AIBudgetExceeded:
+                    # 预算用尽不算AI失败，按纯技术信号处理（等同于没配置AI
+                    # key的降级路径）——不推"AI研判失败"这种报错语气的消息，
+                    # 执行层照样不会拿纯技术信号自动下单（同样的现有安全机制）
+                    logger.info("今日AI预算已用尽，%s 转纯技术信号", sym)
+                    if not budget_notice_sent:
+                        budget_notice_sent = True
+                        notice = (f"💰 今日AI预算（${_DAILY_AI_BUDGET_USD:.2f}）已用尽，"
+                                  f"后续信号转为纯技术面判断，不再调用AI确认（不影响已有持仓止损止盈）")
+                        for chat_id in chat_ids:
+                            try:
+                                await bot.send_message(chat_id=chat_id, text=notice, parse_mode=ParseMode.HTML)
+                            except Exception as e:
+                                logger.warning("AI预算用尽提示发送失败: %s", e)
                 except Exception as e:
                     ai_failed = True
                     logger.error("AI 分析失败 %s: %s", sym, e)
@@ -1380,6 +1395,7 @@ async def _run_extended_watch(
 
     today_str  = str(datetime.date.today())
     alert_key  = f"{today_str}_{session}"
+    budget_notice_sent = False  # 本次运行只提示一次AI预算用尽
 
     data              = load_predictions()
     extended_alerts   = dict(data.get("extended_alerts", {}))
@@ -1536,6 +1552,17 @@ async def _run_extended_watch(
                     logger.info("哨兵AI研判 %s: %s 置信度%s（第%d次触发）",
                                 sym, ai_result.get("final_direction", "?"),
                                 ai_result.get("conviction", "?"), trigger_count)
+            except AIBudgetExceeded:
+                logger.info("今日AI预算已用尽，哨兵 %s 不下单（无AI确认不能扩展时段裸单入场）", sym)
+                if not budget_notice_sent:
+                    budget_notice_sent = True
+                    notice = (f"💰 今日AI预算（${_DAILY_AI_BUDGET_USD:.2f}）已用尽，"
+                              f"{session_label}哨兵后续异动不再调用AI确认（不影响已有持仓）")
+                    for chat_id in chat_ids:
+                        try:
+                            await bot.send_message(chat_id=chat_id, text=notice, parse_mode=ParseMode.HTML)
+                        except Exception as e:
+                            logger.warning("AI预算用尽提示发送失败: %s", e)
             except Exception as e:
                 logger.error("哨兵AI分析 %s 失败: %s", sym, e)
 
