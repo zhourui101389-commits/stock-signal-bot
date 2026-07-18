@@ -43,10 +43,24 @@ def save_predictions(
         # 成交的记录，entry_price是Alpaca真实成交价），后面同一天常规扫描
         # 重新分析同一标的产生的新记录不能覆盖它——那笔真实交易的价格
         # 会被换成一个从未真正下单的分析结果，复盘/校准用的入场价就错了
+        #
+        # 同理：如果已有记录当天已经给出过真实买卖判断（action是积极买入/
+        # 谨慎买入/减仓/回避这几个真实决策之一，很可能已经据此下单成交），
+        # 后面同一天的重扫如果给出的是"持有观望"或没有AI结果（比如免费
+        # 检查点/AI预算用尽降级），也不能覆盖掉——2026-07-08 MRVL就是这样
+        # 丢的：13:10那次AI判断"看多"触发了真实买入，20:18同一天重扫AI
+        # 转"中性"，把当天记录整个覆盖成"持有观望"，事后完全查不出这笔
+        # 交易当时是怎么判断出来的。同一天两次都是真实决策(比如早上谨慎
+        # 买入、下午改积极买入)才允许覆盖——那是判断真的更新了，不是记录
+        # 被技术面兜底结果冲掉
+        _TRADE_ACTIONS = {"积极买入", "谨慎买入", "减仓", "回避"}
         by_symbol = {p["symbol"]: p for p in existing_preds}
         for p in predictions:
             existing_p = by_symbol.get(p["symbol"])
             if existing_p and existing_p.get("trigger_session"):
+                continue
+            if (existing_p and existing_p.get("action") in _TRADE_ACTIONS
+                    and p.get("action") not in _TRADE_ACTIONS):
                 continue
             by_symbol[p["symbol"]] = p
         merged = list(by_symbol.values())

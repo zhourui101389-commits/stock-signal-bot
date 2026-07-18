@@ -14,16 +14,40 @@ warnings.filterwarnings("ignore")
 
 _TG_MAX_CHARS = 4096
 
-# 相关性高的板块集群：同日 ≥2 只看多时触发风险提示
+# 相关性高的板块集群：同日 ≥2 只看多时触发风险提示，也用于账户级板块
+# 敞口上限检查（见 _cluster_exposure_pct）。
+# 2026-07-18 补的教训：MRVL 之前漏在"半导体"外面（明明就是半导体公司）；
+# ANET(网络交换机)/VRT(数据中心散热电力) 完全没被分到任何组；而且最初
+# 把"半导体"和"数据中心基础设施"分成两个集群，用真实持仓算了一遍才发现
+# 这么分会低估集中度——芯片和网络/散热/电力这几年就是同一个"AI资本开支"
+# 叙事在交易，分开算每个集群单独看都不超标，合起来看才是真相，所以这里
+# 直接合并成一个集群。板块相关性提示之前还有个问题是"只查同一天"，这几笔
+# 仓位是分散在一周内陆续建的，从没有哪天同时冒出≥2只触发过提示
 _CORR_CLUSTERS = {
-    "半导体": {"NVDA", "AMD", "SOXL", "MU", "AVGO", "QCOM", "TSM", "INTC", "SMCI", "ARM", "AMAT", "ASML", "SOXX"},
-    "科技巨头": {"AAPL", "MSFT", "GOOGL", "GOOG", "META", "AMZN"},
-    "AI基础设施": {"NVDA", "MSFT", "ORCL", "AMZN", "GOOGL", "IONQ", "PLTR"},
-    "电动车": {"TSLA", "NIO", "RIVN", "LCID", "LI", "XPEV"},
-    "中概": {"BABA", "JD", "PDD", "BIDU", "TME", "KWEB"},
-    "黄金/大宗": {"GLD", "SLV", "GDX", "GOLD", "NEM"},
-    "生物医药": {"XBI", "IBB", "MRNA", "PFE", "ABBV", "GILD"},
+    "半导体/AI资本开支": {"NVDA", "AMD", "SOXL", "MU", "AVGO", "QCOM", "TSM", "INTC",
+                        "SMCI", "ARM", "AMAT", "ASML", "SOXX", "MRVL", "MXL",
+                        "ANET", "VRT", "DELL"},  # 芯片+网络/散热/电力/服务器，同一个资本开支叙事
+    "科技巨头":     {"AAPL", "MSFT", "GOOGL", "GOOG", "META", "AMZN"},
+    "AI基础设施":   {"NVDA", "MSFT", "ORCL", "AMZN", "GOOGL", "IONQ", "PLTR"},
+    "电动车":       {"TSLA", "NIO", "RIVN", "LCID", "LI", "XPEV"},
+    "中概":         {"BABA", "JD", "PDD", "BIDU", "TME", "KWEB"},
+    "黄金/大宗":    {"GLD", "SLV", "GDX", "GOLD", "NEM"},
+    "生物医药":     {"XBI", "IBB", "MRNA", "PFE", "ABBV", "GILD"},
 }
+# 板块聚类天生是模糊的：CRWD/DDOG这类高成长软件股这次也跟着AI硬件一起跌，
+# 但它们的基本面驱动跟芯片/数据中心资本开支不是一回事，没有强行塞进同一个
+# 集群——聚类能挡住"同一个明确主题堆仓位"，挡不住"整个科技股情绪一起转向"
+# 这种更广谱的相关性，这是这套方法本身的局限，不是加几个股票代码能解决的
+
+_MAX_CLUSTER_SHARE_OF_DEPLOYED = 0.40  # 单个板块集群最大占比——分母是已部署
+# 资金(deployed)而不是capital_base总额。用capital_base当分母试过：账户
+# 大部分是现金没动用时，就算某个板块占了持仓的一大半，算出来占总资产的
+# 比例依然很小，完全拦不住——真正该管的是"你已经下的注里有多集中"，
+# 不是"这个板块占空仓账户的百分比"，所以分母要用deployed
+# 只对市场初筛(source=="screener")发现的新标的生效——用户自己在
+# settings.yaml里选的tier_core/tier_swing/tier_speculative标的是用户自己
+# 的主动集中选择(比如核心仓本来就是MU+NVDA+MRVL三只半导体)，不该被这道
+# 检查挡住；这道检查专门防的是筛选器在用户已有的集中仓位上不知情地继续加码
 
 # ── Alpaca 执行风控参数 ──────────────────────────────────────
 _MAX_LOSS_PER_TRADE_PCT = 0.005   # 单笔最大亏损占总资产比例（按入场-止损反推仓位）
@@ -1113,6 +1137,34 @@ def _update_circuit_breaker(equity: float) -> dict:
     }
 
 
+def _symbol_clusters(sym: str) -> list[str]:
+    return [name for name, members in _CORR_CLUSTERS.items() if sym in members]
+
+
+def _cluster_exposure_pct(sym: str, positions_by_symbol: dict, deployed: float) -> tuple[str, float] | None:
+    """
+    算候选标的所属的每个板块集群里，当前持仓(不管什么来源买的)占了
+    已部署资金(deployed，不是capital_base总额——见_MAX_CLUSTER_SHARE_OF_DEPLOYED
+    上面的说明)的百分之多少，返回敞口最大的那个集群和它的比例；候选标的
+    不属于任何已知集群则返回None（不拦，聚类覆盖不到的相关性这道检查
+    管不了，是已知局限，见_CORR_CLUSTERS上面的说明）。
+    """
+    clusters = _symbol_clusters(sym)
+    if not clusters or deployed <= 0:
+        return None
+    worst = None
+    for cluster in clusters:
+        members = _CORR_CLUSTERS[cluster]
+        held_value = sum(
+            p.get("market_value", 0.0)
+            for s, p in positions_by_symbol.items() if s in members
+        )
+        pct = held_value / deployed
+        if worst is None or pct > worst[1]:
+            worst = (cluster, pct)
+    return worst
+
+
 def _gate_and_size_position(
     sym: str, action: str, final_dir: str,
     entry: float, stop: float, target: float,
@@ -1122,15 +1174,25 @@ def _gate_and_size_position(
     max_exposure_pct: float = _MAX_TOTAL_EXPOSURE_PCT,
     halt_new_entries: bool = False,
     blocked_tiers: frozenset = frozenset(),
+    positions_by_symbol: dict | None = None,
 ) -> tuple[int | None, str | None]:
     """
     买入前的全部风控门禁 + 仓位计算。_run_execution（常规时段）和
     _run_extended_watch（盘前盘后哨兵）共用同一套逻辑，扩展时段不允许
-    绕开任何一道门禁（总敞口/历史胜率/单笔最大亏损/账户级熔断）。
+    绕开任何一道门禁（总敞口/历史胜率/单笔最大亏损/账户级熔断/板块集中度）。
     返回 (股数, None) 表示可以下单；(None, 跳过原因) 表示不下单。
     """
     if action not in ("积极买入", "谨慎买入") or final_dir != "看多":
         return None, f"{sym}({action or '观望'})"
+
+    # 板块敞口上限只管市场初筛发现的新标的——用户自己在settings.yaml选的
+    # tier_core/tier_swing/tier_speculative是主动的集中选择，不该被这道检查
+    # 挡住（比如核心仓本来就是MU+NVDA+MRVL三只半导体，这是用户自己的决定）
+    if source == "screener" and positions_by_symbol:
+        exposure = _cluster_exposure_pct(sym, positions_by_symbol, deployed)
+        if exposure and exposure[1] >= _MAX_CLUSTER_SHARE_OF_DEPLOYED:
+            cluster, pct = exposure
+            return None, f"{sym}(板块「{cluster}」敞口已达{pct*100:.0f}%，暂停该板块新标的)"
 
     if halt_new_entries:
         return None, f"{sym}(熔断:暂停新开仓)"
@@ -1269,6 +1331,7 @@ async def _run_execution(
             max_exposure_pct=max_exposure_pct,
             halt_new_entries=cb["halt"],
             blocked_tiers=blocked_tiers,
+            positions_by_symbol=positions_by_symbol,
         )
         if skip_reason:
             skipped.append(skip_reason)
@@ -1622,6 +1685,7 @@ async def _run_extended_watch(
             max_exposure_pct=max_exposure_pct,
             halt_new_entries=cb["halt"],
             blocked_tiers=blocked_tiers,
+            positions_by_symbol=positions_by_symbol,
         )
         if not shares:
             logger.info("哨兵 %s 不下单：%s", sym, skip_reason)
