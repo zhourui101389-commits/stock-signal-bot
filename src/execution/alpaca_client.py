@@ -124,6 +124,16 @@ class AlpacaClient:
         """
         括号单：入场限价单 + 服务端止损 + 服务端止盈。
         Alpaca 不需要本地进程常驻，条件触发由其服务器处理。
+
+        2026-07-18修的严重bug：之前入场单用TimeInForce.DAY，但Alpaca文档
+        明确写了"take profit和stop loss单的time_in_force跟触发它们的
+        订单一样"——括号单只能整体设一个time_in_force，不能入场用DAY、
+        保护腿用GTC。等于止损止盈保护单在成交当天收盘就跟着一起过期作废，
+        之后这个仓位就完全裸奔。实测查了当前9个持仓，全部查不到任何挂着
+        的止损止盈单，MRVL现价已经跌破原止损价仍未平仓——这个bug至少
+        影响了2026-07-08以来所有走这个函数下单的仓位。改成GTC：入场单
+        没成交前会一直挂着(不会像DAY单那样当天自动作废)，但这个代价远
+        小于"持仓完全没有止损保护"——两害相权取其轻。
         """
         from alpaca.trading.requests import (
             LimitOrderRequest, TakeProfitRequest, StopLossRequest,
@@ -148,7 +158,7 @@ class AlpacaClient:
                     symbol=symbol,
                     qty=qty,
                     side=OrderSide.BUY,
-                    time_in_force=TimeInForce.DAY,
+                    time_in_force=TimeInForce.GTC,
                     limit_price=round(entry_price, 2),
                     order_class=OrderClass.BRACKET,
                     take_profit=TakeProfitRequest(limit_price=round(take_profit, 2)),

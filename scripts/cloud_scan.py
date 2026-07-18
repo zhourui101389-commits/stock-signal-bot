@@ -2291,6 +2291,55 @@ async def main():
             logger.error("测试卖单失败: %s", e)
         return
 
+    if scan_mode == "fix_naked_stops":
+        # 一次性补救：2026-07-18发现place_bracket_order()用TimeInForce.DAY，
+        # Alpaca的止损止盈保护腿会跟着入场单同一天过期，导致所有走这个
+        # 函数下单的仓位在成交次日起完全裸奔。代码本身已经改成GTC(见
+        # alpaca_client.py)，这里是针对已经受影响的9个现有持仓的一次性
+        # 补救，不是常规运行模式，用完可以从workflow_dispatch选项里去掉。
+        # 每个标的的止损/止盈是从下单当时AI给出的真实决策值取的（哨兵/
+        # 常规扫描日志、predictions.json历史逐一核对过）；已经跌破当时
+        # 止损价的直接市价平仓(止损本该已经触发)，没跌破的补挂GTC保护。
+        _REMEDIATE = {
+            "ANET": (165.83, 211.50),
+            "AVGO": (373.50, 453.00),
+            "CRWD": (195.00, 245.00),
+            "DDOG": (245.00, 320.00),
+            "MRVL": (191.00, 284.00),
+            "MU":   (856.00, 1235.00),
+            "NVDA": (197.10, 241.20),
+            "OXY":  (50.98, 58.80),
+            "VRT":  (287.71, 384.19),
+        }
+        try:
+            from src.execution.alpaca_client import AlpacaClient
+            alpaca = AlpacaClient(alpaca_key, alpaca_secret, paper=True)
+            positions = alpaca.get_positions()
+            lines = ["🚨 <b>止损保护单补救</b>", "─" * 28]
+            for p in positions:
+                sym = p["symbol"]
+                if sym not in _REMEDIATE:
+                    lines.append(f"  {sym}: 不在补救清单里，跳过（人工确认）")
+                    continue
+                stop, target = _REMEDIATE[sym]
+                cur = p.get("current_price") or 0
+                qty = int(p["qty"])
+                if cur and cur <= stop:
+                    result = alpaca.close_position(sym)
+                    status = "已市价平仓" if result else "平仓失败"
+                    lines.append(f"  {sym}: 现价${cur:.2f}已跌破原止损${stop:.2f} → {status}")
+                else:
+                    result = alpaca.attach_protection(sym, qty, stop, target)
+                    status = f"已补挂 止损${stop:.2f}/止盈${target:.2f}" if result else "补挂失败"
+                    lines.append(f"  {sym}: 现价${cur:.2f} → {status}")
+            msg = "\n".join(lines)
+            for chat_id in chat_ids:
+                await bot.send_message(chat_id=chat_id, text=msg, parse_mode=ParseMode.HTML)
+            logger.info("止损补救完成:\n%s", msg)
+        except Exception as e:
+            logger.error("止损补救失败: %s", e)
+        return
+
     # 自愈兜底：不管这次触发本来是什么模式（哨兵/复盘/查询持仓...），先检查
     # 今天该跑的常规扫描是不是被 GitHub Actions 丢了，丢了就借这次机会补跑。
     # scan_mode=="scan" 或留空(all-in-one) 下面本身就会正常跑一遍 _run_scan，
