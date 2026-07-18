@@ -2104,6 +2104,18 @@ async def _sync_portfolio(
         logger.error("同步 Alpaca 持仓失败: %s", e)
         return
 
+    # 诊断：每个持仓的止损/止盈保护单是不是还真的挂着——2026-07-18发现
+    # MRVL现价已经跌破入场时设的止损价还继续持有，需要先查清楚保护单
+    # 状态再判断是不是止损机制本身有问题
+    try:
+        all_open_orders = alpaca.get_open_orders()
+        for p in positions:
+            sym_orders = [o for o in all_open_orders if o["symbol"] == p["symbol"]]
+            logger.info("止损诊断 %s: 现价$%s 均价$%.2f 未成交订单=%s",
+                        p["symbol"], p.get("current_price"), p["avg_entry_price"], sym_orders)
+    except Exception as e:
+        logger.warning("止损诊断失败: %s", e)
+
     pl_icon  = "🟢" if account["today_pl"] >= 0 else "🔴"
     pl_sign  = "+" if account["today_pl"] >= 0 else ""
     deployed = account["equity"] - account["cash"]

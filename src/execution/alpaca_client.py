@@ -309,15 +309,29 @@ class AlpacaClient:
             logger.warning("查询%s最近买单成交日期失败: %s", symbol, e)
             return None
 
-    def get_open_orders(self, symbol: str) -> list[dict]:
-        """获取某标的当前挂着的未成交订单（含OCO保护单），用于扩展时段平仓前先撤单腾出股数。"""
+    def get_open_orders(self, symbol: str = None) -> list[dict]:
+        """获取当前挂着的未成交订单（含OCO保护单），用于扩展时段平仓前先撤单腾出股数，
+        也用于诊断某个持仓的止损/止盈保护单是否还真的挂着。symbol=None查全部标的。"""
         from alpaca.trading.requests import GetOrdersRequest
         from alpaca.trading.enums import QueryOrderStatus
         try:
             orders = self._client.get_orders(
-                GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+                GetOrdersRequest(status=QueryOrderStatus.OPEN,
+                                 symbols=[symbol] if symbol else None)
             )
-            return [{"order_id": str(o.id), "symbol": o.symbol, "status": str(o.status)} for o in orders]
+            return [{
+                "order_id":    str(o.id),
+                "symbol":      o.symbol,
+                "status":      str(o.status),
+                "side":        str(o.side),
+                "order_type":  str(o.order_type),
+                "order_class": str(o.order_class),
+                "qty":         o.qty,
+                "stop_price":  float(o.stop_price) if o.stop_price else None,
+                "limit_price": float(o.limit_price) if o.limit_price else None,
+                "legs":        [str(l.order_type) + "@" + str(l.stop_price or l.limit_price)
+                                for l in (o.legs or [])] if getattr(o, "legs", None) else [],
+            } for o in orders]
         except Exception as e:
             logger.error("获取未成交订单失败 %s: %s", symbol, e)
             return []
