@@ -7730,6 +7730,7 @@
       "ASX",
       "DRAM",
       "MU",
+      "VLO",
       "WDC"
     ]
   },
@@ -7737,12 +7738,12 @@
     "2026-07-16_post": 20,
     "2026-07-17_pre": 20,
     "2026-07-17_post": 6,
-    "2026-07-20_pre": 4
+    "2026-07-20_pre": 5
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-20",
-    "total_usd": 0.3152
+    "total_usd": 0.348
   }
 }
