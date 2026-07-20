@@ -7667,9 +7667,9 @@
   ],
   "last_full_scan_date": "2026-07-17",
   "circuit_breaker": {
-    "daily_date": "2026-07-17",
+    "daily_date": "2026-07-20",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-07-13",
+    "weekly_monday": "2026-07-20",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -7725,17 +7725,24 @@
       "SNDK",
       "SOXL",
       "VLO"
+    ],
+    "2026-07-20_pre": [
+      "ASX",
+      "DRAM",
+      "MU",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
     "2026-07-16_post": 20,
     "2026-07-17_pre": 20,
-    "2026-07-17_post": 6
+    "2026-07-17_post": 6,
+    "2026-07-20_pre": 4
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-17",
-    "total_usd": 1.5137
+    "date": "2026-07-20",
+    "total_usd": 0.3152
   }
 }
