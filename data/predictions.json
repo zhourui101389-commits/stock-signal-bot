@@ -8698,6 +8698,7 @@
       "GPN",
       "MRVL",
       "MXL",
+      "PANW",
       "SNDK"
     ]
   },
@@ -8706,12 +8707,12 @@
     "2026-07-17_pre": 20,
     "2026-07-17_post": 6,
     "2026-07-20_pre": 5,
-    "2026-07-20_post": 6
+    "2026-07-20_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-20",
-    "total_usd": 1.0882
+    "total_usd": 1.1222
   }
 }
