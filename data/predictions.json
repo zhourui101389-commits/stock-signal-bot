@@ -8695,11 +8695,14 @@
     "2026-07-20_post": [
       "ASX",
       "BABA",
+      "CF",
       "GPN",
       "MRVL",
+      "MU",
       "MXL",
       "PANW",
-      "SNDK"
+      "SNDK",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -8707,12 +8710,12 @@
     "2026-07-17_pre": 20,
     "2026-07-17_post": 6,
     "2026-07-20_pre": 5,
-    "2026-07-20_post": 7
+    "2026-07-20_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-20",
-    "total_usd": 1.1222
+    "total_usd": 1.2169
   }
 }
