@@ -9507,6 +9507,7 @@
       "MXL",
       "SNDK",
       "SOXL",
+      "VTRS",
       "WDC"
     ]
   },
@@ -9517,7 +9518,7 @@
     "2026-07-20_pre": 5,
     "2026-07-20_post": 10,
     "2026-07-21_pre": 10,
-    "2026-07-21_post": 10
+    "2026-07-21_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
