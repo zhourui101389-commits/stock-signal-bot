@@ -8992,6 +8992,18 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-07-21_post": [
+      "ASX",
+      "COIN",
+      "DRAM",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -9000,12 +9012,13 @@
     "2026-07-17_post": 6,
     "2026-07-20_pre": 5,
     "2026-07-20_post": 10,
-    "2026-07-21_pre": 10
+    "2026-07-21_pre": 10,
+    "2026-07-21_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-21",
-    "total_usd": 1.3484
+    "total_usd": 1.5619
   }
 }
