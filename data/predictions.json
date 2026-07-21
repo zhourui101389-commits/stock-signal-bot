@@ -8626,7 +8626,7 @@
   ],
   "last_full_scan_date": "2026-07-20",
   "circuit_breaker": {
-    "daily_date": "2026-07-20",
+    "daily_date": "2026-07-21",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-07-20",
     "weekly_start_equity": 50000.0,
@@ -8703,6 +8703,18 @@
       "PANW",
       "SNDK",
       "WDC"
+    ],
+    "2026-07-21_pre": [
+      "BABA",
+      "DRAM",
+      "GPN",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -8710,12 +8722,13 @@
     "2026-07-17_pre": 20,
     "2026-07-17_post": 6,
     "2026-07-20_pre": 5,
-    "2026-07-20_post": 10
+    "2026-07-20_post": 10,
+    "2026-07-21_pre": 10
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-20",
-    "total_usd": 1.2169
+    "date": "2026-07-21",
+    "total_usd": 0.6513
   }
 }
