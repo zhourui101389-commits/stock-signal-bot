@@ -9515,6 +9515,7 @@
       "COIN",
       "DRAM",
       "INTC",
+      "MPC",
       "MRVL",
       "MU",
       "MXL",
@@ -9532,12 +9533,12 @@
     "2026-07-20_post": 10,
     "2026-07-21_pre": 10,
     "2026-07-21_post": 11,
-    "2026-07-22_pre": 11
+    "2026-07-22_pre": 12
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-22",
-    "total_usd": 0.4046
+    "total_usd": 0.4403
   }
 }
