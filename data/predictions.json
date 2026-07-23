@@ -10624,7 +10624,7 @@
   ],
   "last_full_scan_date": "2026-07-22",
   "circuit_breaker": {
-    "daily_date": "2026-07-22",
+    "daily_date": "2026-07-23",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-07-20",
     "weekly_start_equity": 50000.0,
@@ -10751,6 +10751,18 @@
       "TPL",
       "TSLA",
       "WDC"
+    ],
+    "2026-07-23_pre": [
+      "CB",
+      "CF",
+      "MRVL",
+      "MXL",
+      "OXY",
+      "PCAR",
+      "SMCI",
+      "TPL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -10762,12 +10774,13 @@
     "2026-07-21_pre": 10,
     "2026-07-21_post": 11,
     "2026-07-22_pre": 12,
-    "2026-07-22_post": 9
+    "2026-07-22_post": 9,
+    "2026-07-23_pre": 10
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-22",
-    "total_usd": 1.5155
+    "date": "2026-07-23",
+    "total_usd": 0.4407
   }
 }
