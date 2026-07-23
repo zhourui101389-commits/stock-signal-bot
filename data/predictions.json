@@ -8,14 +8,21 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 993.745,
+      "entry_price": 992.7,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量死叉+大盘转弱，等待方向明确",
+      "verdict": "死叉+顶背离+缩量，短期转弱，大盘拖累，观望为主",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": null
+      "shadow_verdict": {
+        "model": "gemini-flash-latest",
+        "final_direction": "中性",
+        "conviction": "中",
+        "action": "持有观望",
+        "tech_confirmed": true,
+        "verdict": "科技股大盘回调叠加死叉，等待企稳信号"
+      }
     },
     {
       "symbol": "MXL",
@@ -24,14 +31,21 @@
       "action": "持有观望",
       "conviction": "低",
       "horizon": "3-5天",
-      "entry_price": 92.17,
+      "entry_price": 90.58,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "财报3天后+分析师目标价倒挂19%，观望为宜",
+      "verdict": "财报当日技术信号失真，观望为宜",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": null
+      "shadow_verdict": {
+        "model": "gemini-flash-latest",
+        "final_direction": "中性",
+        "conviction": "低",
+        "action": "持有观望",
+        "tech_confirmed": true,
+        "verdict": "财报发布在即且分析师目标价倒挂，建议观望。"
+      }
     },
     {
       "symbol": "SOXL",
@@ -40,10 +54,10 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 155.8,
+      "entry_price": 153.6699,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "短期空头与周线多头对撞，杠杆ETF叠加宏观下跌风险，观望为主",
+      "verdict": "短期空头与周线多头对撞，大盘走弱+缩量，观望为主",
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -56,7 +70,7 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 377.235,
+      "entry_price": 377.9,
       "target_price": null,
       "stop_loss": null,
       "verdict": "严重超买+缩量+大盘转弱，追高风险大于机会",
@@ -72,21 +86,14 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 297.44,
+      "entry_price": 296.6175,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "趋势向上但极度超买缩量，观望等回调确认",
+      "verdict": "极度超买缩量+大盘转弱，追高风险大于机会",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "财报利好已反映致极端超买，短期宜观望等待回调"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "LYB",
@@ -118,10 +125,10 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 208.73,
+      "entry_price": 208.04,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "缩量超买+分析师零买入共识，追高风险大于机会",
+      "verdict": "缩量超买+零买入共识，追高性价比差，等回调确认",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -133,22 +140,15 @@
       "final_direction": "看空",
       "action": "减仓",
       "conviction": "中",
-      "horizon": "3-5天",
-      "entry_price": 317.44,
-      "target_price": 291.78,
-      "stop_loss": 330.27,
-      "verdict": "超买顶背离+缩量，叠加大盘转弱，逢高减仓",
+      "horizon": "1-2周",
+      "entry_price": 317.74,
+      "target_price": 292.08,
+      "stop_loss": 330.57,
+      "verdict": "顶背离+缩量+大盘转弱，高位获利了结压力大",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "看空",
-        "conviction": "中",
-        "action": "减仓",
-        "tech_confirmed": true,
-        "verdict": "严重超买伴随极致缩量背离，高位见顶回调风险大"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "APA",
@@ -157,10 +157,10 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 37.44,
+      "entry_price": 37.3695,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "多头趋势但超买缩量，ADX弱，追高风险大于机会",
+      "verdict": "多头结构完好但超买缩量，追高风险大于机会",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -173,21 +173,14 @@
       "action": "持有观望",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 918.9,
+      "entry_price": 917.005,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "信号内部矛盾+基本面数据缺失，观望为宜",
+      "verdict": "技术多空互搏+宏观逆风+分析师零共识，观望为主",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "高波动整固阶段，成交极度萎缩，宜观望"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "COP",
@@ -195,11 +188,11 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 122.03,
+      "horizon": "3-5天",
+      "entry_price": 122.3745,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "严重超买+缩量+分析师零买入共识，追高风险大于收益",
+      "verdict": "严重超买+地量+零分析师买入，追高风险远大于收益",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -211,22 +204,15 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 58.46,
+      "horizon": "3-5天",
+      "entry_price": 58.57,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "地量超买+分析师0%买入共识，追高风险大于收益",
+      "verdict": "地量超买+大盘转弱，追高性价比差，等回调或放量确认",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "极度超买且缩量明显，地缘油价溢价已计入，观望"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "PSX",
@@ -235,10 +221,10 @@
       "action": "减仓",
       "conviction": "中",
       "horizon": "1-2周",
-      "entry_price": 212.99,
-      "target_price": 196.31,
-      "stop_loss": 221.33,
-      "verdict": "极端超买+缩量+顶背离，叠加大盘转弱，回调概率高",
+      "entry_price": 213.64,
+      "target_price": 197.0,
+      "stop_loss": 205.3,
+      "verdict": "极度超买缩量顶背离，叠加大盘转弱，回调概率高",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
@@ -250,22 +236,15 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "3-5天",
-      "entry_price": 312.6,
+      "horizon": "1-2周",
+      "entry_price": 311.6743,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "极度超买+零分析师支撑，追高风险大于收益，观望为主",
+      "verdict": "缩量超买+零分析师支撑，高位滞涨风险大于机会",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "股价极度超买且高位缩量背离，暂宜观望"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "CF",
@@ -273,22 +252,47 @@
       "final_direction": "中性",
       "action": "持有观望",
       "conviction": "中",
-      "horizon": "1-2周",
-      "entry_price": 128.435,
+      "horizon": "3-5天",
+      "entry_price": 128.19,
       "target_price": null,
       "stop_loss": null,
-      "verdict": "超买缩量+财报临近+大盘转弱，观望为上",
+      "verdict": "超买缩量+财报临近+大盘转弱，观望防守",
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": true,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "超买区伴随极致缩量背离，财报临近宜观望"
-      }
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "CVX",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "持有观望",
+      "conviction": "中",
+      "horizon": "1-2周",
+      "entry_price": 197.48,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "极度超买叠加大盘转弱，追高风险大于机会",
+      "source": "screener",
+      "ai_failed": false,
+      "tech_confirmed": true,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "LITE",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "持有观望",
+      "conviction": "中",
+      "horizon": "1-2周",
+      "entry_price": 828.73,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "ADX=9趋势真空，AI催化剂已部分price in，等回调或放量突破",
+      "source": "screener",
+      "ai_failed": false,
+      "tech_confirmed": true,
+      "shadow_verdict": null
     }
   ],
   "history": [
@@ -11075,6 +11079,6 @@
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-23",
-    "total_usd": 0.8416
+    "total_usd": 1.2552
   }
 }
