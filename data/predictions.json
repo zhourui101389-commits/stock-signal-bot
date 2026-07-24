@@ -12080,6 +12080,22 @@
       "SOXL",
       "TSLA",
       "WAB"
+    ],
+    "2026-07-24_post": [
+      "ASX",
+      "DLR",
+      "DRAM",
+      "INTC",
+      "IP",
+      "MRVL",
+      "MU",
+      "MXL",
+      "PKG",
+      "SMCI",
+      "SNDK",
+      "SOXL",
+      "T",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -12094,12 +12110,13 @@
     "2026-07-22_post": 9,
     "2026-07-23_pre": 10,
     "2026-07-23_post": 6,
-    "2026-07-24_pre": 9
+    "2026-07-24_pre": 9,
+    "2026-07-24_post": 14
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-24",
-    "total_usd": 1.1276
+    "total_usd": 1.5166
   }
 }
