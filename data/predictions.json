@@ -11565,7 +11565,7 @@
   ],
   "last_full_scan_date": "2026-07-23",
   "circuit_breaker": {
-    "daily_date": "2026-07-23",
+    "daily_date": "2026-07-24",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-07-20",
     "weekly_start_equity": 50000.0,
@@ -11712,6 +11712,15 @@
       "MU",
       "MXL",
       "TSLA"
+    ],
+    "2026-07-24_pre": [
+      "ASX",
+      "CSX",
+      "INTC",
+      "LH",
+      "MXL",
+      "PSX",
+      "TSLA"
     ]
   },
   "extended_trigger_count": {
@@ -11725,12 +11734,13 @@
     "2026-07-22_pre": 12,
     "2026-07-22_post": 9,
     "2026-07-23_pre": 10,
-    "2026-07-23_post": 6
+    "2026-07-23_post": 6,
+    "2026-07-24_pre": 7
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-23",
-    "total_usd": 1.5355
+    "date": "2026-07-24",
+    "total_usd": 0.2526
   }
 }
