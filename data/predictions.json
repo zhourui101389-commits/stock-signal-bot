@@ -11720,7 +11720,9 @@
       "LH",
       "MXL",
       "PSX",
-      "TSLA"
+      "SOXL",
+      "TSLA",
+      "WAB"
     ]
   },
   "extended_trigger_count": {
@@ -11735,12 +11737,12 @@
     "2026-07-22_post": 9,
     "2026-07-23_pre": 10,
     "2026-07-23_post": 6,
-    "2026-07-24_pre": 7
+    "2026-07-24_pre": 9
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-24",
-    "total_usd": 0.2526
+    "total_usd": 0.3141
   }
 }
