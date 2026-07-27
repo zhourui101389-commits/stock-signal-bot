@@ -13864,6 +13864,19 @@
       "T",
       "TRV",
       "WDC"
+    ],
+    "2026-07-27_post": [
+      "ACN",
+      "ALLE",
+      "BKR",
+      "GM",
+      "HPQ",
+      "MMM",
+      "MXL",
+      "NVDA",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -13880,7 +13893,8 @@
     "2026-07-23_post": 6,
     "2026-07-24_pre": 9,
     "2026-07-24_post": 15,
-    "2026-07-27_pre": 16
+    "2026-07-27_pre": 16,
+    "2026-07-27_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
