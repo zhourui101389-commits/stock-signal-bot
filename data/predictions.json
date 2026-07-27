@@ -12684,9 +12684,9 @@
   ],
   "last_full_scan_date": "2026-07-24",
   "circuit_breaker": {
-    "daily_date": "2026-07-24",
+    "daily_date": "2026-07-27",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-07-20",
+    "weekly_monday": "2026-07-27",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -12859,6 +12859,24 @@
       "T",
       "TRV",
       "WDC"
+    ],
+    "2026-07-27_pre": [
+      "ASX",
+      "DLR",
+      "DRAM",
+      "FANG",
+      "INTC",
+      "IP",
+      "MPC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "PKG",
+      "SNDK",
+      "SOXL",
+      "T",
+      "TRV",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -12874,12 +12892,13 @@
     "2026-07-23_pre": 10,
     "2026-07-23_post": 6,
     "2026-07-24_pre": 9,
-    "2026-07-24_post": 15
+    "2026-07-24_post": 15,
+    "2026-07-27_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-24",
-    "total_usd": 1.5166
+    "date": "2026-07-27",
+    "total_usd": 0.5828
   }
 }
