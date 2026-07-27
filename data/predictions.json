@@ -14015,7 +14015,10 @@
       "BKR",
       "GM",
       "HPQ",
+      "LDOS",
       "MMM",
+      "MRVL",
+      "MU",
       "MXL",
       "NVDA",
       "SNDK",
@@ -14038,7 +14041,7 @@
     "2026-07-24_pre": 9,
     "2026-07-24_post": 15,
     "2026-07-27_pre": 16,
-    "2026-07-27_post": 11
+    "2026-07-27_post": 14
   },
   "pending_protection": [],
   "pending_entries": [],
