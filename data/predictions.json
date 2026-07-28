@@ -13815,7 +13815,7 @@
   ],
   "last_full_scan_date": "2026-07-27",
   "circuit_breaker": {
-    "daily_date": "2026-07-27",
+    "daily_date": "2026-07-28",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-07-27",
     "weekly_start_equity": 50000.0,
@@ -14024,6 +14024,26 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-07-28_pre": [
+      "ACN",
+      "ALLE",
+      "ASX",
+      "BKR",
+      "CTAS",
+      "DRAM",
+      "GM",
+      "INTC",
+      "LDOS",
+      "MMM",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "RTX",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -14041,12 +14061,13 @@
     "2026-07-24_pre": 9,
     "2026-07-24_post": 15,
     "2026-07-27_pre": 16,
-    "2026-07-27_post": 14
+    "2026-07-27_post": 14,
+    "2026-07-28_pre": 18
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-27",
-    "total_usd": 1.5131
+    "date": "2026-07-28",
+    "total_usd": 0.7677
   }
 }
