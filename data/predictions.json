@@ -14514,6 +14514,29 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-07-28_post": [
+      "ACN",
+      "ADSK",
+      "ASX",
+      "BF-B",
+      "DRAM",
+      "FDS",
+      "GM",
+      "HAS",
+      "HPQ",
+      "INTC",
+      "LDOS",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NUE",
+      "ROP",
+      "SNDK",
+      "SOLV",
+      "SOXL",
+      "UHS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -14532,12 +14555,13 @@
     "2026-07-24_post": 15,
     "2026-07-27_pre": 16,
     "2026-07-27_post": 14,
-    "2026-07-28_pre": 19
+    "2026-07-28_pre": 19,
+    "2026-07-28_post": 21
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-28",
-    "total_usd": 1.4898
+    "total_usd": 1.5159
   }
 }
