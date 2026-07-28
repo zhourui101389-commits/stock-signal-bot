@@ -14033,6 +14033,7 @@
       "CTAS",
       "DRAM",
       "GM",
+      "HPQ",
       "INTC",
       "LDOS",
       "MMM",
@@ -14062,12 +14063,12 @@
     "2026-07-24_post": 15,
     "2026-07-27_pre": 16,
     "2026-07-27_post": 14,
-    "2026-07-28_pre": 18
+    "2026-07-28_pre": 19
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-28",
-    "total_usd": 0.7677
+    "total_usd": 0.789
   }
 }
