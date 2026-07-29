@@ -16412,9 +16412,12 @@
     "2026-07-29_post": [
       "ACN",
       "ADBE",
+      "ADSK",
       "ASX",
       "BXP",
+      "DPZ",
       "DRAM",
+      "FIS",
       "INTC",
       "IT",
       "MRVL",
@@ -16447,7 +16450,7 @@
     "2026-07-28_pre": 19,
     "2026-07-28_post": 21,
     "2026-07-29_pre": 21,
-    "2026-07-29_post": 16
+    "2026-07-29_post": 19
   },
   "pending_protection": [],
   "pending_entries": [],
