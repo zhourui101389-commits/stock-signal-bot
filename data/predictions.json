@@ -15437,6 +15437,24 @@
       "SOXL",
       "UHS",
       "WDC"
+    ],
+    "2026-07-29_post": [
+      "ACN",
+      "ADBE",
+      "ASX",
+      "BXP",
+      "DRAM",
+      "INTC",
+      "IT",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "ROP",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDAY"
     ]
   },
   "extended_trigger_count": {
@@ -15457,7 +15475,8 @@
     "2026-07-27_post": 14,
     "2026-07-28_pre": 19,
     "2026-07-28_post": 21,
-    "2026-07-29_pre": 21
+    "2026-07-29_pre": 21,
+    "2026-07-29_post": 16
   },
   "pending_protection": [],
   "pending_entries": [],
