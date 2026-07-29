@@ -16417,6 +16417,7 @@
       "BXP",
       "DPZ",
       "DRAM",
+      "EXPE",
       "FIS",
       "INTC",
       "IT",
@@ -16424,6 +16425,7 @@
       "MU",
       "MXL",
       "NVDA",
+      "PAYX",
       "ROP",
       "SNDK",
       "SOXL",
@@ -16450,7 +16452,7 @@
     "2026-07-28_pre": 19,
     "2026-07-28_post": 21,
     "2026-07-29_pre": 21,
-    "2026-07-29_post": 19
+    "2026-07-29_post": 21
   },
   "pending_protection": [],
   "pending_entries": [],
