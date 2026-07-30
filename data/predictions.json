@@ -16710,6 +16710,24 @@
       "SOXL",
       "WDAY",
       "WDC"
+    ],
+    "2026-07-30_post": [
+      "ASX",
+      "CMG",
+      "CTSH",
+      "DRAM",
+      "EXPE",
+      "INTC",
+      "IQV",
+      "MRVL",
+      "MSFT",
+      "MU",
+      "MXL",
+      "NVDA",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -16732,7 +16750,8 @@
     "2026-07-28_post": 21,
     "2026-07-29_pre": 21,
     "2026-07-29_post": 21,
-    "2026-07-30_pre": 16
+    "2026-07-30_pre": 16,
+    "2026-07-30_post": 16
   },
   "pending_protection": [],
   "pending_entries": [],
