@@ -16447,7 +16447,8 @@
       "ROP",
       "SNDK",
       "SOXL",
-      "WDAY"
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -16470,12 +16471,12 @@
     "2026-07-28_post": 21,
     "2026-07-29_pre": 21,
     "2026-07-29_post": 21,
-    "2026-07-30_pre": 15
+    "2026-07-30_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-30",
-    "total_usd": 0.8045
+    "total_usd": 0.8939
   }
 }
