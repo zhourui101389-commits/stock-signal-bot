@@ -18275,6 +18275,7 @@
       "DRAM",
       "DXCM",
       "MU",
+      "REGN",
       "SNDK",
       "YUMC"
     ]
@@ -18302,7 +18303,7 @@
     "2026-07-30_pre": 16,
     "2026-07-30_post": 16,
     "2026-07-31_pre": 17,
-    "2026-07-31_post": 6
+    "2026-07-31_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
