@@ -17749,6 +17749,14 @@
       "SOXL",
       "TSLA",
       "WDC"
+    ],
+    "2026-07-31_post": [
+      "AMZN",
+      "DRAM",
+      "DXCM",
+      "MU",
+      "SNDK",
+      "YUMC"
     ]
   },
   "extended_trigger_count": {
@@ -17773,12 +17781,13 @@
     "2026-07-29_post": 21,
     "2026-07-30_pre": 16,
     "2026-07-30_post": 16,
-    "2026-07-31_pre": 17
+    "2026-07-31_pre": 17,
+    "2026-07-31_post": 6
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-07-31",
-    "total_usd": 1.259
+    "total_usd": 1.5372
   }
 }
