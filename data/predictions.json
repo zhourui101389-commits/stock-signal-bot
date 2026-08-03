@@ -17915,9 +17915,9 @@
   ],
   "last_full_scan_date": "2026-07-31",
   "circuit_breaker": {
-    "daily_date": "2026-07-31",
+    "daily_date": "2026-08-03",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-07-27",
+    "weekly_monday": "2026-08-03",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -18278,6 +18278,19 @@
       "REGN",
       "SNDK",
       "YUMC"
+    ],
+    "2026-08-03_pre": [
+      "AMZN",
+      "ASX",
+      "CTSH",
+      "DRAM",
+      "DXCM",
+      "MSFT",
+      "MU",
+      "REGN",
+      "SNDK",
+      "SOXL",
+      "YUMC"
     ]
   },
   "extended_trigger_count": {
@@ -18303,12 +18316,13 @@
     "2026-07-30_pre": 16,
     "2026-07-30_post": 16,
     "2026-07-31_pre": 17,
-    "2026-07-31_post": 7
+    "2026-07-31_post": 7,
+    "2026-08-03_pre": 11
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-07-31",
-    "total_usd": 1.5372
+    "date": "2026-08-03",
+    "total_usd": 0.57
   }
 }
