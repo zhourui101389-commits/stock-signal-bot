@@ -19237,8 +19237,10 @@
       "GRMN",
       "MRVL",
       "MSFT",
+      "NVDA",
       "ORCL",
       "SNDK",
+      "SOXL",
       "TSLA",
       "ULTA",
       "WDC"
@@ -19269,7 +19271,7 @@
     "2026-07-31_pre": 17,
     "2026-07-31_post": 7,
     "2026-08-03_pre": 11,
-    "2026-08-03_post": 15
+    "2026-08-03_post": 17
   },
   "pending_protection": [],
   "pending_entries": [],
