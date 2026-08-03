@@ -19105,6 +19105,23 @@
       "SNDK",
       "SOXL",
       "YUMC"
+    ],
+    "2026-08-03_post": [
+      "AMZN",
+      "ARES",
+      "ASX",
+      "BABA",
+      "BAX",
+      "DXCM",
+      "FSLR",
+      "GRMN",
+      "MRVL",
+      "MSFT",
+      "ORCL",
+      "SNDK",
+      "TSLA",
+      "ULTA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -19131,7 +19148,8 @@
     "2026-07-30_post": 16,
     "2026-07-31_pre": 17,
     "2026-07-31_post": 7,
-    "2026-08-03_pre": 11
+    "2026-08-03_pre": 11,
+    "2026-08-03_post": 15
   },
   "pending_protection": [],
   "pending_entries": [],
