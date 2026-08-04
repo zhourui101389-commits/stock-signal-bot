@@ -18849,7 +18849,7 @@
   ],
   "last_full_scan_date": "2026-08-03",
   "circuit_breaker": {
-    "daily_date": "2026-08-03",
+    "daily_date": "2026-08-04",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-03",
     "weekly_start_equity": 50000.0,
@@ -19244,6 +19244,27 @@
       "TSLA",
       "ULTA",
       "WDC"
+    ],
+    "2026-08-04_pre": [
+      "ARES",
+      "ASX",
+      "BABA",
+      "BAX",
+      "DRAM",
+      "DXCM",
+      "FSLR",
+      "GRMN",
+      "INTC",
+      "MRVL",
+      "MSFT",
+      "MU",
+      "MXL",
+      "NVDA",
+      "ORCL",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "ULTA"
     ]
   },
   "extended_trigger_count": {
@@ -19271,12 +19292,13 @@
     "2026-07-31_pre": 17,
     "2026-07-31_post": 7,
     "2026-08-03_pre": 11,
-    "2026-08-03_post": 17
+    "2026-08-03_post": 17,
+    "2026-08-04_pre": 19
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-08-03",
-    "total_usd": 1.524
+    "date": "2026-08-04",
+    "total_usd": 0.7212
   }
 }
