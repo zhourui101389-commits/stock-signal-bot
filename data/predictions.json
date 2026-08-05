@@ -20654,6 +20654,21 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-05_post": [
+      "ANET",
+      "ASX",
+      "DRAM",
+      "FCX",
+      "LITE",
+      "MRVL",
+      "MXL",
+      "NVDA",
+      "PLTR",
+      "SMCI",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -20684,7 +20699,8 @@
     "2026-08-03_post": 17,
     "2026-08-04_pre": 20,
     "2026-08-04_post": 16,
-    "2026-08-05_pre": 16
+    "2026-08-05_pre": 16,
+    "2026-08-05_post": 13
   },
   "pending_protection": [],
   "pending_entries": [],
