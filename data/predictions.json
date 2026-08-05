@@ -19828,7 +19828,7 @@
   ],
   "last_full_scan_date": "2026-08-04",
   "circuit_breaker": {
-    "daily_date": "2026-08-04",
+    "daily_date": "2026-08-05",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-03",
     "weekly_start_equity": 50000.0,
@@ -20263,6 +20263,24 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-05_pre": [
+      "APH",
+      "COHR",
+      "DELL",
+      "DRAM",
+      "FSLR",
+      "HPE",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PLTR",
+      "PWR",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -20292,12 +20310,13 @@
     "2026-08-03_pre": 11,
     "2026-08-03_post": 17,
     "2026-08-04_pre": 20,
-    "2026-08-04_post": 16
+    "2026-08-04_post": 16,
+    "2026-08-05_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-08-04",
-    "total_usd": 1.5342
+    "date": "2026-08-05",
+    "total_usd": 0.9101
   }
 }
