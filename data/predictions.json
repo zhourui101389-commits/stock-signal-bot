@@ -21912,7 +21912,7 @@
   ],
   "last_full_scan_date": "2026-08-06",
   "circuit_breaker": {
-    "daily_date": "2026-08-06",
+    "daily_date": "2026-08-07",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-03",
     "weekly_start_equity": 50000.0,
@@ -22380,6 +22380,20 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-07_pre": [
+      "BDX",
+      "COHR",
+      "DRAM",
+      "FSLR",
+      "LDOS",
+      "MRVL",
+      "MSI",
+      "MXL",
+      "PH",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -22411,12 +22425,13 @@
     "2026-08-04_pre": 20,
     "2026-08-04_post": 16,
     "2026-08-05_pre": 16,
-    "2026-08-05_post": 13
+    "2026-08-05_post": 13,
+    "2026-08-07_pre": 12
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-08-06",
-    "total_usd": 0.6974
+    "date": "2026-08-07",
+    "total_usd": 0.5164
   }
 }
