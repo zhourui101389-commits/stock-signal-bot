@@ -22526,6 +22526,24 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-07_post": [
+      "ABNB",
+      "BKNG",
+      "COHR",
+      "FSLR",
+      "GEN",
+      "HPQ",
+      "MRVL",
+      "MXL",
+      "NEM",
+      "PLTR",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "VEEV",
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -22558,12 +22576,13 @@
     "2026-08-04_post": 16,
     "2026-08-05_pre": 16,
     "2026-08-05_post": 13,
-    "2026-08-07_pre": 13
+    "2026-08-07_pre": 13,
+    "2026-08-07_post": 16
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
     "date": "2026-08-07",
-    "total_usd": 1.3322
+    "total_usd": 1.5597
   }
 }
