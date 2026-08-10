@@ -22544,9 +22544,9 @@
   ],
   "last_full_scan_date": "2026-08-07",
   "circuit_breaker": {
-    "daily_date": "2026-08-07",
+    "daily_date": "2026-08-10",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-08-03",
+    "weekly_monday": "2026-08-10",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -23046,6 +23046,26 @@
       "WDAY",
       "WDC",
       "ZBRA"
+    ],
+    "2026-08-10_pre": [
+      "ABNB",
+      "ASX",
+      "COHR",
+      "FSLR",
+      "GEN",
+      "HPQ",
+      "MRVL",
+      "MXL",
+      "NEM",
+      "PLTR",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "TSLA",
+      "VEEV",
+      "WDAY",
+      "WDC",
+      "ZBRA"
     ]
   },
   "extended_trigger_count": {
@@ -23079,12 +23099,13 @@
     "2026-08-05_pre": 16,
     "2026-08-05_post": 13,
     "2026-08-07_pre": 13,
-    "2026-08-07_post": 17
+    "2026-08-07_post": 17,
+    "2026-08-10_pre": 18
   },
   "pending_protection": [],
   "pending_entries": [],
   "ai_spend": {
-    "date": "2026-08-07",
-    "total_usd": 1.5597
+    "date": "2026-08-10",
+    "total_usd": 0.5162
   }
 }
