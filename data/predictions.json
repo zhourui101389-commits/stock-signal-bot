@@ -23051,6 +23051,7 @@
       "ABNB",
       "ASX",
       "COHR",
+      "DRAM",
       "FSLR",
       "GEN",
       "HPQ",
@@ -23100,7 +23101,7 @@
     "2026-08-05_post": 13,
     "2026-08-07_pre": 13,
     "2026-08-07_post": 17,
-    "2026-08-10_pre": 18
+    "2026-08-10_pre": 19
   },
   "pending_protection": [],
   "pending_entries": [],
