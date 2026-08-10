@@ -15,7 +15,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 861.0,
+      "actual_pct": -0.19184958065506752,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SNDK",
@@ -31,7 +37,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 1237.9200439453125,
+      "actual_pct": -0.15485514700988984,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SOXL",
@@ -47,7 +59,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 130.0,
+      "actual_pct": -0.20726184079220863,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "WDC",
@@ -63,7 +81,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 438.3399963378906,
+      "actual_pct": 0.09819285649804753,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "WDAY",
@@ -79,7 +103,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 184.19000244140625,
+      "actual_pct": -0.11388153936754647,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "IT",
@@ -95,7 +125,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 193.1699981689453,
+      "actual_pct": 0.077711205546214,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "CRWD",
@@ -111,7 +147,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 225.16000366210938,
+      "actual_pct": -0.008880157158998056,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "LDOS",
@@ -127,7 +169,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 139.10000610351562,
+      "actual_pct": 0.07914677567854947,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "CRL",
@@ -143,7 +191,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 277.0,
+      "actual_pct": 0.07586979298384318,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SWKS",
@@ -159,7 +213,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 68.79000091552734,
+      "actual_pct": -0.05811286426362712,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "VEEV",
@@ -175,7 +235,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 234.69000244140625,
+      "actual_pct": 0.14935667893071886,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "ACN",
@@ -191,7 +257,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 178.25,
+      "actual_pct": -0.07287812535037305,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "HPQ",
@@ -207,7 +279,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 29.799999237060547,
+      "actual_pct": -1.7636418755215229,
+      "correct": true,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "NEM",
@@ -223,7 +301,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 117.26000213623047,
+      "actual_pct": -0.021313777353905307,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "PLTR",
@@ -239,7 +323,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 175.22999572753906,
+      "actual_pct": 0.0171208490519828,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "ABNB",
@@ -255,7 +345,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 184.6999969482422,
+      "actual_pct": 0.10839942994156505,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "NTAP",
@@ -271,7 +367,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 198.72000122070312,
+      "actual_pct": -1.3110840183238421,
+      "correct": true,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "ZBRA",
@@ -287,7 +389,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 378.0799865722656,
+      "actual_pct": -0.03966195905517626,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "CTSH",
@@ -303,7 +411,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 58.310001373291016,
+      "actual_pct": -0.09423220544673411,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "ASX",
@@ -326,7 +440,13 @@
         "action": "持有观望",
         "tech_confirmed": true,
         "verdict": "成交量极低且ADX处于无趋势区，建议中性观望"
-      }
+      },
+      "close_price": 37.59000015258789,
+      "actual_pct": -2.8431115208377027,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MSFT",
@@ -342,7 +462,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 506.05999755859375,
+      "actual_pct": -0.9007955276321377,
+      "correct": true,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "FCX",
@@ -358,7 +484,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 70.51000213623047,
+      "actual_pct": -0.920393260408259,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "NVDA",
@@ -374,7 +506,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 217.5500030517578,
+      "actual_pct": -0.9949639400691591,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "TSLA",
@@ -390,7 +528,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 330.8800048828125,
+      "actual_pct": 0.040818419874070797,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "VRTX",
@@ -406,7 +550,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 523.9099731445312,
+      "actual_pct": 0.04200445770039439,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "APA",
@@ -422,7 +572,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": 41.02000045776367,
+      "actual_pct": -0.024371294750985283,
+      "correct": null,
+      "inconclusive": true,
+      "hit_target": false,
+      "hit_stop": false
     }
   ],
   "history": [
