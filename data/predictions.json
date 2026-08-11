@@ -24554,6 +24554,11 @@
       "SOXL",
       "VEEV",
       "VRTX"
+    ],
+    "2026-08-11_post": [
+      "ASX",
+      "BX",
+      "IT"
     ]
   },
   "extended_trigger_count": {
@@ -24590,7 +24595,8 @@
     "2026-08-07_post": 17,
     "2026-08-10_pre": 19,
     "2026-08-10_post": 14,
-    "2026-08-11_pre": 13
+    "2026-08-11_pre": 13,
+    "2026-08-11_post": 3
   },
   "pending_protection": [],
   "pending_entries": [],
