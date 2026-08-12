@@ -24546,7 +24546,7 @@
   ],
   "last_full_scan_date": "2026-08-11",
   "circuit_breaker": {
-    "daily_date": "2026-08-11",
+    "daily_date": "2026-08-12",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-10",
     "weekly_start_equity": 50000.0,
@@ -25110,6 +25110,21 @@
       "MRVL",
       "SNDK",
       "SOXL"
+    ],
+    "2026-08-12_pre": [
+      "ADSK",
+      "ASX",
+      "BX",
+      "DRAM",
+      "HAS",
+      "IT",
+      "LDOS",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "WDAY"
     ]
   },
   "extended_trigger_count": {
@@ -25147,7 +25162,8 @@
     "2026-08-10_pre": 19,
     "2026-08-10_post": 14,
     "2026-08-11_pre": 13,
-    "2026-08-11_post": 8
+    "2026-08-11_post": 8,
+    "2026-08-12_pre": 13
   },
   "pending_protection": [],
   "pending_entries": [],
