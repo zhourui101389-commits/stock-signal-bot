@@ -25532,6 +25532,20 @@
       "SOXL",
       "WDAY",
       "WDC"
+    ],
+    "2026-08-12_post": [
+      "ANET",
+      "DRAM",
+      "HPE",
+      "INTC",
+      "MPC",
+      "MU",
+      "MXL",
+      "SMCI",
+      "SNDK",
+      "SOXL",
+      "TSCO",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -25570,7 +25584,8 @@
     "2026-08-10_post": 14,
     "2026-08-11_pre": 13,
     "2026-08-11_post": 8,
-    "2026-08-12_pre": 15
+    "2026-08-12_pre": 15,
+    "2026-08-12_post": 12
   },
   "pending_protection": [],
   "pending_entries": [],
