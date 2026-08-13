@@ -26598,6 +26598,25 @@
       "SOXL",
       "TSCO",
       "WDC"
+    ],
+    "2026-08-13_post": [
+      "CIEN",
+      "DRAM",
+      "HPQ",
+      "INTC",
+      "INTU",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NEM",
+      "PLTR",
+      "PSX",
+      "SMCI",
+      "SNDK",
+      "TSLA",
+      "VEEV",
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -26638,7 +26657,8 @@
     "2026-08-11_post": 8,
     "2026-08-12_pre": 15,
     "2026-08-12_post": 13,
-    "2026-08-13_pre": 15
+    "2026-08-13_pre": 15,
+    "2026-08-13_post": 17
   },
   "pending_protection": [],
   "pending_entries": [],
