@@ -27179,6 +27179,7 @@
       "PSX",
       "SMCI",
       "SNDK",
+      "SOXL",
       "TSLA",
       "VEEV",
       "WDAY",
@@ -27226,7 +27227,7 @@
     "2026-08-12_post": 13,
     "2026-08-13_pre": 15,
     "2026-08-13_post": 17,
-    "2026-08-14_pre": 18
+    "2026-08-14_pre": 19
   },
   "pending_protection": [],
   "pending_entries": [],
