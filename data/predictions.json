@@ -27671,9 +27671,9 @@
   ],
   "last_full_scan_date": "2026-08-14",
   "circuit_breaker": {
-    "daily_date": "2026-08-14",
+    "daily_date": "2026-08-17",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-08-10",
+    "weekly_monday": "2026-08-17",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -28336,6 +28336,21 @@
       "VEEV",
       "WDAY",
       "WDC"
+    ],
+    "2026-08-17_pre": [
+      "DRAM",
+      "FOX",
+      "FOXA",
+      "MU",
+      "MXL",
+      "NEM",
+      "PLTR",
+      "SNDK",
+      "SOXL",
+      "STX",
+      "VEEV",
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -28379,7 +28394,8 @@
     "2026-08-13_pre": 15,
     "2026-08-13_post": 17,
     "2026-08-14_pre": 19,
-    "2026-08-14_post": 10
+    "2026-08-14_post": 10,
+    "2026-08-17_pre": 13
   },
   "pending_protection": [],
   "pending_entries": [],
