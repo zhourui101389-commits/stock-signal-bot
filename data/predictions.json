@@ -29185,6 +29185,16 @@
       "VEEV",
       "WDAY",
       "WDC"
+    ],
+    "2026-08-17_post": [
+      "CIEN",
+      "COHR",
+      "DRAM",
+      "MRVL",
+      "MU",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -29229,7 +29239,8 @@
     "2026-08-13_post": 17,
     "2026-08-14_pre": 19,
     "2026-08-14_post": 10,
-    "2026-08-17_pre": 13
+    "2026-08-17_pre": 13,
+    "2026-08-17_post": 8
   },
   "pending_protection": [],
   "pending_entries": [],
