@@ -28700,7 +28700,7 @@
   ],
   "last_full_scan_date": "2026-08-17",
   "circuit_breaker": {
-    "daily_date": "2026-08-17",
+    "daily_date": "2026-08-18",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-17",
     "weekly_start_equity": 50000.0,
@@ -29391,6 +29391,12 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-18_pre": [
+      "ASX",
+      "HPE",
+      "MXL",
+      "SOXL"
     ]
   },
   "extended_trigger_count": {
@@ -29436,7 +29442,8 @@
     "2026-08-14_pre": 19,
     "2026-08-14_post": 10,
     "2026-08-17_pre": 13,
-    "2026-08-17_post": 9
+    "2026-08-17_post": 9,
+    "2026-08-18_pre": 4
   },
   "pending_protection": [],
   "pending_entries": [],
