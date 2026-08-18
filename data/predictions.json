@@ -29395,8 +29395,11 @@
     "2026-08-18_pre": [
       "ASX",
       "HPE",
+      "INTC",
       "MXL",
-      "SOXL"
+      "PSX",
+      "SOXL",
+      "STX"
     ]
   },
   "extended_trigger_count": {
@@ -29443,7 +29446,7 @@
     "2026-08-14_post": 10,
     "2026-08-17_pre": 13,
     "2026-08-17_post": 9,
-    "2026-08-18_pre": 4
+    "2026-08-18_pre": 7
   },
   "pending_protection": [],
   "pending_entries": [],
