@@ -29775,6 +29775,21 @@
       "SNDK",
       "SOXL",
       "STX"
+    ],
+    "2026-08-18_post": [
+      "ASX",
+      "DRAM",
+      "HPE",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NEM",
+      "SNDK",
+      "SOXL",
+      "STX",
+      "TRGP",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -29821,7 +29836,8 @@
     "2026-08-14_post": 10,
     "2026-08-17_pre": 13,
     "2026-08-17_post": 9,
-    "2026-08-18_pre": 9
+    "2026-08-18_pre": 9,
+    "2026-08-18_post": 13
   },
   "pending_protection": [],
   "pending_entries": [],
