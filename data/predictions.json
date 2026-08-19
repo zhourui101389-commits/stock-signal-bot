@@ -29682,7 +29682,7 @@
   ],
   "last_full_scan_date": "2026-08-18",
   "circuit_breaker": {
-    "daily_date": "2026-08-18",
+    "daily_date": "2026-08-19",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-17",
     "weekly_start_equity": 50000.0,
@@ -30401,6 +30401,20 @@
       "TRGP",
       "VEEV",
       "WDC"
+    ],
+    "2026-08-19_pre": [
+      "ASX",
+      "DRAM",
+      "HPE",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "STX",
+      "TRGP",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -30448,7 +30462,8 @@
     "2026-08-17_pre": 13,
     "2026-08-17_post": 9,
     "2026-08-18_pre": 9,
-    "2026-08-18_post": 15
+    "2026-08-18_post": 15,
+    "2026-08-19_pre": 12
   },
   "pending_protection": [],
   "pending_entries": [],
