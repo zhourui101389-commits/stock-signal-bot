@@ -30821,6 +30821,28 @@
       "STX",
       "TRGP",
       "WDC"
+    ],
+    "2026-08-19_post": [
+      "AXON",
+      "CPRT",
+      "CSGP",
+      "CTSH",
+      "INTC",
+      "INTU",
+      "IT",
+      "MRK",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "NEM",
+      "PTC",
+      "REGN",
+      "SOXL",
+      "TSLA",
+      "TYL",
+      "VEEV",
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -30869,7 +30891,8 @@
     "2026-08-17_post": 9,
     "2026-08-18_pre": 9,
     "2026-08-18_post": 15,
-    "2026-08-19_pre": 13
+    "2026-08-19_pre": 13,
+    "2026-08-19_post": 20
   },
   "pending_protection": [],
   "pending_entries": [],
