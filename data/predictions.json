@@ -32486,11 +32486,13 @@
     "2026-08-20_post": [
       "ASX",
       "DRAM",
+      "IQV",
       "LDOS",
       "MRNA",
       "MRVL",
       "MU",
-      "NDSN"
+      "NDSN",
+      "VEEV"
     ]
   },
   "extended_trigger_count": {
@@ -32542,7 +32544,7 @@
     "2026-08-19_pre": 13,
     "2026-08-19_post": 21,
     "2026-08-20_pre": 25,
-    "2026-08-20_post": 7
+    "2026-08-20_post": 9
   },
   "pending_protection": [],
   "pending_entries": [],
