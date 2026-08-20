@@ -31862,6 +31862,13 @@
       "VEEV",
       "WDAY",
       "WDC"
+    ],
+    "2026-08-20_post": [
+      "DRAM",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "NDSN"
     ]
   },
   "extended_trigger_count": {
@@ -31912,7 +31919,8 @@
     "2026-08-18_post": 15,
     "2026-08-19_pre": 13,
     "2026-08-19_post": 21,
-    "2026-08-20_pre": 25
+    "2026-08-20_pre": 25,
+    "2026-08-20_post": 5
   },
   "pending_protection": [],
   "pending_entries": [],
