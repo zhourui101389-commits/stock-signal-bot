@@ -31864,7 +31864,9 @@
       "WDC"
     ],
     "2026-08-20_post": [
+      "ASX",
       "DRAM",
+      "LDOS",
       "MRNA",
       "MRVL",
       "MU",
@@ -31920,7 +31922,7 @@
     "2026-08-19_pre": 13,
     "2026-08-19_post": 21,
     "2026-08-20_pre": 25,
-    "2026-08-20_post": 5
+    "2026-08-20_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
