@@ -31488,6 +31488,7 @@
       "DRAM",
       "FOXA",
       "INTC",
+      "INTU",
       "IT",
       "LDOS",
       "MRK",
@@ -31553,7 +31554,7 @@
     "2026-08-18_post": 15,
     "2026-08-19_pre": 13,
     "2026-08-19_post": 21,
-    "2026-08-20_pre": 23
+    "2026-08-20_pre": 24
   },
   "pending_protection": [],
   "pending_entries": [],
