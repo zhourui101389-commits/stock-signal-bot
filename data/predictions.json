@@ -31698,7 +31698,7 @@
   ],
   "last_full_scan_date": "2026-08-20",
   "circuit_breaker": {
-    "daily_date": "2026-08-20",
+    "daily_date": "2026-08-21",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-17",
     "weekly_start_equity": 50000.0,
@@ -32493,6 +32493,16 @@
       "MU",
       "NDSN",
       "VEEV"
+    ],
+    "2026-08-21_pre": [
+      "APA",
+      "DRAM",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "NDSN",
+      "NEM",
+      "SOXL"
     ]
   },
   "extended_trigger_count": {
@@ -32544,7 +32554,8 @@
     "2026-08-19_pre": 13,
     "2026-08-19_post": 21,
     "2026-08-20_pre": 25,
-    "2026-08-20_post": 9
+    "2026-08-20_post": 9,
+    "2026-08-21_pre": 8
   },
   "pending_protection": [],
   "pending_entries": [],
