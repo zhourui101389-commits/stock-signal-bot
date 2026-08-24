@@ -34532,6 +34532,7 @@
       "MXL",
       "SNDK",
       "SOXL",
+      "TGT",
       "TSLA",
       "WDC"
     ]
@@ -34589,7 +34590,7 @@
     "2026-08-21_pre": 10,
     "2026-08-21_post": 10,
     "2026-08-24_pre": 17,
-    "2026-08-24_post": 12
+    "2026-08-24_post": 13
   },
   "pending_protection": [],
   "pending_entries": [],
