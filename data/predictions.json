@@ -32842,9 +32842,9 @@
   ],
   "last_full_scan_date": "2026-08-21",
   "circuit_breaker": {
-    "daily_date": "2026-08-21",
+    "daily_date": "2026-08-24",
     "daily_start_equity": 50000.0,
-    "weekly_monday": "2026-08-17",
+    "weekly_monday": "2026-08-24",
     "weekly_start_equity": 50000.0,
     "peak_equity": 50000.0
   },
@@ -33661,6 +33661,24 @@
       "NEM",
       "PLTR",
       "TSLA"
+    ],
+    "2026-08-24_pre": [
+      "APA",
+      "COIN",
+      "EL",
+      "FCX",
+      "INTC",
+      "MOS",
+      "MRK",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "NEM",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDAY",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -33714,7 +33732,8 @@
     "2026-08-20_pre": 25,
     "2026-08-20_post": 9,
     "2026-08-21_pre": 10,
-    "2026-08-21_post": 10
+    "2026-08-21_post": 10,
+    "2026-08-24_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
