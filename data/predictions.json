@@ -35169,6 +35169,18 @@
       "SOXL",
       "TSLA",
       "WDC"
+    ],
+    "2026-08-25_post": [
+      "COIN",
+      "DRAM",
+      "HOOD",
+      "IT",
+      "MRK",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -35225,7 +35237,8 @@
     "2026-08-21_post": 10,
     "2026-08-24_pre": 17,
     "2026-08-24_post": 14,
-    "2026-08-25_pre": 9
+    "2026-08-25_pre": 9,
+    "2026-08-25_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
