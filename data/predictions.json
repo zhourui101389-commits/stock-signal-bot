@@ -33931,7 +33931,7 @@
   ],
   "last_full_scan_date": "2026-08-24",
   "circuit_breaker": {
-    "daily_date": "2026-08-24",
+    "daily_date": "2026-08-25",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-24",
     "weekly_start_equity": 50000.0,
@@ -34785,6 +34785,16 @@
       "TGT",
       "TSLA",
       "WDC"
+    ],
+    "2026-08-25_pre": [
+      "DRAM",
+      "IT",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -34840,7 +34850,8 @@
     "2026-08-21_pre": 10,
     "2026-08-21_post": 10,
     "2026-08-24_pre": 17,
-    "2026-08-24_post": 14
+    "2026-08-24_post": 14,
+    "2026-08-25_pre": 8
   },
   "pending_protection": [],
   "pending_entries": [],
