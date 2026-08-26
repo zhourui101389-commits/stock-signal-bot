@@ -36062,6 +36062,15 @@
       "PLTR",
       "PSKY",
       "SOXL"
+    ],
+    "2026-08-26_post": [
+      "DRAM",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -36120,7 +36129,8 @@
     "2026-08-24_post": 14,
     "2026-08-25_pre": 9,
     "2026-08-25_post": 11,
-    "2026-08-26_pre": 12
+    "2026-08-26_pre": 12,
+    "2026-08-26_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
