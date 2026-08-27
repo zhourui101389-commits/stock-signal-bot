@@ -13,7 +13,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -29,7 +29,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -45,7 +45,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -61,7 +61,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -77,7 +77,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -93,7 +93,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -109,7 +109,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -125,7 +125,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -141,7 +141,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -157,7 +157,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -173,7 +173,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -189,7 +189,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -205,7 +205,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -221,7 +221,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -269,7 +269,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -285,7 +285,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     }
