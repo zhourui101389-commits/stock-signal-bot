@@ -31992,7 +31992,19 @@
           "t1_correct": null,
           "t3_close": 898.835,
           "t3_pct": -3.7114,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 938.4,
+          "t5_pct": 0.5271,
+          "t5_correct": null,
+          "holding_peak_pct": 6.0505,
+          "holding_trough_pct": -4.9139,
+          "holding_peak_day": 2,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.5271,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "SOXL",
@@ -32020,7 +32032,19 @@
           "t1_correct": null,
           "t3_close": 107.1906,
           "t3_pct": -11.6464,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 116.6,
+          "t5_pct": -3.8905,
+          "t5_correct": null,
+          "holding_peak_pct": 4.5087,
+          "holding_trough_pct": -12.6278,
+          "holding_peak_day": 2,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -3.8905,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "WDC",
@@ -32048,7 +32072,19 @@
           "t1_correct": null,
           "t3_close": 426.07,
           "t3_pct": -7.6231,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 468.88,
+          "t5_pct": 1.6586,
+          "t5_correct": null,
+          "holding_peak_pct": 3.8094,
+          "holding_trough_pct": -9.0389,
+          "holding_peak_day": 2,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 1.6586,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "LDOS",
@@ -32076,7 +32112,20 @@
           "t1_correct": true,
           "t3_close": 139.0701,
           "t3_pct": -5.0392,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 137.43,
+          "t5_pct": -6.1591,
+          "t5_correct": true,
+          "holding_peak_pct": -0.1093,
+          "holding_trough_pct": -8.2827,
+          "holding_peak_day": 1,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -6.1591,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.74,
+          "exit_tracked": true
         },
         {
           "symbol": "PLTR",
@@ -32104,7 +32153,20 @@
           "t1_correct": true,
           "t3_close": 175.218,
           "t3_pct": -0.5291,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 177.5,
+          "t5_pct": 0.7664,
+          "t5_correct": false,
+          "holding_peak_pct": 3.5708,
+          "holding_trough_pct": -4.1158,
+          "holding_peak_day": 2,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.7664,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.365,
+          "exit_tracked": true
         },
         {
           "symbol": "ABNB",
@@ -32132,7 +32194,20 @@
           "t1_correct": true,
           "t3_close": 190.875,
           "t3_pct": 2.1651,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 188.07,
+          "t5_pct": 0.6637,
+          "t5_correct": false,
+          "holding_peak_pct": 3.5449,
+          "holding_trough_pct": -1.9151,
+          "holding_peak_day": 3,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.6637,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.528,
+          "exit_tracked": true
         },
         {
           "symbol": "INTU",
@@ -32160,7 +32235,19 @@
           "t1_correct": null,
           "t3_close": 370.97,
           "t3_pct": 2.1787,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 345.88,
+          "t5_pct": -4.732,
+          "t5_correct": null,
+          "holding_peak_pct": 2.7323,
+          "holding_trough_pct": -11.1084,
+          "holding_peak_day": 3,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -4.732,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "CTSH",
@@ -32188,7 +32275,20 @@
           "t1_correct": true,
           "t3_close": 61.7,
           "t3_pct": 0.7265,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 62.09,
+          "t5_pct": 1.3632,
+          "t5_correct": false,
+          "holding_peak_pct": 3.3385,
+          "holding_trough_pct": -1.8529,
+          "holding_peak_day": 4,
+          "holding_trough_day": 2,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 1.3632,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.381,
+          "exit_tracked": true
         },
         {
           "symbol": "MRNA",
@@ -32216,7 +32316,19 @@
           "t1_correct": null,
           "t3_close": 135.5,
           "t3_pct": -17.5264,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 149.66,
+          "t5_pct": -8.9078,
+          "t5_correct": null,
+          "holding_peak_pct": -1.7803,
+          "holding_trough_pct": -21.7201,
+          "holding_peak_day": 4,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -8.9078,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "VEEV",
@@ -32244,7 +32356,20 @@
           "t1_correct": false,
           "t3_close": 248.245,
           "t3_pct": -0.6106,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 244.91,
+          "t5_pct": -1.9458,
+          "t5_correct": true,
+          "holding_peak_pct": 1.4894,
+          "holding_trough_pct": -4.34,
+          "holding_peak_day": 1,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -1.9458,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.589,
+          "exit_tracked": true
         },
         {
           "symbol": "CPRT",
@@ -32272,7 +32397,20 @@
           "t1_correct": false,
           "t3_close": 33.785,
           "t3_pct": 0.1334,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 32.67,
+          "t5_pct": -3.1713,
+          "t5_correct": true,
+          "holding_peak_pct": 2.6378,
+          "holding_trough_pct": -4.505,
+          "holding_peak_day": 1,
+          "holding_trough_day": 4,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -3.1713,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.813,
+          "exit_tracked": true
         },
         {
           "symbol": "NEM",
@@ -32300,7 +32438,19 @@
           "t1_correct": null,
           "t3_close": 131.56,
           "t3_pct": 5.2817,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 131.6,
+          "t5_pct": 5.3137,
+          "t5_correct": null,
+          "holding_peak_pct": 8.2666,
+          "holding_trough_pct": -1.0003,
+          "holding_peak_day": 4,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 5.3137,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "MRK",
@@ -32328,7 +32478,19 @@
           "t1_correct": null,
           "t3_close": 150.54,
           "t3_pct": -1.4404,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 153.1,
+          "t5_pct": 0.2357,
+          "t5_correct": null,
+          "holding_peak_pct": 2.7367,
+          "holding_trough_pct": -2.7629,
+          "holding_peak_day": 4,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.2357,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "IT",
@@ -32356,7 +32518,20 @@
           "t1_correct": null,
           "t3_close": 198.39,
           "t3_pct": 2.2049,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 192.96,
+          "t5_pct": -0.5924,
+          "t5_correct": true,
+          "holding_peak_pct": 4.5953,
+          "holding_trough_pct": -2.3183,
+          "holding_peak_day": 3,
+          "holding_trough_day": 2,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -0.5924,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.75,
+          "exit_tracked": true
         },
         {
           "symbol": "REGN",
@@ -32384,7 +32559,20 @@
           "t1_correct": true,
           "t3_close": 827.8,
           "t3_pct": -1.4307,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 814.79,
+          "t5_pct": -2.9798,
+          "t5_correct": true,
+          "holding_peak_pct": 0.8555,
+          "holding_trough_pct": -2.9905,
+          "holding_peak_day": 2,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -2.9798,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.997,
+          "exit_tracked": true
         },
         {
           "symbol": "APA",
@@ -32412,7 +32600,19 @@
           "t1_correct": null,
           "t3_close": 42.89,
           "t3_pct": -1.9545,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 41.19,
+          "t5_pct": -5.8407,
+          "t5_correct": null,
+          "holding_peak_pct": 2.9832,
+          "holding_trough_pct": -7.4637,
+          "holding_peak_day": 1,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -5.8407,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "FOXA",
@@ -32440,7 +32640,20 @@
           "t1_correct": true,
           "t3_close": 69.215,
           "t3_pct": -0.0722,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 69.6,
+          "t5_pct": 0.4836,
+          "t5_correct": false,
+          "holding_peak_pct": 1.6747,
+          "holding_trough_pct": -1.9851,
+          "holding_peak_day": 4,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.4836,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.325,
+          "exit_tracked": true
         },
         {
           "symbol": "TSLA",
@@ -32468,7 +32681,19 @@
           "t1_correct": null,
           "t3_close": 353.8,
           "t3_pct": 1.3899,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 345.82,
+          "t5_pct": -0.897,
+          "t5_correct": null,
+          "holding_peak_pct": 5.0294,
+          "holding_trough_pct": -2.8629,
+          "holding_peak_day": 2,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -0.897,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "CSGP",
@@ -32496,7 +32721,19 @@
           "t1_correct": null,
           "t3_close": 32.66,
           "t3_pct": -2.8988,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 32.14,
+          "t5_pct": -4.4448,
+          "t5_correct": null,
+          "holding_peak_pct": -0.0149,
+          "holding_trough_pct": -5.6935,
+          "holding_peak_day": 1,
+          "holding_trough_day": 1,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -4.4448,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "PTC",
@@ -32524,7 +32761,19 @@
           "t1_correct": null,
           "t3_close": 154.96,
           "t3_pct": 1.1158,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 151.61,
+          "t5_pct": -1.0701,
+          "t5_correct": null,
+          "holding_peak_pct": 1.814,
+          "holding_trough_pct": -2.8515,
+          "holding_peak_day": 2,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -1.0701,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "TYL",
@@ -32552,7 +32801,20 @@
           "t1_correct": true,
           "t3_close": 357.12,
           "t3_pct": 1.7001,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 352.65,
+          "t5_pct": 0.4272,
+          "t5_correct": false,
+          "holding_peak_pct": 2.5203,
+          "holding_trough_pct": -2.6057,
+          "holding_peak_day": 3,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 0.4272,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.408,
+          "exit_tracked": true
         },
         {
           "symbol": "WDAY",
@@ -32580,7 +32842,20 @@
           "t1_correct": true,
           "t3_close": 202.075,
           "t3_pct": 1.3924,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 190.75,
+          "t5_pct": -4.29,
+          "t5_correct": true,
+          "holding_peak_pct": 1.7361,
+          "holding_trough_pct": -5.6438,
+          "holding_peak_day": 3,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -4.29,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.817,
+          "exit_tracked": true
         },
         {
           "symbol": "AXON",
@@ -32608,7 +32883,19 @@
           "t1_correct": null,
           "t3_close": 630.625,
           "t3_pct": -1.4925,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 607.48,
+          "t5_pct": -5.1079,
+          "t5_correct": null,
+          "holding_peak_pct": 0.5967,
+          "holding_trough_pct": -7.7213,
+          "holding_peak_day": 1,
+          "holding_trough_day": 4,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -5.1079,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "MRVL",
@@ -32636,7 +32923,19 @@
           "t1_correct": null,
           "t3_close": 224.3,
           "t3_pct": -4.4617,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 245.11,
+          "t5_pct": 4.4021,
+          "t5_correct": null,
+          "holding_peak_pct": 7.5583,
+          "holding_trough_pct": -6.1144,
+          "holding_peak_day": 2,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 4.4021,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "PSKY",
@@ -32664,7 +32963,20 @@
           "t1_correct": true,
           "t3_close": 10.18,
           "t3_pct": -3.508,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 10.74,
+          "t5_pct": 1.8,
+          "t5_correct": false,
+          "holding_peak_pct": 2.0843,
+          "holding_trough_pct": -3.982,
+          "holding_peak_day": 5,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": 1.8,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.047,
+          "exit_tracked": true
         }
       ]
     },
@@ -33315,7 +33627,10 @@
           "hit_stop": false,
           "t1_close": 87.26,
           "t1_pct": -3.2058,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 88.24,
+          "t3_pct": -2.1187,
+          "t3_correct": null
         },
         {
           "symbol": "MU",
@@ -33340,7 +33655,10 @@
           "hit_stop": false,
           "t1_close": 910.43,
           "t1_pct": -5.8267,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 938.4,
+          "t3_pct": -2.9335,
+          "t3_correct": null
         },
         {
           "symbol": "MXL",
@@ -33372,7 +33690,10 @@
           "hit_stop": false,
           "t1_close": 62.78,
           "t1_pct": -5.116,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 63.0,
+          "t3_pct": -4.7835,
+          "t3_correct": null
         },
         {
           "symbol": "SOXL",
@@ -33397,7 +33718,10 @@
           "hit_stop": false,
           "t1_close": 111.16,
           "t1_pct": -8.1094,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 116.6,
+          "t3_pct": -3.6125,
+          "t3_correct": null
         },
         {
           "symbol": "APA",
@@ -33422,7 +33746,10 @@
           "hit_stop": false,
           "t1_close": 42.96,
           "t1_pct": -3.0686,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 41.19,
+          "t3_pct": -7.0623,
+          "t3_correct": true
         },
         {
           "symbol": "IQV",
@@ -33447,7 +33774,10 @@
           "hit_stop": false,
           "t1_close": 260.24,
           "t1_pct": 0.6381,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 261.51,
+          "t3_pct": 1.1292,
+          "t3_correct": null
         },
         {
           "symbol": "CPRT",
@@ -33472,7 +33802,10 @@
           "hit_stop": false,
           "t1_close": 33.26,
           "t1_pct": -3.4823,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 32.67,
+          "t3_pct": -5.1944,
+          "t3_correct": true
         },
         {
           "symbol": "CTSH",
@@ -33497,7 +33830,10 @@
           "hit_stop": false,
           "t1_close": 62.2,
           "t1_pct": 1.1218,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 62.09,
+          "t3_pct": 0.9429,
+          "t3_correct": false
         },
         {
           "symbol": "IT",
@@ -33522,7 +33858,10 @@
           "hit_stop": false,
           "t1_close": 202.78,
           "t1_pct": 4.5743,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 192.96,
+          "t3_pct": -0.4899,
+          "t3_correct": true
         },
         {
           "symbol": "NEM",
@@ -33547,7 +33886,10 @@
           "hit_stop": false,
           "t1_close": 131.84,
           "t1_pct": -0.0531,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 131.6,
+          "t3_pct": -0.235,
+          "t3_correct": null
         },
         {
           "symbol": "MRK",
@@ -33572,7 +33914,10 @@
           "hit_stop": false,
           "t1_close": 150.66,
           "t1_pct": -1.3133,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 153.1,
+          "t3_pct": 0.2849,
+          "t3_correct": null
         },
         {
           "symbol": "FCX",
@@ -33597,7 +33942,10 @@
           "hit_stop": false,
           "t1_close": 77.8,
           "t1_pct": 1.3681,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 79.0,
+          "t3_pct": 2.9316,
+          "t3_correct": null
         },
         {
           "symbol": "COIN",
@@ -33622,7 +33970,10 @@
           "hit_stop": false,
           "t1_close": 179.48,
           "t1_pct": -2.7815,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 181.78,
+          "t3_pct": -1.5356,
+          "t3_correct": true
         },
         {
           "symbol": "PLTR",
@@ -33647,7 +33998,10 @@
           "hit_stop": false,
           "t1_close": 175.89,
           "t1_pct": -2.0848,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 177.5,
+          "t3_pct": -1.1885,
+          "t3_correct": true
         },
         {
           "symbol": "EL",
@@ -33672,7 +34026,10 @@
           "hit_stop": false,
           "t1_close": 104.13,
           "t1_pct": 3.6377,
-          "t1_correct": false
+          "t1_correct": false,
+          "t3_close": 105.06,
+          "t3_pct": 4.5633,
+          "t3_correct": false
         },
         {
           "symbol": "MRNA",
@@ -33697,7 +34054,10 @@
           "hit_stop": false,
           "t1_close": 138.89,
           "t1_pct": -4.8047,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 149.66,
+          "t3_pct": 2.5771,
+          "t3_correct": null
         },
         {
           "symbol": "REGN",
@@ -33722,7 +34082,10 @@
           "hit_stop": false,
           "t1_close": 828.5,
           "t1_pct": -1.3221,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 814.79,
+          "t3_pct": -2.955,
+          "t3_correct": true
         },
         {
           "symbol": "ASX",
@@ -33747,7 +34110,10 @@
           "hit_stop": false,
           "t1_close": 36.24,
           "t1_pct": -0.1653,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 37.26,
+          "t3_pct": 2.6446,
+          "t3_correct": null
         },
         {
           "symbol": "NOW",
@@ -33772,7 +34138,10 @@
           "hit_stop": false,
           "t1_close": 128.05,
           "t1_pct": -0.9208,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 125.8,
+          "t3_pct": -2.6617,
+          "t3_correct": null
         },
         {
           "symbol": "WDAY",
@@ -33797,7 +34166,10 @@
           "hit_stop": false,
           "t1_close": 199.15,
           "t1_pct": -0.1729,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 190.75,
+          "t3_pct": -4.3836,
+          "t3_correct": true
         },
         {
           "symbol": "CRM",
@@ -33822,7 +34194,10 @@
           "hit_stop": false,
           "t1_close": 209.06,
           "t1_pct": 0.3986,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 205.62,
+          "t3_pct": -1.2534,
+          "t3_correct": null
         },
         {
           "symbol": "TSLA",
@@ -33847,7 +34222,10 @@
           "hit_stop": false,
           "t1_close": 348.95,
           "t1_pct": -4.182,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 345.82,
+          "t3_pct": -5.0415,
+          "t3_correct": null
         },
         {
           "symbol": "CRL",
@@ -33872,7 +34250,10 @@
           "hit_stop": false,
           "t1_close": 298.58,
           "t1_pct": 0.7763,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 295.1,
+          "t3_pct": -0.3983,
+          "t3_correct": null
         },
         {
           "symbol": "MRVL",
@@ -33897,7 +34278,10 @@
           "hit_stop": false,
           "t1_close": 229.29,
           "t1_pct": -2.3217,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 245.11,
+          "t3_pct": 4.4177,
+          "t3_correct": null
         },
         {
           "symbol": "MOS",
@@ -33922,7 +34306,10 @@
           "hit_stop": false,
           "t1_close": 24.0,
           "t1_pct": -2.1207,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 24.16,
+          "t3_pct": -1.4682,
+          "t3_correct": null
         }
       ]
     },
@@ -34679,7 +35066,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 88.24,
+          "t1_pct": 0.7536,
+          "t1_correct": true
         },
         {
           "symbol": "MRVL",
@@ -34701,7 +35091,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 245.11,
+          "t1_pct": -0.303,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -34723,7 +35116,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 938.4,
+          "t1_pct": 1.1436,
+          "t1_correct": null
         },
         {
           "symbol": "MXL",
@@ -34745,7 +35141,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 63.0,
+          "t1_pct": -4.6971,
+          "t1_correct": null
         },
         {
           "symbol": "NVDA",
@@ -34767,7 +35166,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 209.66,
+          "t1_pct": -1.4014,
+          "t1_correct": false
         },
         {
           "symbol": "SOXL",
@@ -34789,7 +35191,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 116.6,
+          "t1_pct": 1.1538,
+          "t1_correct": true
         },
         {
           "symbol": "TSLA",
@@ -34811,7 +35216,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 345.82,
+          "t1_pct": -1.8003,
+          "t1_correct": null
         },
         {
           "symbol": "WDC",
@@ -34833,7 +35241,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 468.88,
+          "t1_pct": 5.6226,
+          "t1_correct": true
         },
         {
           "symbol": "NEM",
@@ -34855,7 +35266,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 131.6,
+          "t1_pct": -2.4101,
+          "t1_correct": null
         },
         {
           "symbol": "FCX",
@@ -34877,7 +35291,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 79.0,
+          "t1_pct": -0.8098,
+          "t1_correct": null
         },
         {
           "symbol": "MRK",
@@ -34899,7 +35316,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 153.1,
+          "t1_pct": -1.9972,
+          "t1_correct": true
         },
         {
           "symbol": "CMG",
@@ -34921,7 +35341,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 37.34,
+          "t1_pct": -0.7575,
+          "t1_correct": null
         },
         {
           "symbol": "CRL",
@@ -34943,7 +35366,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 295.1,
+          "t1_pct": -1.139,
+          "t1_correct": true
         },
         {
           "symbol": "EL",
@@ -34965,7 +35391,10 @@
           "correct": false,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 105.06,
+          "t1_pct": 0.7963,
+          "t1_correct": false
         },
         {
           "symbol": "IT",
@@ -34987,7 +35416,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 192.96,
+          "t1_pct": -1.6965,
+          "t1_correct": true
         },
         {
           "symbol": "CTSH",
@@ -35009,7 +35441,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 62.09,
+          "t1_pct": -1.6863,
+          "t1_correct": null
         },
         {
           "symbol": "HOOD",
@@ -35031,7 +35466,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 108.54,
+          "t1_pct": -2.7245,
+          "t1_correct": null
         },
         {
           "symbol": "BR",
@@ -35053,7 +35491,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 181.6,
+          "t1_pct": -1.8166,
+          "t1_correct": true
         },
         {
           "symbol": "MRNA",
@@ -35075,7 +35516,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 149.66,
+          "t1_pct": -5.6903,
+          "t1_correct": null
         },
         {
           "symbol": "PLTR",
@@ -35097,7 +35541,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 177.5,
+          "t1_pct": 2.3232,
+          "t1_correct": false
         },
         {
           "symbol": "PSKY",
@@ -35119,7 +35566,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 10.74,
+          "t1_pct": 0.1399,
+          "t1_correct": null
         },
         {
           "symbol": "COIN",
@@ -35141,7 +35591,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 181.78,
+          "t1_pct": -2.5752,
+          "t1_correct": true
         },
         {
           "symbol": "JKHY",
@@ -35163,7 +35616,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 172.39,
+          "t1_pct": -0.7921,
+          "t1_correct": true
         }
       ]
     }
