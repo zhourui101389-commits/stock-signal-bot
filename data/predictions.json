@@ -35,7 +35,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -51,7 +51,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -67,7 +67,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -127,7 +127,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -143,7 +143,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -159,7 +159,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -175,7 +175,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -235,7 +235,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -273,7 +273,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -289,16 +289,9 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "多头趋势中动能衰竭且资金流出，宜观望"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "MXL",
@@ -312,7 +305,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -328,7 +321,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -344,7 +337,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -360,7 +353,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -376,7 +369,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -392,7 +385,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     }
