@@ -36748,7 +36748,7 @@
   ],
   "last_full_scan_date": "2026-08-27",
   "circuit_breaker": {
-    "daily_date": "2026-08-27",
+    "daily_date": "2026-08-28",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-24",
     "weekly_start_equity": 50000.0,
@@ -37649,6 +37649,15 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-08-28_post": [
+      "ADSK",
+      "MRNA",
+      "MRVL",
+      "NOW",
+      "NVDA",
+      "SNPS",
+      "SOXL"
     ]
   },
   "extended_trigger_count": {
@@ -37708,7 +37717,8 @@
     "2026-08-25_pre": 9,
     "2026-08-25_post": 11,
     "2026-08-26_pre": 12,
-    "2026-08-26_post": 7
+    "2026-08-26_post": 7,
+    "2026-08-28_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
