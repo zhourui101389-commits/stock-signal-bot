@@ -39443,6 +39443,16 @@
       "NVDA",
       "SNPS",
       "SOXL"
+    ],
+    "2026-08-31_post": [
+      "COIN",
+      "CRWD",
+      "FTNT",
+      "MXL",
+      "SLB",
+      "SNDK",
+      "TSLA",
+      "VEEV"
     ]
   },
   "extended_trigger_count": {
@@ -39503,7 +39513,8 @@
     "2026-08-25_post": 11,
     "2026-08-26_pre": 12,
     "2026-08-26_post": 7,
-    "2026-08-28_post": 7
+    "2026-08-28_post": 7,
+    "2026-08-31_post": 8
   },
   "pending_protection": [],
   "pending_entries": [],
