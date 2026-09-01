@@ -39823,6 +39823,19 @@
       "TSLA",
       "TYL",
       "WDC"
+    ],
+    "2026-09-01_post": [
+      "CF",
+      "DE",
+      "DRAM",
+      "MRNA",
+      "MU",
+      "MXL",
+      "NOW",
+      "SLB",
+      "SOXL",
+      "TSLA",
+      "VEEV"
     ]
   },
   "extended_trigger_count": {
@@ -39885,7 +39898,8 @@
     "2026-08-26_post": 7,
     "2026-08-28_post": 7,
     "2026-08-31_post": 8,
-    "2026-09-01_pre": 9
+    "2026-09-01_pre": 9,
+    "2026-09-01_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
