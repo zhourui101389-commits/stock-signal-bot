@@ -38567,7 +38567,7 @@
   ],
   "last_full_scan_date": "2026-08-31",
   "circuit_breaker": {
-    "daily_date": "2026-08-31",
+    "daily_date": "2026-09-01",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-31",
     "weekly_start_equity": 50000.0,
@@ -39487,6 +39487,17 @@
       "SNDK",
       "TSLA",
       "VEEV"
+    ],
+    "2026-09-01_pre": [
+      "CRWD",
+      "MRVL",
+      "MXL",
+      "SLB",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "TYL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -39548,7 +39559,8 @@
     "2026-08-26_pre": 12,
     "2026-08-26_post": 7,
     "2026-08-28_post": 7,
-    "2026-08-31_post": 8
+    "2026-08-31_post": 8,
+    "2026-09-01_pre": 9
   },
   "pending_protection": [],
   "pending_entries": [],
