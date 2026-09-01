@@ -24124,7 +24124,8 @@
           "effective_exit_pct": 8.8957,
           "effective_exit_reason": "hit_stop",
           "exit_quality": 0.28,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 7.1264
         },
         {
           "symbol": "WDC",
@@ -24335,7 +24336,8 @@
           "effective_exit_pct": 5.6544,
           "effective_exit_reason": "held_to_t10",
           "exit_quality": 0.177,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 9.3829
         },
         {
           "symbol": "FSLR",
@@ -24545,7 +24547,8 @@
           "effective_exit_pct": -13.537,
           "effective_exit_reason": "hit_stop",
           "exit_quality": 0.428,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -25.5705
         },
         {
           "symbol": "IT",
@@ -24589,7 +24592,8 @@
           "effective_exit_pct": 1.4211,
           "effective_exit_reason": "held_to_t10",
           "exit_quality": 0.037,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 2.7103
         },
         {
           "symbol": "DASH",
@@ -24723,7 +24727,8 @@
           "effective_exit_pct": -0.815,
           "effective_exit_reason": "held_to_t10",
           "exit_quality": 0.223,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 2.6352
         },
         {
           "symbol": "INTC",
@@ -24932,7 +24937,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -4.8983,
           "effective_exit_reason": "held_to_t10",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -7.7284
         },
         {
           "symbol": "NEM",
@@ -25017,7 +25023,8 @@
           "effective_exit_pct": -10.3741,
           "effective_exit_reason": "hit_stop",
           "exit_quality": 1.178,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 12.2215
         },
         {
           "symbol": "CTSH",
@@ -29438,7 +29445,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -13.9157,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -14.4892
         },
         {
           "symbol": "MRVL",
@@ -29478,7 +29486,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 7.7809,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -1.504
         },
         {
           "symbol": "MU",
@@ -29518,7 +29527,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -0.451,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -3.9437
         },
         {
           "symbol": "NVDA",
@@ -29558,7 +29568,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -4.6325,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -3.3755
         },
         {
           "symbol": "SNDK",
@@ -29599,7 +29610,8 @@
           "effective_exit_pct": -2.1014,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.189,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -8.9159
         },
         {
           "symbol": "SOXL",
@@ -29639,7 +29651,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -16.4762,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -22.8894
         },
         {
           "symbol": "WDC",
@@ -29679,7 +29692,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -8.2836,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -8.2816
         },
         {
           "symbol": "APO",
@@ -29720,7 +29734,8 @@
           "effective_exit_pct": -5.987,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.713,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -4.322
         },
         {
           "symbol": "NEM",
@@ -29761,7 +29776,8 @@
           "effective_exit_pct": 11.9353,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.045,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 8.8728
         },
         {
           "symbol": "SMCI",
@@ -29802,7 +29818,8 @@
           "effective_exit_pct": -6.6316,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.578,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -7.0327
         },
         {
           "symbol": "MPC",
@@ -29843,7 +29860,8 @@
           "effective_exit_pct": 1.4883,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.517,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 3.7701
         },
         {
           "symbol": "STX",
@@ -29883,7 +29901,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -12.8384,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -14.9139
         },
         {
           "symbol": "LDOS",
@@ -29924,7 +29943,8 @@
           "effective_exit_pct": -1.2433,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.813,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -1.7532
         },
         {
           "symbol": "ZBRA",
@@ -29965,7 +29985,8 @@
           "effective_exit_pct": -2.3763,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.346,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -5.5712
         },
         {
           "symbol": "KKR",
@@ -30006,7 +30027,8 @@
           "effective_exit_pct": -5.6532,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.725,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -5.4792
         },
         {
           "symbol": "FOXA",
@@ -30047,7 +30069,8 @@
           "effective_exit_pct": -0.6379,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.724,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -0.8118
         },
         {
           "symbol": "HPE",
@@ -30087,7 +30110,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -9.1682,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -11.1054
         },
         {
           "symbol": "VLO",
@@ -30128,7 +30152,8 @@
           "effective_exit_pct": 2.0327,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.309,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 3.0564
         },
         {
           "symbol": "PSX",
@@ -30169,7 +30194,8 @@
           "effective_exit_pct": 4.1243,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.268,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 4.6131
         },
         {
           "symbol": "DRAM",
@@ -30210,7 +30236,8 @@
           "effective_exit_pct": 0.8656,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.435,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -2.3695
         },
         {
           "symbol": "MXL",
@@ -30250,7 +30277,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -19.5045,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -25.4018
         },
         {
           "symbol": "WDAY",
@@ -30290,7 +30318,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 2.3383,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 4.7483
         },
         {
           "symbol": "NTAP",
@@ -30330,7 +30359,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -7.0666,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -9.6041
         },
         {
           "symbol": "PLTR",
@@ -30371,7 +30401,8 @@
           "effective_exit_pct": 1.8279,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.197,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 5.4213
         },
         {
           "symbol": "TSLA",
@@ -30411,7 +30442,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 6.8873,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 2.731
         },
         {
           "symbol": "VEEV",
@@ -30452,7 +30484,8 @@
           "effective_exit_pct": 0.8164,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.368,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 12.5248
         },
         {
           "symbol": "FOX",
@@ -30493,7 +30526,8 @@
           "effective_exit_pct": -0.6833,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.686,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -0.244
         }
       ]
     },
