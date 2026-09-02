@@ -40756,6 +40756,14 @@
       "SLB",
       "SOXL",
       "VEEV"
+    ],
+    "2026-09-02_post": [
+      "CF",
+      "DE",
+      "HAL",
+      "MXL",
+      "NVDA",
+      "PSKY"
     ]
   },
   "extended_trigger_count": {
@@ -40820,7 +40828,8 @@
     "2026-08-31_post": 8,
     "2026-09-01_pre": 9,
     "2026-09-01_post": 11,
-    "2026-09-02_pre": 10
+    "2026-09-02_pre": 10,
+    "2026-09-02_post": 6
   },
   "pending_protection": [],
   "pending_entries": [],
