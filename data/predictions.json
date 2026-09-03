@@ -41718,6 +41718,14 @@
       "MXL",
       "NVDA",
       "PSKY"
+    ],
+    "2026-09-03_post": [
+      "CDW",
+      "DELL",
+      "HOOD",
+      "NOW",
+      "PFG",
+      "TSLA"
     ]
   },
   "extended_trigger_count": {
@@ -41784,7 +41792,8 @@
     "2026-09-01_post": 11,
     "2026-09-02_pre": 10,
     "2026-09-02_post": 6,
-    "2026-09-03_pre": 8
+    "2026-09-03_pre": 8,
+    "2026-09-03_post": 6
   },
   "pending_protection": [],
   "pending_entries": [],
