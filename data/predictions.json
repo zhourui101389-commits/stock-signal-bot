@@ -40323,7 +40323,7 @@
   ],
   "last_full_scan_date": "2026-09-02",
   "circuit_breaker": {
-    "daily_date": "2026-09-02",
+    "daily_date": "2026-09-03",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-31",
     "weekly_start_equity": 50000.0,
@@ -41287,6 +41287,16 @@
       "MXL",
       "NVDA",
       "PSKY"
+    ],
+    "2026-09-03_pre": [
+      "APH",
+      "BG",
+      "DE",
+      "HAL",
+      "MRNA",
+      "MXL",
+      "NVDA",
+      "PSKY"
     ]
   },
   "extended_trigger_count": {
@@ -41352,7 +41362,8 @@
     "2026-09-01_pre": 9,
     "2026-09-01_post": 11,
     "2026-09-02_pre": 10,
-    "2026-09-02_post": 6
+    "2026-09-02_post": 6,
+    "2026-09-03_pre": 8
   },
   "pending_protection": [],
   "pending_entries": [],
