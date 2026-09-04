@@ -41264,7 +41264,7 @@
   ],
   "last_full_scan_date": "2026-09-03",
   "circuit_breaker": {
-    "daily_date": "2026-09-03",
+    "daily_date": "2026-09-04",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-08-31",
     "weekly_start_equity": 50000.0,
@@ -42246,6 +42246,16 @@
       "NOW",
       "PFG",
       "TSLA"
+    ],
+    "2026-09-04_pre": [
+      "CDW",
+      "DELL",
+      "HOOD",
+      "MRNA",
+      "NOW",
+      "NVDA",
+      "PFG",
+      "SOXL"
     ]
   },
   "extended_trigger_count": {
@@ -42313,7 +42323,8 @@
     "2026-09-02_pre": 10,
     "2026-09-02_post": 6,
     "2026-09-03_pre": 8,
-    "2026-09-03_post": 6
+    "2026-09-03_post": 6,
+    "2026-09-04_pre": 8
   },
   "pending_protection": [],
   "pending_entries": [],
