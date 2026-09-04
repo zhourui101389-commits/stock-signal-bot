@@ -42533,6 +42533,23 @@
       "NVDA",
       "PFG",
       "SOXL"
+    ],
+    "2026-09-04_post": [
+      "BBY",
+      "CEG",
+      "CF",
+      "DRAM",
+      "FICO",
+      "INTC",
+      "LULU",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -42601,7 +42618,8 @@
     "2026-09-02_post": 6,
     "2026-09-03_pre": 8,
     "2026-09-03_post": 6,
-    "2026-09-04_pre": 8
+    "2026-09-04_pre": 8,
+    "2026-09-04_post": 15
   },
   "pending_protection": [],
   "pending_entries": [],
