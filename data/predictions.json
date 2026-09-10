@@ -45234,6 +45234,19 @@
       "META",
       "MRNA",
       "SOXL"
+    ],
+    "2026-09-10_post": [
+      "ASX",
+      "COO",
+      "DRAM",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -45308,7 +45321,8 @@
     "2026-09-08_post": 13,
     "2026-09-09_pre": 8,
     "2026-09-09_post": 6,
-    "2026-09-10_pre": 3
+    "2026-09-10_pre": 3,
+    "2026-09-10_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
