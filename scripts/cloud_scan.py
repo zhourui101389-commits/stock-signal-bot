@@ -2104,6 +2104,11 @@ async def _sync_portfolio(
         logger.error("同步 Alpaca 持仓失败: %s", e)
         return
 
+    # 账户真实权益记到日志里——之前只写进Telegram消息正文，日志里查不到，
+    # 2026-09-10排查AI额度用尽期间账户真实表现时才发现这个缺口
+    logger.info("账户真实权益: $%.2f  现金: $%.2f  今日盈亏: $%+.2f(%+.2f%%)",
+                account["equity"], account["cash"], account["today_pl"], account["today_pl_pct"])
+
     # 诊断：每个持仓的止损/止盈保护单是不是还真的挂着——2026-07-18发现
     # MRVL现价已经跌破入场时设的止损价还继续持有，需要先查清楚保护单
     # 状态再判断是不是止损机制本身有问题
