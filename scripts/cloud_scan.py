@@ -882,6 +882,14 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
     today_predictions = []
     watchlist_digest_entries: list[dict] = []
     budget_notice_sent = False  # 本次运行只提示一次AI预算用尽，不逐个标的刷屏
+    ai_outage_notice_sent = False
+    consecutive_ai_failures = 0
+    # AI连续失败(比如Anthropic账户余额用尽、key失效)之前只会逐个标的推
+    # "AI研判失败"——这种消息混在正常推送里不扎眼，2026-08-10额度用尽后
+    # 系统这样默默"失败重试3次→转纯技术面"跑了整整一个月都没人发现。
+    # 连续失败到一定次数，明确推一条"AI可能整体故障"的报警，跟单个标的
+    # 偶尔研判失败区分开
+    _AI_OUTAGE_THRESHOLD = 3
 
     for sym in symbols:
         try:
@@ -912,8 +920,10 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
                         logger.info("AI综合研判 %s: %s 置信度%s",
                                     sym, ai_result.get("final_direction", "?"),
                                     ai_result.get("conviction", "?"))
+                        consecutive_ai_failures = 0
                     else:
                         ai_failed = True
+                        consecutive_ai_failures += 1
                         logger.warning("AI 分析失败 %s：未生成结果，本条不作为执行建议", sym)
                 except AIBudgetExceeded:
                     # 预算用尽不算AI失败，按纯技术信号处理（等同于没配置AI
@@ -931,7 +941,22 @@ async def _run_scan(config, bot, chat_ids, finnhub_client, anthropic_key, gemini
                                 logger.warning("AI预算用尽提示发送失败: %s", e)
                 except Exception as e:
                     ai_failed = True
+                    consecutive_ai_failures += 1
                     logger.error("AI 分析失败 %s: %s", sym, e)
+
+                if consecutive_ai_failures >= _AI_OUTAGE_THRESHOLD and not ai_outage_notice_sent:
+                    ai_outage_notice_sent = True
+                    outage_msg = (
+                        f"🚨 <b>AI连续{consecutive_ai_failures}次研判失败</b>\n"
+                        f"很可能是Anthropic账户余额用尽或API key失效（不是单只股票的偶发问题），"
+                        f"请去 https://console.anthropic.com 检查账户余额/账单。"
+                        f"在修好之前，所有信号会自动降级为纯技术面判断，不会自动下单。"
+                    )
+                    for chat_id in chat_ids:
+                        try:
+                            await bot.send_message(chat_id=chat_id, text=outage_msg, parse_mode=ParseMode.HTML)
+                        except Exception as e:
+                            logger.warning("AI故障报警发送失败: %s", e)
 
             # 影子模式：免费模型独立跑一遍同样的输入，只记录不下单，
             # 不看Claude是否成功——两边判断需要各自独立，不能互相依赖
