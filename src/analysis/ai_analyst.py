@@ -581,6 +581,38 @@ def build_prompt(
     return prompt
 
 
+# 2026-09-10用真实成交记录查出来的实证发现：46笔已走完评估周期的真实买入
+# 决策里，凡是verdict原文里出现"追涨/追多/死叉为洗盘/死叉仅是整理/不改
+# 主升浪/非反转/非狂热/假摔"这类词——也就是AI自己在理由里已经承认"这是
+# 追高"或者"技术面在警告但我判断是噪音"、却还是给出买入——这10笔全部
+# 亏钱（0/10，平均-10.89%），且赢的12笔里没有一笔带这类措辞。这不是
+# "AI判断不准"的泛泛问题，是一个具体、可检测的语言模式：AI自己的理由里
+# 已经暴露了心虚，但故事(催化剂/财报/行业热度)盖过了这份心虚，还是买了。
+# 用词典硬拦，不依赖AI自己遵守prompt里的软指令（prompt里的规则AI不一定
+# 会真的执行，历史上这10笔理论上都不应该在_SYSTEM_PROMPT现有规则下被
+# 判定为"确定性买入"，但还是发生了）。
+_CHASE_RED_FLAGS = ["追涨", "追多", "死叉为", "死叉仅", "非反转", "非狂热", "不改主升浪", "假摔"]
+
+
+def _apply_chase_guard(analysis: dict) -> dict:
+    """action是买入动作、但verdict原文自己带有追涨心虚措辞时，强制降级为
+    持有观望——用真实历史数据验证过这个模式(见上面注释)，不是猜的规则。"""
+    action = analysis.get("action", "")
+    verdict = analysis.get("verdict", "") or ""
+    if action not in ("积极买入", "谨慎买入"):
+        return analysis
+    hit = [kw for kw in _CHASE_RED_FLAGS if kw in verdict]
+    if not hit:
+        return analysis
+    logger.warning("追涨心虚措辞拦截 %s: verdict含%s，%s→持有观望",
+                   analysis.get("symbol"), hit, action)
+    analysis["action"] = "持有观望"
+    analysis["chase_guard_triggered"] = True
+    analysis["chase_guard_original_action"] = action
+    analysis["verdict"] = f"[追涨模式拦截，原判断{action}] {verdict}"
+    return analysis
+
+
 def run_ai_analysis(
     result,
     finnhub,
@@ -663,6 +695,7 @@ def run_ai_analysis(
                         symbol, analysis.get("final_direction"),
                         "确认" if confirmed else "推翻",
                         analysis.get("conviction"))
+            analysis = _apply_chase_guard(analysis)
             return analysis
 
         except json.JSONDecodeError as e:
