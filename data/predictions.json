@@ -45938,6 +45938,16 @@
       "MU",
       "SOXL",
       "SWKS"
+    ],
+    "2026-09-11_post": [
+      "HPQ",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "QCOM",
+      "SNDK",
+      "SOXL",
+      "SWKS"
     ]
   },
   "extended_trigger_count": {
@@ -46014,7 +46024,8 @@
     "2026-09-09_post": 6,
     "2026-09-10_pre": 3,
     "2026-09-10_post": 11,
-    "2026-09-11_pre": 6
+    "2026-09-11_pre": 6,
+    "2026-09-11_post": 8
   },
   "pending_protection": [],
   "pending_entries": [],
