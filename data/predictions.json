@@ -47090,6 +47090,22 @@
       "SNDK",
       "SOXL",
       "SWKS"
+    ],
+    "2026-09-14_post": [
+      "ASX",
+      "CRM",
+      "CRWD",
+      "DRAM",
+      "FTNT",
+      "HPQ",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -47167,7 +47183,8 @@
     "2026-09-10_pre": 3,
     "2026-09-10_post": 11,
     "2026-09-11_pre": 6,
-    "2026-09-11_post": 8
+    "2026-09-11_post": 8,
+    "2026-09-14_post": 14
   },
   "pending_protection": [],
   "pending_entries": [],
