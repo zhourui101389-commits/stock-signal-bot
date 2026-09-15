@@ -46090,7 +46090,7 @@
   ],
   "last_full_scan_date": "2026-09-14",
   "circuit_breaker": {
-    "daily_date": "2026-09-14",
+    "daily_date": "2026-09-15",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-09-14",
     "weekly_start_equity": 50000.0,
@@ -47202,6 +47202,22 @@
       "SOXL",
       "SWKS",
       "WDC"
+    ],
+    "2026-09-15_pre": [
+      "ASX",
+      "CRM",
+      "CRWD",
+      "DRAM",
+      "FTNT",
+      "HPQ",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "SWKS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -47280,7 +47296,8 @@
     "2026-09-10_post": 11,
     "2026-09-11_pre": 6,
     "2026-09-11_post": 8,
-    "2026-09-14_post": 14
+    "2026-09-14_post": 14,
+    "2026-09-15_pre": 14
   },
   "pending_protection": [],
   "pending_entries": [],
