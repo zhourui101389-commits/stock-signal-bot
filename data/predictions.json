@@ -48323,6 +48323,18 @@
       "SWKS",
       "SYY",
       "WST"
+    ],
+    "2026-09-16_post": [
+      "DELL",
+      "FANG",
+      "HBAN",
+      "INTC",
+      "JBHT",
+      "MRVL",
+      "MXL",
+      "RVTY",
+      "SOXL",
+      "SWKS"
     ]
   },
   "extended_trigger_count": {
@@ -48404,7 +48416,8 @@
     "2026-09-14_post": 14,
     "2026-09-15_pre": 14,
     "2026-09-15_post": 8,
-    "2026-09-16_pre": 12
+    "2026-09-16_pre": 12,
+    "2026-09-16_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
