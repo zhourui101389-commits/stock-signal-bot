@@ -49026,6 +49026,20 @@
       "SOXL",
       "SWKS",
       "WDC"
+    ],
+    "2026-09-17_post": [
+      "ARE",
+      "ASX",
+      "DELL",
+      "DRAM",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SMCI",
+      "SNDK",
+      "SOXL",
+      "SWKS"
     ]
   },
   "extended_trigger_count": {
@@ -49109,7 +49123,8 @@
     "2026-09-15_post": 8,
     "2026-09-16_pre": 12,
     "2026-09-16_post": 10,
-    "2026-09-17_pre": 15
+    "2026-09-17_pre": 15,
+    "2026-09-17_post": 12
   },
   "pending_protection": [],
   "pending_entries": [],
