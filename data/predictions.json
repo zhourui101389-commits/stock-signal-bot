@@ -47568,7 +47568,7 @@
   ],
   "last_full_scan_date": "2026-09-16",
   "circuit_breaker": {
-    "daily_date": "2026-09-16",
+    "daily_date": "2026-09-17",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-09-14",
     "weekly_start_equity": 50000.0,
@@ -48732,6 +48732,23 @@
       "RVTY",
       "SOXL",
       "SWKS"
+    ],
+    "2026-09-17_pre": [
+      "ASX",
+      "DELL",
+      "DRAM",
+      "FANG",
+      "HBAN",
+      "INTC",
+      "JBHT",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "NVDA",
+      "RVTY",
+      "SOXL",
+      "SWKS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -48814,7 +48831,8 @@
     "2026-09-15_pre": 14,
     "2026-09-15_post": 8,
     "2026-09-16_pre": 12,
-    "2026-09-16_post": 10
+    "2026-09-16_post": 10,
+    "2026-09-17_pre": 15
   },
   "pending_protection": [],
   "pending_entries": [],
