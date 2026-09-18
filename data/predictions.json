@@ -49737,6 +49737,17 @@
       "SNDK",
       "SOXL",
       "SWKS"
+    ],
+    "2026-09-18_post": [
+      "ASX",
+      "COIN",
+      "CRWD",
+      "DRAM",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -49822,7 +49833,8 @@
     "2026-09-16_post": 10,
     "2026-09-17_pre": 15,
     "2026-09-17_post": 12,
-    "2026-09-18_pre": 12
+    "2026-09-18_pre": 12,
+    "2026-09-18_post": 9
   },
   "pending_protection": [],
   "pending_entries": [],
