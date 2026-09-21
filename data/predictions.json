@@ -50844,6 +50844,26 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-09-21_post": [
+      "AMD",
+      "ASX",
+      "CRWD",
+      "DRAM",
+      "FFIV",
+      "INTC",
+      "LITE",
+      "META",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "QCOM",
+      "SMCI",
+      "SOXL",
+      "TSLA",
+      "VLO",
+      "WBD",
+      "ZTO"
     ]
   },
   "extended_trigger_count": {
@@ -50930,7 +50950,8 @@
     "2026-09-17_pre": 15,
     "2026-09-17_post": 12,
     "2026-09-18_pre": 12,
-    "2026-09-18_post": 9
+    "2026-09-18_post": 9,
+    "2026-09-21_post": 18
   },
   "pending_protection": [],
   "pending_entries": [],
