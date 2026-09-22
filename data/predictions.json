@@ -49624,7 +49624,7 @@
   ],
   "last_full_scan_date": "2026-09-21",
   "circuit_breaker": {
-    "daily_date": "2026-09-21",
+    "daily_date": "2026-09-22",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-09-21",
     "weekly_start_equity": 50000.0,
@@ -50864,6 +50864,24 @@
       "VLO",
       "WBD",
       "ZTO"
+    ],
+    "2026-09-22_pre": [
+      "AMD",
+      "ASX",
+      "CRWD",
+      "FFIV",
+      "INTC",
+      "META",
+      "MRNA",
+      "MRVL",
+      "MXL",
+      "QCOM",
+      "SMCI",
+      "SOXL",
+      "TSLA",
+      "VLO",
+      "WBD",
+      "ZTO"
     ]
   },
   "extended_trigger_count": {
@@ -50951,7 +50969,8 @@
     "2026-09-17_post": 12,
     "2026-09-18_pre": 12,
     "2026-09-18_post": 9,
-    "2026-09-21_post": 18
+    "2026-09-21_post": 18,
+    "2026-09-22_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
