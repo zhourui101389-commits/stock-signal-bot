@@ -51255,6 +51255,20 @@
       "VLO",
       "WBD",
       "ZTO"
+    ],
+    "2026-09-22_post": [
+      "A",
+      "ASX",
+      "DRAM",
+      "MPWR",
+      "MRNA",
+      "MTD",
+      "MU",
+      "SNDK",
+      "SOXL",
+      "STX",
+      "TER",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -51343,7 +51357,8 @@
     "2026-09-18_pre": 12,
     "2026-09-18_post": 9,
     "2026-09-21_post": 18,
-    "2026-09-22_pre": 16
+    "2026-09-22_pre": 16,
+    "2026-09-22_post": 12
   },
   "pending_protection": [],
   "pending_entries": [],
