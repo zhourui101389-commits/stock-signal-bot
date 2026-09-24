@@ -52767,6 +52767,15 @@
       "SNDK",
       "SOXL",
       "TER"
+    ],
+    "2026-09-24_post": [
+      "A",
+      "INTC",
+      "META",
+      "MRNA",
+      "SNDK",
+      "SWKS",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -52857,7 +52866,8 @@
     "2026-09-21_post": 18,
     "2026-09-22_pre": 16,
     "2026-09-22_post": 12,
-    "2026-09-23_post": 5
+    "2026-09-23_post": 5,
+    "2026-09-24_post": 7
   },
   "pending_protection": [],
   "pending_entries": [],
