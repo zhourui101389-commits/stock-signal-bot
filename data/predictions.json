@@ -53561,6 +53561,17 @@
       "SNDK",
       "SWKS",
       "WDC"
+    ],
+    "2026-09-25_post": [
+      "DDOG",
+      "INTC",
+      "META",
+      "MSFT",
+      "MXL",
+      "ON",
+      "QCOM",
+      "SMCI",
+      "SOXL"
     ]
   },
   "extended_trigger_count": {
@@ -53652,7 +53663,8 @@
     "2026-09-22_pre": 16,
     "2026-09-22_post": 12,
     "2026-09-23_post": 5,
-    "2026-09-24_post": 7
+    "2026-09-24_post": 7,
+    "2026-09-25_post": 9
   },
   "pending_protection": [],
   "pending_entries": [],
