@@ -56241,6 +56241,14 @@
       "HPE",
       "INTC",
       "MRNA"
+    ],
+    "2026-10-01_post": [
+      "AMAT",
+      "CDNS",
+      "COHR",
+      "SNPS",
+      "SOXL",
+      "TER"
     ]
   },
   "extended_trigger_count": {
@@ -56335,7 +56343,8 @@
     "2026-09-24_post": 7,
     "2026-09-25_post": 9,
     "2026-09-29_post": 8,
-    "2026-09-30_post": 3
+    "2026-09-30_post": 3,
+    "2026-10-01_post": 6
   },
   "pending_protection": [],
   "pending_entries": [],
