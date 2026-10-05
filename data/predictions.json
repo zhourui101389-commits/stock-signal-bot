@@ -292,6 +292,86 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "NVDA",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 238.9,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "core",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "WBD",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 30.95,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "screener",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "CHRW",
+      "direction": "SELL",
+      "final_direction": "看空",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 140.61,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "screener",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "NTAP",
+      "direction": "SELL",
+      "final_direction": "看空",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 223.77,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "screener",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "ECHO",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 98.21,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
@@ -56698,7 +56778,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 47.53,
+          "t1_pct": 0.1686,
+          "t1_correct": null
         },
         {
           "symbol": "INTC",
@@ -56714,7 +56797,10 @@
           "source": "core",
           "ai_failed": true,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 116.19,
+          "t1_pct": -6.8991,
+          "t1_correct": null
         },
         {
           "symbol": "MRVL",
@@ -56730,7 +56816,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 271.25,
+          "t1_pct": -0.3819,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -56746,7 +56835,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 1063.96,
+          "t1_pct": -1.0169,
+          "t1_correct": null
         },
         {
           "symbol": "MXL",
@@ -56762,7 +56854,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 105.49,
+          "t1_pct": -0.4154,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -56778,7 +56873,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 164.27,
+          "t1_pct": 0.3421,
+          "t1_correct": null
         },
         {
           "symbol": "WDC",
@@ -56794,7 +56892,10 @@
           "source": "core",
           "ai_failed": true,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 441.64,
+          "t1_pct": 5.0224,
+          "t1_correct": null
         },
         {
           "symbol": "AMAT",
@@ -56810,7 +56911,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 542.28,
+          "t1_pct": 0.4148,
+          "t1_correct": null
         },
         {
           "symbol": "SNPS",
@@ -56826,7 +56930,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 488.47,
+          "t1_pct": -0.2919,
+          "t1_correct": null
         },
         {
           "symbol": "AMD",
@@ -56842,7 +56949,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 631.75,
+          "t1_pct": -0.3407,
+          "t1_correct": null
         },
         {
           "symbol": "DDOG",
@@ -56858,7 +56968,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 276.415,
+          "t1_pct": -0.7023,
+          "t1_correct": null
         },
         {
           "symbol": "PANW",
@@ -56874,7 +56987,10 @@
           "source": "screener",
           "ai_failed": true,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 406.76,
+          "t1_pct": 0.0197,
+          "t1_correct": null
         },
         {
           "symbol": "NTAP",
@@ -56890,7 +57006,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 223.77,
+          "t1_pct": -1.1049,
+          "t1_correct": null
         },
         {
           "symbol": "KLAC",
@@ -56906,7 +57025,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 206.85,
+          "t1_pct": -0.0193,
+          "t1_correct": null
         },
         {
           "symbol": "HPE",
@@ -56922,7 +57044,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 68.36,
+          "t1_pct": -1.3991,
+          "t1_correct": null
         },
         {
           "symbol": "CRWD",
@@ -56938,7 +57063,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 272.67,
+          "t1_pct": 0.9739,
+          "t1_correct": null
         },
         {
           "symbol": "CCL",
@@ -56954,7 +57082,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 25.56,
+          "t1_pct": -0.7764,
+          "t1_correct": true
         },
         {
           "symbol": "LRCX",
@@ -56970,7 +57101,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 345.8,
+          "t1_pct": -0.4863,
+          "t1_correct": null
         },
         {
           "symbol": "TER",
@@ -56986,7 +57120,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 444.53,
+          "t1_pct": -1.0044,
+          "t1_correct": null
         },
         {
           "symbol": "LITE",
@@ -57002,7 +57139,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 1091.67,
+          "t1_pct": 0.5758,
+          "t1_correct": null
         },
         {
           "symbol": "SNDK",
@@ -57018,7 +57158,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 1704.16,
+          "t1_pct": -0.9204,
+          "t1_correct": false
         },
         {
           "symbol": "ON",
@@ -57034,7 +57177,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 85.93,
+          "t1_pct": 1.2251,
+          "t1_correct": null
         },
         {
           "symbol": "STX",
@@ -57050,7 +57196,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 887.09,
+          "t1_pct": 4.4877,
+          "t1_correct": null
         }
       ]
     }
