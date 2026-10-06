@@ -58821,6 +58821,19 @@
       "TER",
       "TSLA",
       "WDC"
+    ],
+    "2026-10-06_post": [
+      "AMD",
+      "CEG",
+      "DRAM",
+      "HPE",
+      "LITE",
+      "MRVL",
+      "MXL",
+      "PANW",
+      "SNPS",
+      "VST",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -58917,7 +58930,8 @@
     "2026-09-29_post": 8,
     "2026-09-30_post": 3,
     "2026-10-01_post": 6,
-    "2026-10-02_post": 13
+    "2026-10-02_post": 13,
+    "2026-10-06_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
