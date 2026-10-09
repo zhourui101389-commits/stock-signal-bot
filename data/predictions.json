@@ -60671,6 +60671,19 @@
       "SNPS",
       "VST",
       "WDC"
+    ],
+    "2026-10-09_post": [
+      "AMT",
+      "CCI",
+      "CEG",
+      "CIEN",
+      "CTVA",
+      "DDOG",
+      "HUM",
+      "MRNA",
+      "PANW",
+      "PLTR",
+      "YUMC"
     ]
   },
   "extended_trigger_count": {
@@ -60768,7 +60781,8 @@
     "2026-09-30_post": 3,
     "2026-10-01_post": 6,
     "2026-10-02_post": 13,
-    "2026-10-06_post": 11
+    "2026-10-06_post": 11,
+    "2026-10-09_post": 11
   },
   "pending_protection": [],
   "pending_entries": [],
