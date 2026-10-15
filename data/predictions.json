@@ -62795,7 +62795,7 @@
   ],
   "last_full_scan_date": "2026-10-14",
   "circuit_breaker": {
-    "daily_date": "2026-10-14",
+    "daily_date": "2026-10-15",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-10-12",
     "weekly_start_equity": 50000.0,
@@ -64183,6 +64183,24 @@
       "SOXL",
       "WDC",
       "WMT"
+    ],
+    "2026-10-15_pre": [
+      "ASX",
+      "BF-B",
+      "BIIB",
+      "DRAM",
+      "INTC",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PLTR",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDC",
+      "WMT"
     ]
   },
   "extended_trigger_count": {
@@ -64283,7 +64301,8 @@
     "2026-10-06_post": 11,
     "2026-10-09_post": 11,
     "2026-10-13_post": 7,
-    "2026-10-14_post": 14
+    "2026-10-14_post": 14,
+    "2026-10-15_pre": 16
   },
   "pending_protection": [],
   "pending_entries": [],
