@@ -63888,7 +63888,7 @@
   ],
   "last_full_scan_date": "2026-10-15",
   "circuit_breaker": {
-    "daily_date": "2026-10-15",
+    "daily_date": "2026-10-16",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-10-12",
     "weekly_start_equity": 50000.0,
@@ -65309,6 +65309,30 @@
       "RL",
       "SOXL",
       "VEEV"
+    ],
+    "2026-10-16_pre": [
+      "ACN",
+      "ASX",
+      "BAX",
+      "BLK",
+      "DRAM",
+      "EBAY",
+      "EL",
+      "GEHC",
+      "INTC",
+      "KDP",
+      "KMB",
+      "LLY",
+      "MRNA",
+      "MRVL",
+      "MTD",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "UNH",
+      "VEEV",
+      "WDC",
+      "WM"
     ]
   },
   "extended_trigger_count": {
@@ -65411,7 +65435,8 @@
     "2026-10-13_post": 7,
     "2026-10-14_post": 14,
     "2026-10-15_pre": 16,
-    "2026-10-15_post": 13
+    "2026-10-15_post": 13,
+    "2026-10-16_pre": 22
   },
   "pending_protection": [],
   "pending_entries": [],
