@@ -65818,6 +65818,21 @@
       "VEEV",
       "WDC",
       "WM"
+    ],
+    "2026-10-16_post": [
+      "ASX",
+      "COP",
+      "DRAM",
+      "EOG",
+      "INTC",
+      "MRNA",
+      "MRVL",
+      "MTD",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -65921,7 +65936,8 @@
     "2026-10-14_post": 14,
     "2026-10-15_pre": 16,
     "2026-10-15_post": 13,
-    "2026-10-16_pre": 22
+    "2026-10-16_pre": 22,
+    "2026-10-16_post": 13
   },
   "pending_protection": [],
   "pending_entries": [],
