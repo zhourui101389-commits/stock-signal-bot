@@ -67434,6 +67434,18 @@
       "SNDK",
       "SOXL",
       "WDC"
+    ],
+    "2026-10-19_post": [
+      "ASX",
+      "DRAM",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -67538,7 +67550,8 @@
     "2026-10-15_pre": 16,
     "2026-10-15_post": 13,
     "2026-10-16_pre": 22,
-    "2026-10-16_post": 13
+    "2026-10-16_post": 13,
+    "2026-10-19_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
