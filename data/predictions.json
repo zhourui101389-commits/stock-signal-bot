@@ -67922,6 +67922,18 @@
       "SOXL",
       "TSLA",
       "WDC"
+    ],
+    "2026-10-20_post": [
+      "CSGP",
+      "HLT",
+      "IT",
+      "LLY",
+      "MRNA",
+      "MRVL",
+      "SOXL",
+      "TSLA",
+      "TYL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -68027,7 +68039,8 @@
     "2026-10-15_post": 13,
     "2026-10-16_pre": 22,
     "2026-10-16_post": 13,
-    "2026-10-19_post": 10
+    "2026-10-19_post": 10,
+    "2026-10-20_post": 10
   },
   "pending_protection": [],
   "pending_entries": [],
