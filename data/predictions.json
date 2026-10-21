@@ -68995,6 +68995,11 @@
       "TSLA",
       "TYL",
       "WDC"
+    ],
+    "2026-10-21_post": [
+      "ASX",
+      "CRL",
+      "HAS"
     ]
   },
   "extended_trigger_count": {
@@ -69101,7 +69106,8 @@
     "2026-10-16_pre": 22,
     "2026-10-16_post": 13,
     "2026-10-19_post": 10,
-    "2026-10-20_post": 10
+    "2026-10-20_post": 10,
+    "2026-10-21_post": 3
   },
   "pending_protection": [],
   "pending_entries": [],
