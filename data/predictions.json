@@ -69521,6 +69521,33 @@
       "ASX",
       "CRL",
       "HAS"
+    ],
+    "2026-10-22_post": [
+      "ACN",
+      "ADP",
+      "ASX",
+      "BRO",
+      "CSGP",
+      "CSX",
+      "CTSH",
+      "DRAM",
+      "EFX",
+      "FDS",
+      "INTC",
+      "INTU",
+      "IT",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "PKG",
+      "SNDK",
+      "SOXL",
+      "STZ",
+      "TSLA",
+      "TYL",
+      "VRSK",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -69628,7 +69655,8 @@
     "2026-10-16_post": 13,
     "2026-10-19_post": 10,
     "2026-10-20_post": 10,
-    "2026-10-21_post": 3
+    "2026-10-21_post": 3,
+    "2026-10-22_post": 25
   },
   "pending_protection": [],
   "pending_entries": [],
