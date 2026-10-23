@@ -68594,7 +68594,7 @@
   ],
   "last_full_scan_date": "2026-10-22",
   "circuit_breaker": {
-    "daily_date": "2026-10-22",
+    "daily_date": "2026-10-23",
     "daily_start_equity": 50000.0,
     "weekly_monday": "2026-10-19",
     "weekly_start_equity": 50000.0,
@@ -70110,6 +70110,27 @@
       "TYL",
       "VRSK",
       "WDC"
+    ],
+    "2026-10-23_pre": [
+      "ACN",
+      "ADP",
+      "ASX",
+      "CSGP",
+      "CSX",
+      "CTSH",
+      "DRAM",
+      "INTC",
+      "INTU",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "SNDK",
+      "SOXL",
+      "STZ",
+      "TSLA",
+      "TYL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -70218,7 +70239,8 @@
     "2026-10-19_post": 10,
     "2026-10-20_post": 10,
     "2026-10-21_post": 3,
-    "2026-10-22_post": 25
+    "2026-10-22_post": 25,
+    "2026-10-23_pre": 19
   },
   "pending_protection": [],
   "pending_entries": [],
