@@ -3,12 +3,12 @@
   "predictions": [
     {
       "symbol": "ASX",
-      "direction": "BUY",
-      "final_direction": "看多",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 39.72,
+      "entry_price": 40.025,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -35,12 +35,12 @@
     },
     {
       "symbol": "MRVL",
-      "direction": "BUY",
-      "final_direction": "看多",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 233.665,
+      "entry_price": 236.24,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -51,12 +51,12 @@
     },
     {
       "symbol": "MU",
-      "direction": "BUY",
-      "final_direction": "看多",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 907.72,
+      "entry_price": 911.66,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -72,7 +72,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 66.18,
+      "entry_price": 67.69,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -88,7 +88,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 1262.26,
+      "entry_price": 1265.115,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -104,7 +104,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 91.05,
+      "entry_price": 92.404,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -136,7 +136,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 164.215,
+      "entry_price": 163.39,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -147,12 +147,12 @@
     },
     {
       "symbol": "ALLE",
-      "direction": "SELL",
-      "final_direction": "看空",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 178.21,
+      "entry_price": 179.0,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -168,7 +168,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 625.385,
+      "entry_price": 630.515,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -184,7 +184,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 193.86,
+      "entry_price": 193.805,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -195,12 +195,12 @@
     },
     {
       "symbol": "ACN",
-      "direction": "SELL",
-      "final_direction": "看空",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 247.96,
+      "entry_price": 245.095,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -216,7 +216,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 444.5,
+      "entry_price": 439.215,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -232,7 +232,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 324.635,
+      "entry_price": 324.44,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -248,7 +248,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 178.14,
+      "entry_price": 177.675,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -264,7 +264,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 140.4358,
+      "entry_price": 139.64,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -280,7 +280,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 88.495,
+      "entry_price": 87.49,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -296,7 +296,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 355.76,
+      "entry_price": 354.515,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -312,7 +312,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 34.12,
+      "entry_price": 34.125,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -328,7 +328,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 104.12,
+      "entry_price": 104.575,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -344,7 +344,7 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 232.135,
+      "entry_price": 229.4,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
@@ -360,11 +360,27 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 117.77,
+      "entry_price": 117.63,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
+      "ai_failed": true,
+      "tech_confirmed": null,
+      "shadow_verdict": null
+    },
+    {
+      "symbol": "NVDA",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
+      "action": "",
+      "conviction": "",
+      "horizon": "3-5天",
+      "entry_price": 216.52,
+      "target_price": null,
+      "stop_loss": null,
+      "verdict": "",
+      "source": "core",
       "ai_failed": true,
       "tech_confirmed": null,
       "shadow_verdict": null
@@ -70488,7 +70504,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 40.025,
+          "t1_pct": 3.4505,
+          "t1_correct": true
         },
         {
           "symbol": "INTC",
@@ -70510,7 +70529,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 91.585,
+          "t1_pct": 5.3185,
+          "t1_correct": true
         },
         {
           "symbol": "MRVL",
@@ -70532,7 +70554,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 236.06,
+          "t1_pct": 3.304,
+          "t1_correct": null
         },
         {
           "symbol": "MU",
@@ -70554,7 +70579,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 910.8499,
+          "t1_pct": 3.7946,
+          "t1_correct": true
         },
         {
           "symbol": "MXL",
@@ -70576,7 +70604,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 67.58,
+          "t1_pct": 6.4923,
+          "t1_correct": null
         },
         {
           "symbol": "NVDA",
@@ -70598,7 +70629,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 216.25,
+          "t1_pct": 2.5076,
+          "t1_correct": null
         },
         {
           "symbol": "SNDK",
@@ -70620,7 +70654,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1262.9399,
+          "t1_pct": 2.0121,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -70642,7 +70679,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 92.05,
+          "t1_pct": 10.1604,
+          "t1_correct": null
         },
         {
           "symbol": "INTU",
@@ -70664,7 +70704,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 336.35,
+          "t1_pct": -2.8452,
+          "t1_correct": true
         },
         {
           "symbol": "NOW",
@@ -70686,7 +70729,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 156.8425,
+          "t1_pct": -1.3321,
+          "t1_correct": false
         },
         {
           "symbol": "CTSH",
@@ -70708,7 +70754,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 68.54,
+          "t1_pct": -3.0826,
+          "t1_correct": true
         },
         {
           "symbol": "CDW",
@@ -70730,7 +70779,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 163.235,
+          "t1_pct": -1.1356,
+          "t1_correct": null
         },
         {
           "symbol": "CRL",
@@ -70752,7 +70804,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 354.295,
+          "t1_pct": 2.5842,
+          "t1_correct": false
         },
         {
           "symbol": "ALLE",
@@ -70774,7 +70829,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 178.69,
+          "t1_pct": -0.162,
+          "t1_correct": null
         },
         {
           "symbol": "ACN",
@@ -70796,7 +70854,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 244.8,
+          "t1_pct": -1.8326,
+          "t1_correct": true
         },
         {
           "symbol": "HAS",
@@ -70818,7 +70879,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 117.545,
+          "t1_pct": 0.0894,
+          "t1_correct": null
         },
         {
           "symbol": "IT",
@@ -70840,7 +70904,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 229.26,
+          "t1_pct": -0.4429,
+          "t1_correct": true
         },
         {
           "symbol": "CSGP",
@@ -70862,7 +70929,10 @@
           "correct": true,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 33.14,
+          "t1_pct": -4.1365,
+          "t1_correct": true
         },
         {
           "symbol": "FDS",
@@ -70884,7 +70954,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 324.65,
+          "t1_pct": -2.3712,
+          "t1_correct": null
         },
         {
           "symbol": "CCI",
@@ -70906,7 +70979,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 87.71,
+          "t1_pct": 2.024,
+          "t1_correct": null
         },
         {
           "symbol": "EFX",
@@ -70928,7 +71004,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 177.265,
+          "t1_pct": -2.7939,
+          "t1_correct": true
         },
         {
           "symbol": "PTC",
@@ -70950,7 +71029,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 193.835,
+          "t1_pct": 0.0181,
+          "t1_correct": null
         },
         {
           "symbol": "ROP",
@@ -70972,7 +71054,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 439.2,
+          "t1_pct": 0.2419,
+          "t1_correct": null
         },
         {
           "symbol": "LMT",
@@ -70994,7 +71079,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 630.34,
+          "t1_pct": 4.3298,
+          "t1_correct": false
         },
         {
           "symbol": "APA",
@@ -71016,7 +71104,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 51.675,
+          "t1_pct": -0.4335,
+          "t1_correct": null
         },
         {
           "symbol": "AMT",
@@ -71038,7 +71129,10 @@
           "correct": null,
           "inconclusive": true,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 189.2,
+          "t1_pct": 0.1217,
+          "t1_correct": null
         }
       ]
     }
