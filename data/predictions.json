@@ -72703,6 +72703,21 @@
       "INTU",
       "MXL",
       "WDC"
+    ],
+    "2026-10-26_post": [
+      "ASX",
+      "CRL",
+      "DOW",
+      "DRAM",
+      "INTC",
+      "LDOS",
+      "LMT",
+      "MRVL",
+      "MU",
+      "MXL",
+      "SOXL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -72813,7 +72828,8 @@
     "2026-10-21_post": 3,
     "2026-10-22_post": 25,
     "2026-10-23_pre": 19,
-    "2026-10-23_post": 9
+    "2026-10-23_post": 9,
+    "2026-10-26_post": 13
   },
   "pending_protection": [],
   "pending_entries": [],
