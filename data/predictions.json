@@ -73098,6 +73098,22 @@
       "SOXL",
       "TSLA",
       "WDC"
+    ],
+    "2026-10-27_post": [
+      "ACN",
+      "ASX",
+      "CTAS",
+      "DRAM",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "PANW",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "URI",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -73209,7 +73225,8 @@
     "2026-10-22_post": 25,
     "2026-10-23_pre": 19,
     "2026-10-23_post": 9,
-    "2026-10-26_post": 13
+    "2026-10-26_post": 13,
+    "2026-10-27_post": 14
   },
   "pending_protection": [],
   "pending_entries": [],
