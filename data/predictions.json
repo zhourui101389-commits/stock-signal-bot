@@ -74410,6 +74410,23 @@
       "PNR",
       "PPG",
       "SNDK"
+    ],
+    "2026-10-29_post": [
+      "CVNA",
+      "DRAM",
+      "EG",
+      "GEN",
+      "INTC",
+      "MLM",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NXPI",
+      "RCL",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -74523,7 +74540,8 @@
     "2026-10-23_post": 9,
     "2026-10-26_post": 13,
     "2026-10-27_post": 14,
-    "2026-10-28_post": 8
+    "2026-10-28_post": 8,
+    "2026-10-29_post": 15
   },
   "pending_protection": [],
   "pending_entries": [],
