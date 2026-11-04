@@ -77499,6 +77499,14 @@
       "SOXL",
       "VLTO",
       "WDC"
+    ],
+    "2026-11-04_post": [
+      "ACN",
+      "MXL",
+      "ROL",
+      "SNDK",
+      "SOXL",
+      "TSLA"
     ]
   },
   "extended_trigger_count": {
@@ -77614,7 +77622,8 @@
     "2026-10-27_post": 14,
     "2026-10-28_post": 8,
     "2026-10-29_post": 15,
-    "2026-10-30_post": 20
+    "2026-10-30_post": 20,
+    "2026-11-04_post": 6
   },
   "pending_protection": [],
   "pending_entries": [],
