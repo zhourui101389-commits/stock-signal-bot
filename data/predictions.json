@@ -78883,6 +78883,22 @@
       "WDC",
       "XYZ",
       "ZBH"
+    ],
+    "2026-11-06_post": [
+      "APP",
+      "ASX",
+      "CPAY",
+      "DRAM",
+      "INTC",
+      "MRVL",
+      "MSI",
+      "MU",
+      "MXL",
+      "NVDA",
+      "SNDK",
+      "SOXL",
+      "TSLA",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -79000,7 +79016,8 @@
     "2026-10-29_post": 15,
     "2026-10-30_post": 20,
     "2026-11-04_post": 6,
-    "2026-11-05_post": 21
+    "2026-11-05_post": 21,
+    "2026-11-06_post": 14
   },
   "pending_protection": [],
   "pending_entries": [],
