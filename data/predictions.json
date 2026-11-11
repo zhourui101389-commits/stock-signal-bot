@@ -81093,6 +81093,13 @@
       "SOXL",
       "TSLA",
       "WYNN"
+    ],
+    "2026-11-11_post": [
+      "APP",
+      "ASX",
+      "CHTR",
+      "NVDA",
+      "TTWO"
     ]
   },
   "extended_trigger_count": {
@@ -81212,7 +81219,8 @@
     "2026-11-04_post": 6,
     "2026-11-05_post": 21,
     "2026-11-06_post": 14,
-    "2026-11-07_post": 16
+    "2026-11-07_post": 16,
+    "2026-11-11_post": 5
   },
   "pending_protection": [],
   "pending_entries": [],
