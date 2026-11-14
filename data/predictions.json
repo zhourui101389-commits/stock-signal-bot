@@ -80070,6 +80070,20 @@
       "NVDA",
       "SWKS",
       "TTD"
+    ],
+    "2026-11-14_post": [
+      "ANET",
+      "ASX",
+      "DRAM",
+      "FISV",
+      "INTC",
+      "MRVL",
+      "MU",
+      "MXL",
+      "NVDA",
+      "SNDK",
+      "SOXL",
+      "WDC"
     ]
   },
   "extended_trigger_count": {
@@ -80191,7 +80205,8 @@
     "2026-11-06_post": 14,
     "2026-11-07_post": 16,
     "2026-11-11_post": 5,
-    "2026-11-13_post": 6
+    "2026-11-13_post": 6,
+    "2026-11-14_post": 12
   },
   "pending_protection": [],
   "pending_entries": [],
