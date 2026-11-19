@@ -13,7 +13,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -29,7 +29,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -111,7 +111,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -122,12 +122,12 @@
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
-      "entry_price": 356.525,
+      "entry_price": 361.73,
       "target_price": null,
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -143,7 +143,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -159,7 +159,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
