@@ -15,7 +15,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "MU",
@@ -31,7 +37,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "SOXL",
@@ -47,7 +59,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "WDC",
@@ -63,7 +81,13 @@
       "source": "core",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "GIS",
@@ -79,7 +103,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "TSN",
@@ -95,7 +125,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     },
     {
       "symbol": "AES",
@@ -111,7 +147,13 @@
       "source": "screener",
       "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": null
+      "shadow_verdict": null,
+      "close_price": null,
+      "actual_pct": null,
+      "correct": null,
+      "inconclusive": false,
+      "hit_target": false,
+      "hit_stop": false
     }
   ],
   "history": [
@@ -65700,7 +65742,8 @@
           "effective_exit_pct": -15.2017,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.369,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -16.6858
         },
         {
           "symbol": "SOXL",
@@ -65734,7 +65777,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -23.3315,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -32.8911
         },
         {
           "symbol": "VLTO",
@@ -65768,7 +65812,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 1.6248,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 1.771
         },
         {
           "symbol": "PNR",
@@ -65803,7 +65848,8 @@
           "effective_exit_pct": -0.1434,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.663,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -4.0872
         },
         {
           "symbol": "ROP",
@@ -65838,7 +65884,8 @@
           "effective_exit_pct": 0.1879,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.733,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -0.3505
         },
         {
           "symbol": "MXL",
@@ -65872,7 +65919,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -15.8512,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -19.6186
         },
         {
           "symbol": "ERIE",
@@ -65907,7 +65955,8 @@
           "effective_exit_pct": 0.173,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.858,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 0.4749
         },
         {
           "symbol": "GEHC",
@@ -65942,7 +65991,8 @@
           "effective_exit_pct": 3.7069,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.644,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 1.4629
         },
         {
           "symbol": "HII",
@@ -65977,7 +66027,8 @@
           "effective_exit_pct": -1.0602,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.023,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -6.1496
         },
         {
           "symbol": "IDXX",
@@ -66012,7 +66063,8 @@
           "effective_exit_pct": 3.6605,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.268,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 2.7082
         },
         {
           "symbol": "GEN",
@@ -66046,7 +66098,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 1.0098,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -0.6395
         },
         {
           "symbol": "FDXF",
@@ -66081,7 +66134,8 @@
           "effective_exit_pct": -0.3301,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.309,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 1.2974
         },
         {
           "symbol": "ACN",
@@ -66116,7 +66170,8 @@
           "effective_exit_pct": 1.5517,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.618,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -6.0025
         },
         {
           "symbol": "EFX",
@@ -66151,7 +66206,8 @@
           "effective_exit_pct": 0.2717,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.642,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -3.9527
         },
         {
           "symbol": "ASX",
@@ -66185,7 +66241,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -9.1421,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -18.4891
         },
         {
           "symbol": "DRAM",
@@ -66219,7 +66276,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -14.3429,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -17.9471
         },
         {
           "symbol": "NVDA",
@@ -66253,7 +66311,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -18.2883,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -24.7859
         },
         {
           "symbol": "ROL",
@@ -66288,7 +66347,8 @@
           "effective_exit_pct": 2.8648,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.311,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 2.0348
         },
         {
           "symbol": "LLY",
@@ -66322,7 +66382,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": 1.286,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": 0.1022
         },
         {
           "symbol": "CVNA",
@@ -66357,7 +66418,8 @@
           "effective_exit_pct": 2.4411,
           "effective_exit_reason": "held_to_t5",
           "exit_quality": 0.655,
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -0.2525
         },
         {
           "symbol": "REGN",
@@ -66391,7 +66453,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -5.8868,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -1.6027
         },
         {
           "symbol": "WDC",
@@ -66425,7 +66488,8 @@
           "stop_hit_day": null,
           "effective_exit_pct": -16.741,
           "effective_exit_reason": "held_to_t5",
-          "exit_tracked": true
+          "exit_tracked": true,
+          "post_exit_5d_pct": -18.431
         }
       ]
     },
@@ -72076,7 +72140,19 @@
           "t1_correct": null,
           "t3_close": 797.24,
           "t3_pct": -18.4568,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 94.395,
+          "t5_pct": -90.3451,
+          "t5_correct": null,
+          "holding_peak_pct": -87.9879,
+          "holding_trough_pct": -90.4189,
+          "holding_peak_day": 1,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -90.3451,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "SOXL",
@@ -72247,7 +72323,20 @@
           "t1_correct": false,
           "t3_close": 398.94,
           "t3_pct": 1.3361,
-          "t3_correct": false
+          "t3_correct": false,
+          "t5_close": 379.02,
+          "t5_pct": -3.7238,
+          "t5_correct": true,
+          "holding_peak_pct": 6.3724,
+          "holding_trough_pct": -4.1526,
+          "holding_peak_day": 2,
+          "holding_trough_day": 5,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -3.7238,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.959,
+          "exit_tracked": true
         },
         {
           "symbol": "FISV",
@@ -72384,7 +72473,20 @@
           "t1_correct": false,
           "t3_close": 14.93,
           "t3_pct": -3.4906,
-          "t3_correct": true
+          "t3_correct": true,
+          "t5_close": 14.56,
+          "t5_pct": -5.8824,
+          "t5_correct": true,
+          "holding_peak_pct": 4.0401,
+          "holding_trough_pct": -6.1732,
+          "holding_peak_day": 1,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -5.8824,
+          "effective_exit_reason": "held_to_t5",
+          "exit_quality": 0.972,
+          "exit_tracked": true
         },
         {
           "symbol": "ASX",
@@ -72440,7 +72542,19 @@
           "t1_correct": null,
           "t3_close": 38.93,
           "t3_pct": -10.8337,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 38.43,
+          "t5_pct": -11.9789,
+          "t5_correct": null,
+          "holding_peak_pct": -0.7787,
+          "holding_trough_pct": -15.1397,
+          "holding_peak_day": 1,
+          "holding_trough_day": 3,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -11.9789,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "BEN",
@@ -72496,7 +72610,19 @@
           "t1_correct": null,
           "t3_close": 186.42,
           "t3_pct": -9.7808,
-          "t3_correct": null
+          "t3_correct": null,
+          "t5_close": 189.59,
+          "t5_pct": -8.2466,
+          "t5_correct": null,
+          "holding_peak_pct": 2.6739,
+          "holding_trough_pct": -11.7142,
+          "holding_peak_day": 1,
+          "holding_trough_day": 4,
+          "target_hit_day": null,
+          "stop_hit_day": null,
+          "effective_exit_pct": -8.2466,
+          "effective_exit_reason": "held_to_t5",
+          "exit_tracked": true
         },
         {
           "symbol": "AMD",
@@ -73845,7 +73971,10 @@
           "shadow_verdict": null,
           "t1_close": 38.93,
           "t1_pct": -0.8658,
-          "t1_correct": null
+          "t1_correct": null,
+          "t3_close": 38.43,
+          "t3_pct": -2.139,
+          "t3_correct": null
         },
         {
           "symbol": "MU",
@@ -74091,7 +74220,10 @@
           "shadow_verdict": null,
           "t1_close": 398.94,
           "t1_pct": -3.9208,
-          "t1_correct": true
+          "t1_correct": true,
+          "t3_close": 379.02,
+          "t3_pct": -8.7183,
+          "t3_correct": true
         },
         {
           "symbol": "ROP",
@@ -75137,7 +75269,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 594.51,
+          "t1_pct": -13.894,
+          "t1_correct": null
         },
         {
           "symbol": "SOXL",
@@ -75153,7 +75288,10 @@
           "source": "core",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 30.88,
+          "t1_pct": -31.8322,
+          "t1_correct": null
         },
         {
           "symbol": "DPZ",
@@ -75175,7 +75313,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 348.61,
+          "t1_pct": -1.3945,
+          "t1_correct": null
         },
         {
           "symbol": "TSN",
@@ -75197,7 +75338,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 65.12,
+          "t1_pct": 1.3541,
+          "t1_correct": null
         },
         {
           "symbol": "COST",
@@ -75219,7 +75363,10 @@
           "correct": null,
           "inconclusive": false,
           "hit_target": false,
-          "hit_stop": false
+          "hit_stop": false,
+          "t1_close": 1102.15,
+          "t1_pct": 0.5043,
+          "t1_correct": null
         },
         {
           "symbol": "PDD",
@@ -75235,7 +75382,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 83.68,
+          "t1_pct": -2.6977,
+          "t1_correct": null
         },
         {
           "symbol": "PANW",
@@ -75251,7 +75401,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 343.32,
+          "t1_pct": -5.0894,
+          "t1_correct": false
         },
         {
           "symbol": "GEN",
@@ -75267,7 +75420,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 29.19,
+          "t1_pct": -3.1841,
+          "t1_correct": null
         },
         {
           "symbol": "CMG",
@@ -75283,7 +75439,10 @@
           "source": "screener",
           "ai_failed": false,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 35.55,
+          "t1_pct": -2.0661,
+          "t1_correct": null
         },
         {
           "symbol": "APP",
@@ -75299,7 +75458,10 @@
           "source": "screener",
           "ai_failed": true,
           "tech_confirmed": null,
-          "shadow_verdict": null
+          "shadow_verdict": null,
+          "t1_close": 348.29,
+          "t1_pct": -9.7297,
+          "t1_correct": null
         }
       ]
     },
