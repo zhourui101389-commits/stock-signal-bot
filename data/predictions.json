@@ -13,7 +13,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -35,8 +35,8 @@
     },
     {
       "symbol": "SOXL",
-      "direction": "SELL",
-      "final_direction": "看空",
+      "direction": "NEUTRAL",
+      "final_direction": "中性",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
@@ -45,7 +45,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "core",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
