@@ -35,8 +35,8 @@
     },
     {
       "symbol": "SOXL",
-      "direction": "NEUTRAL",
-      "final_direction": "中性",
+      "direction": "SELL",
+      "final_direction": "看空",
       "action": "",
       "conviction": "",
       "horizon": "3-5天",
@@ -61,16 +61,9 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
-      "shadow_verdict": {
-        "model": "gemini-flash-latest",
-        "final_direction": "中性",
-        "conviction": "中",
-        "action": "持有观望",
-        "tech_confirmed": true,
-        "verdict": "短期涨幅偏大且指标背离，多空胶着宜观望"
-      }
+      "shadow_verdict": null
     },
     {
       "symbol": "APP",
@@ -84,7 +77,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -100,7 +93,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -116,7 +109,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     },
@@ -132,7 +125,7 @@
       "stop_loss": null,
       "verdict": "",
       "source": "screener",
-      "ai_failed": true,
+      "ai_failed": false,
       "tech_confirmed": null,
       "shadow_verdict": null
     }
